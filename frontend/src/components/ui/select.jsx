@@ -1,74 +1,105 @@
 import React from "react";
 
-const TabsCtx = React.createContext(null);
+const SelectCtx = React.createContext(null);
 
-export function Tabs({ value, defaultValue, onValueChange, className = "", children }) {
+export function Select({ value, defaultValue, onValueChange, className = "", children }) {
   const isControlled = value !== undefined;
-  const [internal, setInternal] = React.useState(defaultValue);
+  const [internal, setInternal] = React.useState(defaultValue ?? "");
+  const [open, setOpen] = React.useState(false);
+  const [labelMap] = React.useState(() => new Map());
+  const containerRef = React.useRef(null);
+
   const current = isControlled ? value : internal;
   const setValue = (v) => {
     if (!isControlled) setInternal(v);
     onValueChange?.(v);
   };
-  const idBase = React.useId();
+
+  React.useEffect(() => {
+    function onDoc(e) {
+      if (!containerRef.current) return;
+      if (!containerRef.current.contains(e.target)) setOpen(false);
+    }
+    if (open) {
+      document.addEventListener("mousedown", onDoc);
+      document.addEventListener("touchstart", onDoc, { passive: true });
+      return () => {
+        document.removeEventListener("mousedown", onDoc);
+        document.removeEventListener("touchstart", onDoc);
+      };
+    }
+  }, [open]);
 
   return (
-    <TabsCtx.Provider value={{ value: current, setValue, idBase }}>
-      <div className={className}>{children}</div>
-    </TabsCtx.Provider>
+    <SelectCtx.Provider value={{ value: current, setValue, open, setOpen, labelMap }}>
+      <div ref={containerRef} className={`relative ${className}`}>{children}</div>
+    </SelectCtx.Provider>
   );
 }
 
-export function TabsList({ className = "", children, ...props }) {
-  return (
-    <div
-      role="tablist"
-      className={`inline-grid gap-0 rounded-xl border bg-white p-1 text-sm ${className}`}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-}
-
-export function TabsTrigger({ value, className = "", children, ...props }) {
-  const ctx = React.useContext(TabsCtx);
-  if (!ctx) throw new Error("TabsTrigger must be used within <Tabs>");
-  const selected = ctx.value === value;
-
+export function SelectTrigger({ className = "", children, ...props }) {
+  const ctx = React.useContext(SelectCtx);
+  if (!ctx) throw new Error("SelectTrigger must be used within <Select>");
   return (
     <button
-      role="tab"
-      id={`${ctx.idBase}-${value}-tab`}
-      aria-selected={selected}
-      aria-controls={`${ctx.idBase}-${value}-panel`}
-      onClick={() => ctx.setValue(value)}
-      className={`px-3 py-2 transition-colors rounded-lg
-        ${selected ? "bg-slate-900 text-white" : "text-slate-700 hover:bg-slate-100"}
-        ${className}`}
+      type="button"
+      role="combobox"
+      aria-expanded={ctx.open}
+      onClick={() => ctx.setOpen(!ctx.open)}
+      className={`h-10 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm shadow-sm
+                  text-left hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-300 ${className}`}
       {...props}
     >
-      {children}
+      <div className="flex items-center justify-between">{children}<svg aria-hidden="true" viewBox="0 0 20 20" className="h-4 w-4 ml-2"><path d="M5 7l5 6 5-6" fill="currentColor"/></svg></div>
     </button>
   );
 }
 
-export function TabsContent({ value, className = "", children, ...props }) {
-  const ctx = React.useContext(TabsCtx);
-  if (!ctx) throw new Error("TabsContent must be used within <Tabs>");
-  const selected = ctx.value === value;
+export function SelectValue({ placeholder }) {
+  const ctx = React.useContext(SelectCtx);
+  if (!ctx) throw new Error("SelectValue must be used within <Select>");
+  const label = ctx.labelMap.get(ctx.value) ?? ctx.value;
+  return <span className="truncate">{label || placeholder || "Select…"}</span>;
+}
+
+export function SelectContent({ className = "", children, ...props }) {
+  const ctx = React.useContext(SelectCtx);
+  if (!ctx) throw new Error("SelectContent must be used within <Select>");
+  if (!ctx.open) return null;
   return (
     <div
-      role="tabpanel"
-      id={`${ctx.idBase}-${value}-panel`}
-      aria-labelledby={`${ctx.idBase}-${value}-tab`}
-      hidden={!selected}
-      className={className}
+      role="listbox"
+      className={`absolute z-50 mt-2 w-full rounded-xl border bg-white shadow-lg p-1 ${className}`}
       {...props}
     >
-      {selected ? children : null}
+      {children}
     </div>
   );
 }
 
-export default { Tabs, TabsList, TabsTrigger, TabsContent };
+export function SelectItem({ value, className = "", children, ...props }) {
+  const ctx = React.useContext(SelectCtx);
+  if (!ctx) throw new Error("SelectItem must be used within <Select>");
+  const selected = ctx.value === value;
+
+  React.useEffect(() => {
+    const label = typeof children === "string" ? children : (Array.isArray(children) ? children.join(" ") : value);
+    ctx.labelMap.set(value, label);
+    return () => { ctx.labelMap.delete(value); };
+  }, [value, children]);
+
+  return (
+    <div
+      role="option"
+      aria-selected={selected}
+      onClick={() => { ctx.setValue(value); ctx.setOpen(false); }}
+      className={`cursor-pointer select-none rounded-lg px-3 py-2 text-sm
+                  hover:bg-slate-100 ${selected ? "bg-slate-100" : ""} ${className}`}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+}
+
+export default { Select, SelectTrigger, SelectValue, SelectContent, SelectItem };
