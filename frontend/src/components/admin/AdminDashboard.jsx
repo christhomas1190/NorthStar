@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import KPIGrid from "@/components/admin/KPIGrid";
+import ActivityLog from "@/components/admin/ActivityLog.jsx";
 import KPICard from "@/components/common/KPICard";
 
 const KPIS = [
