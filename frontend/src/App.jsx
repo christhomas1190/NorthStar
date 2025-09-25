@@ -1,21 +1,21 @@
+import React from "react";
 import AppShell from '@/components/layout/AppShell'
 import Sidebar from '@/components/layout/Sidebar'
-import AdminDashboard from '@/components/admin/AdminDashboard'
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+
+import AdminDashboard from "@/components/admin/AdminDashboard.jsx";
+import TeacherDashboard from "@/components/teacher/TeacherDashboard.jsx";
+
+const currentUser = { id: "t_45", role: "teacher" };
+
 export default function App() {
   return (
-      <Router>
-        <Routes>
-          {/* Role-based routing */}
-          <Route path="/" element={<Navigate to={currentUser.role === "admin" ? "/admin" : "/teacher"} replace />} />
-
-          {/* Admin-only */}
-          <Route path="/admin" element={<AdminDashboard />} />
-
-          {/* Teacher-only */}
-          <Route path="/teacher" element={<TeacherConsole />} />
-
-          {/* Later: add /student/:id for student viewer?? */}
-        </Routes>
-      </Router>
-    );
-  }
+    <Router>
+      <Routes>
+        <Route path="/" element={<Navigate to={currentUser.role === "admin" ? "/admin" : "/teacher"} replace />} />
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/teacher" element={<TeacherDashboard />} />
+      </Routes>
+    </Router>
+  );
+}
