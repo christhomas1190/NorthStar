@@ -22,7 +22,9 @@ function toLocalInputValue(date = new Date()) {
 }
 
 export default function TeacherDashboard() {
-  const { toast } = useToast();
+const { push } = useToast();
+if (!student) return push("Pick a student first");
+push("Draft saved");
 
   // form state
   const [studentId, setStudentId] = useState("");

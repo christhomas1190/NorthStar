@@ -1,14 +1,12 @@
 import React, { useMemo, useState } from "react";
+import Page from "@/components/layout/Page";
+import PageTabs from "@/components/layout/PageTabs";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 import { FileDown, Filter, BarChart3 } from "lucide-react";
-import PageTabs from "@/components/layout/PageTabs";
-import Page from "@/components/layout/Page";
-
-
 
 // Mock rows — swap with API later
 const RAW = [
@@ -25,7 +23,10 @@ export default function ReportsPage() {
   const rows = useMemo(() => {
     const term = q.trim().toLowerCase();
     return RAW.filter(r =>
-      (!term || r.student.toLowerCase().includes(term) || r.category.toLowerCase().includes(term) || r.id.toLowerCase().includes(term))
+      !term ||
+      r.student.toLowerCase().includes(term) ||
+      r.category.toLowerCase().includes(term) ||
+      r.id.toLowerCase().includes(term)
     );
   }, [q]);
 
@@ -41,53 +42,46 @@ export default function ReportsPage() {
   }
 
   return (
-      <Page title="Reports & Trends" subtitle="Filters, trends, and exports for incidents" actions={
-          <Button variant="outline" onClick={exportCSV}><FileDown size={16} className="mr-2" /> Export CSV</Button>
-        }>
-          <PageTabs items={[
-            { label: "Admin Dashboard", to: "/admin" },
-            { label: "Reports & Trends", to: "/reports" },
-          ]} />
-    <div className="mx-auto max-w-6xl">
-      {/* Page header */}
-      <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-semibold text-slate-900">Reports & Trends</h1>
-          <p className="text-sm text-slate-500 mt-0.5">Filters, trends, and exports for incidents</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={exportCSV}>
-            <FileDown size={16} className="mr-2" /> Export CSV
-          </Button>
-        </div>
-      </div>
+    <Page
+      title="Reports & Trends"
+      subtitle="Filters, trends, and exports for incidents"
+      actions={
+        <Button variant="outline" onClick={exportCSV}>
+          <FileDown size={16} className="mr-2" /> Export CSV
+        </Button>
+      }
+    >
+      {/* Pill tabs under the page header */}
       <PageTabs
         items={[
           { label: "Admin Dashboard", to: "/admin" },
-          { label: "Reports & Trends", to: "/reports" }, // current page
+          { label: "Reports & Trends", to: "/reports" },
         ]}
       />
 
+      {/* Sections */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Filters */}
         <Card className="lg:col-span-3">
           <CardHeader className="flex items-center justify-between">
             <CardTitle className="text-base">Filters</CardTitle>
-            <Badge variant="outline" className="gap-1"><Filter size={14}/> Basic</Badge>
+            <Badge variant="outline" className="gap-1">
+              <Filter size={14} /> Basic
+            </Badge>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="space-y-1">
                 <label className="text-xs text-slate-600">From</label>
-                <Input type="date" value={from} onChange={e=>setFrom(e.target.value)} />
+                <Input type="date" value={from} onChange={e => setFrom(e.target.value)} />
               </div>
               <div className="space-y-1">
                 <label className="text-xs text-slate-600">To</label>
-                <Input type="date" value={to} onChange={e=>setTo(e.target.value)} />
+                <Input type="date" value={to} onChange={e => setTo(e.target.value)} />
               </div>
               <div className="space-y-1">
                 <label className="text-xs text-slate-600">Search</label>
-                <Input placeholder="Student, category, or ID…" value={q} onChange={e=>setQ(e.target.value)} />
+                <Input placeholder="Student, category, or ID…" value={q} onChange={e => setQ(e.target.value)} />
               </div>
             </div>
           </CardContent>
@@ -97,7 +91,9 @@ export default function ReportsPage() {
         <Card>
           <CardHeader className="flex items-center justify-between">
             <CardTitle className="text-base">30-Day Trend</CardTitle>
-            <Badge variant="outline" className="gap-1"><BarChart3 size={14}/> Mock</Badge>
+            <Badge variant="outline" className="gap-1">
+              <BarChart3 size={14} /> Mock
+            </Badge>
           </CardHeader>
           <CardContent>
             <div className="h-36 w-full rounded-xl bg-slate-100 grid place-content-center text-slate-400">
@@ -142,7 +138,9 @@ export default function ReportsPage() {
                   ))}
                   {rows.length === 0 && (
                     <TR>
-                      <TD colSpan={6} className="py-6 text-slate-500">No results for the selected filters.</TD>
+                      <TD colSpan={6} className="py-6 text-slate-500">
+                        No results for the selected filters.
+                      </TD>
                     </TR>
                   )}
                 </TBody>
@@ -157,13 +155,18 @@ export default function ReportsPage() {
             <CardTitle className="text-base">Exports</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-3">
-            <Button variant="outline" onClick={exportCSV}><FileDown size={16} className="mr-2" /> CSV (incidents)</Button>
-            <Button variant="outline" disabled><FileDown size={16} className="mr-2" /> PDF (coming soon)</Button>
-            <Button variant="outline" disabled><FileDown size={16} className="mr-2" /> XLSX (coming soon)</Button>
+            <Button variant="outline" onClick={exportCSV}>
+              <FileDown size={16} className="mr-2" /> CSV (incidents)
+            </Button>
+            <Button variant="outline" disabled>
+              <FileDown size={16} className="mr-2" /> PDF (coming soon)
+            </Button>
+            <Button variant="outline" disabled>
+              <FileDown size={16} className="mr-2" /> XLSX (coming soon)
+            </Button>
           </CardContent>
         </Card>
       </div>
-    </div>
     </Page>
   );
 }

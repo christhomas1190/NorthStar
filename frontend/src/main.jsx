@@ -1,30 +1,17 @@
-// import "./index.css";
-// import React from "react";
-// import ReactDOM from "react-dom/client";
-// import { BrowserRouter } from "react-router-dom";
-// import App from "./App.jsx";
-// import { ToastProvider } from "@/components/ui/toast.jsx";
-//
-// ReactDOM.createRoot(document.getElementById("root")).render(
-//   <React.StrictMode>
-//     <BrowserRouter>
-//       <ToastProvider>
-//         <App />
-//       </ToastProvider>
-//     </BrowserRouter>
-//   </React.StrictMode>
-// );
-import "./index.css"; // must be first
+import "./index.css";
 
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App.jsx";
+import { ToastProvider } from "@/components/ui/toast.jsx";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>
-      <App />
+      <ToastProvider>
+        <App />
+      </ToastProvider>
     </BrowserRouter>
   </React.StrictMode>
 );

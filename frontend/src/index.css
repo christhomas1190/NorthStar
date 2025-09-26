@@ -1,9 +1,1 @@
-/* src/index.css */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* optional: tiny global */
-@layer base {
-  html, body, #root { height: 100%; }
-}
+@import "tailwindcss";
