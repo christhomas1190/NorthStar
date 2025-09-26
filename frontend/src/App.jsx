@@ -3,6 +3,7 @@ import AppShell from "@/components/layout/AppShell";
 import Sidebar from "@/components/layout/Sidebar";
 import AdminDashboard from "@/components/admin/AdminDashboard";
 import TeacherDashboard from "@/components/teacher/TeacherDashboard";
+import ReportsPage from "@/components/reports/ReportsPage";
 
 export default function App() {
   return (
@@ -11,8 +12,7 @@ export default function App() {
         <Route path="/" element={<Navigate to="/admin" replace />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/teacher" element={<TeacherDashboard />} />
-        <Route path="/reports" element={<div className="rounded-2xl border bg-white p-4">Reports (stub)</div>} />
-        {/* add more routes as needed */}
+        <Route path="/reports" element={<ReportsPage />} />
       </Routes>
     </AppShell>
   );

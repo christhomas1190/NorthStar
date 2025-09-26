@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast.jsx";
+import Page from "@/components/layout/Page";
 
 // Mock students for now; replace with API later
 const mockStudents = [
@@ -80,11 +81,8 @@ export default function TeacherDashboard() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] w-full bg-slate-50/60">
-      <div className="mx-auto max-w-5xl p-4 sm:p-6 lg:p-8">
-        <h1 className="text-xl font-semibold text-slate-900 mb-3">Teacher Dashboard</h1>
-
-        <Card className="shadow-sm border-slate-200/70">
+     <Page title="Teacher Dashboard" subtitle="Record incidents quickly and accurately">
+         <Card className="shadow-sm border-slate-200/70">
           <CardHeader className="pb-0">
             <CardTitle className="sr-only">Record Incident</CardTitle>
           </CardHeader>
@@ -188,7 +186,6 @@ export default function TeacherDashboard() {
             <p className="mt-4 text-xs text-slate-500">Tier is managed by Admin and cannot be changed here.</p>
           </CardContent>
         </Card>
-      </div>
-    </div>
+    </Page>
   );
 }

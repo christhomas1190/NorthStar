@@ -2,6 +2,7 @@
 import React from "react";
 import { BarChart3, Clock, Tag } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Page from "@/components/layout/Page";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import KPICard from "@/components/common/KPICard";
@@ -28,12 +29,7 @@ export default function AdminDashboard() {
   const isAdmin = true; // plug in your auth/role
 
   return (
-    <div className="min-h-screen w-full">
-      <div className="mb-4 flex items-center gap-2 text-slate-700">
-        <BarChart3 size={18} />
-        <h1 className="text-lg font-semibold">Admin Dashboard</h1>
-      </div>
-
+    <Page title="Admin Dashboard" subtitle="School overview & quick actions">
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <Card className="xl:col-span-2 shadow-sm">
           <CardHeader><CardTitle className="text-lg">School Overview</CardTitle></CardHeader>
@@ -102,6 +98,6 @@ export default function AdminDashboard() {
           </Card>
         ))}
       </div>
-    </div>
+    </Page>
   );
 }

@@ -6,7 +6,6 @@
    return (
      <aside className="p-4 space-y-2">
        <NavLink to="/admin" className={({isActive}) => `${link} ${isActive ? active : ""}`}>Admin</NavLink>
-       <NavLink to="/teacher" className={({isActive}) => `${link} ${isActive ? active : ""}`}>Teacher</NavLink>
        <NavLink to="/reports" className={({isActive}) => `${link} ${isActive ? active : ""}`}>Reports</NavLink>
      </aside>
    );
