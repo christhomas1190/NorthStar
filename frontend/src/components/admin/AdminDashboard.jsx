@@ -1,8 +1,8 @@
-// src/components/admin/AdminDashboard.jsx
 import React from "react";
+import Page from "@/components/layout/Page";
+import PageTabs from "@/components/layout/PageTabs";
 import { BarChart3, Clock, Tag } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import Page from "@/components/layout/Page";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import KPICard from "@/components/common/KPICard";
@@ -26,13 +26,18 @@ const tiers = [
 ];
 
 export default function AdminDashboard() {
-  const isAdmin = true; // plug in your auth/role
+  const isAdmin = true;
 
   return (
     <Page title="Admin Dashboard" subtitle="School overview & quick actions">
+      <PageTabs items={[
+        { label: "Admin Dashboard", to: "/admin" },
+        { label: "Reports & Trends", to: "/reports" },
+      ]} />
+
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <Card className="xl:col-span-2 shadow-sm">
-          <CardHeader><CardTitle className="text-lg">School Overview</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base">School Overview</CardTitle></CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {KPIS.map(k => <KPICard key={k.label} {...k} />)}
@@ -52,7 +57,7 @@ export default function AdminDashboard() {
         </Card>
 
         <Card className="shadow-sm">
-          <CardHeader><CardTitle className="text-lg">Quick Actions</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base">Quick Actions</CardTitle></CardHeader>
           <CardContent>
             <div className="grid gap-3">
               <Button variant="outline" className="justify-between">Define Behavior Categories ▸</Button>

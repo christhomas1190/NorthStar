@@ -1,13 +1,17 @@
-export default function KPICard({ label, value, hint, onClick, className = "" }) {
+export default function KPICard({ label, value, hint, onClick }) {
+  const Comp = onClick ? "button" : "div";
   return (
-    <button
-      type="button"
+    <Comp
+      type={onClick ? "button" : undefined}
       onClick={onClick}
-      className={`w-full text-left rounded-2xl border bg-white p-4 shadow-sm hover:shadow-md transition-shadow ${className}`}
+      className={[
+        "w-full text-left rounded-3xl border border-slate-200 bg-white p-5 shadow-sm",
+        onClick ? "transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-slate-300" : "",
+      ].join(" ")}
     >
-      <p className="text-slate-500 text-sm">{label}</p>
-      <p className="text-2xl font-semibold mt-1">{value}</p>
-      {hint ? <p className="text-xs text-slate-400 mt-1">{hint}</p> : null}
-    </button>
+      <div className="text-slate-500 text-sm">{label}</div>
+      <div className="mt-1 text-3xl font-semibold tracking-tight">{value}</div>
+      {hint ? <div className="mt-1 text-slate-400 text-sm">{hint}</div> : null}
+    </Comp>
   );
 }

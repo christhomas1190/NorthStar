@@ -5,6 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 import { FileDown, Filter, BarChart3 } from "lucide-react";
+import PageTabs from "@/components/layout/PageTabs";
+import Page from "@/components/layout/Page";
+
+
 
 // Mock rows — swap with API later
 const RAW = [
@@ -37,6 +41,13 @@ export default function ReportsPage() {
   }
 
   return (
+      <Page title="Reports & Trends" subtitle="Filters, trends, and exports for incidents" actions={
+          <Button variant="outline" onClick={exportCSV}><FileDown size={16} className="mr-2" /> Export CSV</Button>
+        }>
+          <PageTabs items={[
+            { label: "Admin Dashboard", to: "/admin" },
+            { label: "Reports & Trends", to: "/reports" },
+          ]} />
     <div className="mx-auto max-w-6xl">
       {/* Page header */}
       <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -50,6 +61,12 @@ export default function ReportsPage() {
           </Button>
         </div>
       </div>
+      <PageTabs
+        items={[
+          { label: "Admin Dashboard", to: "/admin" },
+          { label: "Reports & Trends", to: "/reports" }, // current page
+        ]}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Filters */}
@@ -147,5 +164,6 @@ export default function ReportsPage() {
         </Card>
       </div>
     </div>
+    </Page>
   );
 }
