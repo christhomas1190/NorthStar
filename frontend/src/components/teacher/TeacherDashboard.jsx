@@ -165,9 +165,9 @@ function onSubmit() {
 
               {/* Date & Time */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Date & Time</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Time of Incident</label>
                 <input
-                  type="datetime-local"
+                  type="time"
                   className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300"
                   value={when}
                   onChange={(e) => setWhen(e.target.value)}
