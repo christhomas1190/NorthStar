@@ -1,14 +1,27 @@
 package io.northstar.behavior.controller;
 
+import io.northstar.behavior.dto.CreateStudentRequest;
+import io.northstar.behavior.dto.StudentDTO;
+import io.northstar.behavior.dto.IncidentDTO;
+import io.northstar.behavior.dto.IncidentSummaryDTO;
+import io.northstar.behavior.dto.InterventionSummaryDTO;
+
+import io.northstar.behavior.domain.Student;
+import io.northstar.behavior.domain.Incident;
+import io.northstar.behavior.domain.Intervention;
+
 import io.northstar.behavior.service.StudentService;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
+        import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/students")
@@ -24,7 +37,12 @@ public class StudentController {
     // CREATE
     @PostMapping
     public ResponseEntity<StudentDTO> create(@Valid @RequestBody CreateStudentRequest req) {
-        Student s = students.create(req.firstName(), req.lastName(), req.studentId(), req.grade());
+        Student s = students.create(
+                req.getFirstName(),
+                req.getLastName(),
+                req.getStudentId(),
+                req.getGrade()
+        );
         return ResponseEntity.status(HttpStatus.CREATED).body(toDTO(s));
     }
 
