@@ -1,4 +1,4 @@
-package io.northstar.behavior.repository.dynamodb;
+package io.northstar.behavior.repository;
 
 import io.northstar.behavior.model.Intervention;
 import org.hibernate.query.Page;
@@ -8,5 +8,5 @@ import java.util.List;
 
 
 public interface InterventionRepository extends JpaRepository<Intervention, Long> {
-    List<Intervention> findStudentByIdOrderByOccuredAtDesc(long studentId);
+    List<Intervention> findByStudentIdOrderByStartDateDesc(long studentId);
 }

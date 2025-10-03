@@ -6,9 +6,9 @@ import io.northstar.behavior.dto.IncidentDTO;
 import io.northstar.behavior.dto.IncidentSummaryDTO;
 import io.northstar.behavior.dto.InterventionSummaryDTO;
 
-import io.northstar.behavior.domain.Student;
-import io.northstar.behavior.domain.Incident;
-import io.northstar.behavior.domain.Intervention;
+import io.northstar.behavior.model.Student;
+import io.northstar.behavior.model.Incident;
+import io.northstar.behavior.model.Intervention;
 
 import io.northstar.behavior.service.StudentService;
 

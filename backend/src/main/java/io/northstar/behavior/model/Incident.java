@@ -28,7 +28,7 @@ public class Incident {
     @Column(nullable = false)
     private String reportedBy;
     @Column(nullable = false)
-    private OffsetDateTime occuredAt;
+    private OffsetDateTime occurredAt;
     @Column(nullable = false)
     private OffsetDateTime createdAt;
 
@@ -91,12 +91,12 @@ public class Incident {
         this.reportedBy = reportedBy;
     }
 
-    public OffsetDateTime getOccuredAt() {
-        return occuredAt;
+    public OffsetDateTime getOccurredAt() {
+        return occurredAt;
     }
 
-    public void setOccuredAt(OffsetDateTime occuredAt) {
-        this.occuredAt = occuredAt;
+    public void setOccurredAt(OffsetDateTime occuredAt) {
+        this.occurredAt = occuredAt;
     }
 
     public OffsetDateTime getCreatedAt() {
@@ -106,4 +106,6 @@ public class Incident {
     public void setCreatedAt(OffsetDateTime createdAt) {
         this.createdAt = createdAt;
     }
+
+
 }

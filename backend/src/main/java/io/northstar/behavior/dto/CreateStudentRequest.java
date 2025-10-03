@@ -8,4 +8,6 @@ public record CreateStudentRequest(
         @NotBlank String lastName,
         @NotBlank String studentId,   // school-issued ID (e.g., “A12345”)
         @NotBlank String grade        // e.g., “6”, “7”, “8”, “K”, “12”
-) {}
+) {
+
+}

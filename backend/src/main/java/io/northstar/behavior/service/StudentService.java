@@ -1,6 +1,10 @@
 package io.northstar.behavior.service;
 
+import io.northstar.behavior.model.Intervention;
+import io.northstar.behavior.model.Student;
+
 import java.time.LocalDate;
+import java.util.List;
 
 public interface StudentService {
 

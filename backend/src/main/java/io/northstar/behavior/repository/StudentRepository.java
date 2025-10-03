@@ -1,4 +1,4 @@
-package io.northstar.behavior.repository.dynamodb;
+package io.northstar.behavior.repository;
 
 import io.northstar.behavior.model.Student;
 import org.springframework.data.jpa.repository.JpaRepository;

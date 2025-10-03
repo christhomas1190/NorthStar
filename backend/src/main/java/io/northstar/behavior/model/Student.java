@@ -1,14 +1,12 @@
 package io.northstar.behavior.model;
 
 import jakarta.persistence.*;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.core.annotation.Order;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
-@EntityScan
+@Entity
 @Table(name="students")
 public class Student {
     @Id
@@ -79,7 +77,7 @@ public class Student {
         return insicents;
     }
 
-    public void setInsicents(List<Incident> insicents) {
+    public void setIncidents(List<Incident> insicents) {
         this.insicents = insicents;
     }
 
@@ -90,9 +88,5 @@ public class Student {
     public void setInterventions(List<Intervention> interventions) {
         this.interventions = interventions;
     }
-
-
-
-
 
 }
