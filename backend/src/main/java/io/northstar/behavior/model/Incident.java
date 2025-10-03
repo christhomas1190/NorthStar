@@ -4,6 +4,8 @@ package io.northstar.behavior.model;
 import jakarta.persistence.*;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 
+import java.time.OffsetDateTime;
+
 @EntityScan
 @Table(name="incident")
 public class Incident {
@@ -25,7 +27,82 @@ public class Incident {
     private String severity;
     @Column(nullable = false)
     private String reportedBy;
+    @Column(nullable = false)
+    private OffsetDateTime occuredAt;
+    @Column(nullable = false)
+    private OffsetDateTime createdAt;
+    public Incident() {}
 
 
+    public Long getId() {
+        return id;
+    }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getStudentId() {
+        return studentId;
+    }
+
+    public void setStudentId(Long studentId) {
+        this.studentId = studentId;
+    }
+
+    public Student getStudent() {
+        return student;
+    }
+
+    public void setStudent(Student student) {
+        this.student = student;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getSeverity() {
+        return severity;
+    }
+
+    public void setSeverity(String severity) {
+        this.severity = severity;
+    }
+
+    public String getReportedBy() {
+        return reportedBy;
+    }
+
+    public void setReportedBy(String reportedBy) {
+        this.reportedBy = reportedBy;
+    }
+
+    public OffsetDateTime getOccuredAt() {
+        return occuredAt;
+    }
+
+    public void setOccuredAt(OffsetDateTime occuredAt) {
+        this.occuredAt = occuredAt;
+    }
+
+    public OffsetDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(OffsetDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
 }
