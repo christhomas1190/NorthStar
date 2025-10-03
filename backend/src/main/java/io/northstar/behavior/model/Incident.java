@@ -31,6 +31,7 @@ public class Incident {
     private OffsetDateTime occuredAt;
     @Column(nullable = false)
     private OffsetDateTime createdAt;
+
     public Incident() {}
 
 

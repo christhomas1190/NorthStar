@@ -9,7 +9,7 @@ import java.time.OffsetDateTime;
 
 @EntityScan
 @Table(name="intervention")
-public class intervention {
+public class Intervention {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,7 +35,7 @@ public class intervention {
     @Column(nullable = false)
     private OffsetDateTime createdAt;
 
-    public void Intervention() {}
+    public Intervention() {}
 
     public Long getId() {
         return id;
