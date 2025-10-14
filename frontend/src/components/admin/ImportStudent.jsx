@@ -40,5 +40,22 @@ function parseLine(line, format) {
               const last = m[0];
               const first = m.slice(1).join(","); // keep any extra commas in first
                 return { firstName: trimAll(first), lastName: trimAll(last) };
-               }
+    }
 }
+function validateRow(r) {
+  const errors = {};
+  if (!trimAll(r.firstName)) errors.firstName = "First required";
+  if (!trimAll(r.lastName)) errors.lastName = "Last required";
+  if (!trimAll(r.studentId)) errors.studentId = "Student ID required";
+  if (!trimAll(r.grade)) errors.grade = "Grade required";
+  return errors;
+}
+export default function ImportStudentsPage() {
+  // Single add
+  const [single, setSingle] = useState({
+    firstName: "",
+    lastName: "",
+    studentId: "",
+    grade: "",
+  });
+  const [singleStatus, setSingleStatus] = useState(null);
