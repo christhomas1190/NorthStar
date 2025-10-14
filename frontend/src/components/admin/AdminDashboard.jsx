@@ -33,6 +33,7 @@ export default function AdminDashboard() {
       <PageTabs items={[
         { label: "Admin Dashboard", to: "/admin" },
         { label: "Reports & Trends", to: "/reports" },
+        { label: "Import Students", to: "/admin/import-Students" },
       ]} />
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
