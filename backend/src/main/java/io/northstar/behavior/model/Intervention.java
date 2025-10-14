@@ -35,7 +35,8 @@ public class Intervention {
     @Column(nullable = false)
     private OffsetDateTime createdAt;
 
-    public Intervention() {}
+    public Intervention() {
+    }
 
     public Long getId() {
         return id;
@@ -116,4 +117,5 @@ public class Intervention {
     public void setCreatedAt(OffsetDateTime createdAt) {
         this.createdAt = createdAt;
     }
+}
 

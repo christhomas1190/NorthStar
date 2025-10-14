@@ -10,4 +10,6 @@ public record CreateStudentRequest(
         @NotBlank String grade        // e.g., “6”, “7”, “8”, “K”, “12”
 ) {
 
+
+
 }

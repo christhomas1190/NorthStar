@@ -19,6 +19,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -36,10 +38,10 @@ public class StudentController {
     @PostMapping
     public ResponseEntity<StudentDTO> create(@Valid @RequestBody CreateStudentRequest req) {
         Student s = students.create(
-                req.getFirstName(),
-                req.getLastName(),
-                req.getStudentId(),
-                req.getGrade()
+                req.firstName(),
+                req.lastName(),
+                req.studentId(),
+                req.grade()
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(toDTO(s));
     }

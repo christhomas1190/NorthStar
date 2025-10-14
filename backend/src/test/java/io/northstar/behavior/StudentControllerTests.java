@@ -1,6 +1,5 @@
 package io.northstar.behavior;
 
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.northstar.behavior.controller.StudentController;
 import io.northstar.behavior.dto.CreateStudentRequest;
@@ -11,6 +10,7 @@ import io.northstar.behavior.service.StudentService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -21,20 +21,21 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-
 @WebMvcTest(controllers = StudentController.class)
+@AutoConfigureMockMvc(addFilters = false) // avoids 401s if Spring Security is on the classpath
 public class StudentControllerTests {
+
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper objectMapper;
 
     @MockBean StudentService students;
 
-    // ---- helpers to build domain objects the controller returns ----
+    // ---- helpers ----
     private Student student(long id, String first, String last, String sid, String grade,
                             List<Incident> incs, List<Intervention> ivs) {
         Student s = new Student();
@@ -47,6 +48,7 @@ public class StudentControllerTests {
         s.setInterventions(ivs != null ? ivs : new ArrayList<>());
         return s;
     }
+
     private Incident incident(long id, long studentId, String category, String severity) {
         Incident inc = new Incident();
         inc.setId(id);
@@ -55,11 +57,11 @@ public class StudentControllerTests {
         inc.setDescription("desc");
         inc.setSeverity(severity);
         inc.setReportedBy("Teacher A");
-        // entity field is spelled occuredAt (one 'r'); keep consistent with your model
         inc.setOccurredAt(OffsetDateTime.parse("2025-09-01T08:00:00Z"));
         inc.setCreatedAt(OffsetDateTime.parse("2025-09-01T09:00:00Z"));
         return inc;
     }
+
     private Intervention intervention(long id, long studentId, String tier, String strategy) {
         Intervention iv = new Intervention();
         iv.setId(id);
@@ -74,4 +76,38 @@ public class StudentControllerTests {
         return iv;
     }
 
+    @Test
+    @DisplayName("POST /api/students => 201 Created with mapped incidents/intervention")
+    void createStudent_created_201() {
+        // Given
+        CreateStudentRequest req = new CreateStudentRequest("Ada", "Lovelace", "A12345", "8");
+        Student returned = student(
+                10L, "Ada", "Lovelace", "A12345", "8",
+                List.of(incident(1L, 10L, "Disruption", "Minor")),
+                List.of(intervention(7L, 10L, "Tier 1", "Check-in/Check-out"))
+        );
+        when(students.create("Ada", "Lovelace", "A12345", "8")).thenReturn(returned);
+
+        try {
+            // When / Then
+            mvc.perform(post("/api/students")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(req)))
+                    .andExpect(status().isCreated())
+                    .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.id").value(10))
+                    .andExpect(jsonPath("$.firstName").value("Ada"))
+                    .andExpect(jsonPath("$.incidents", hasSize(1)))
+                    .andExpect(jsonPath("$.incidents[0].category").value("Disruption"))
+                    .andExpect(jsonPath("$.incidents[0].severity").value("Minor"))
+                    // keep singular if StudentDTO field is 'intervention'
+                    .andExpect(jsonPath("$.interventions", hasSize(1)))
+                    .andExpect(jsonPath("$.interventions[0].tier").value("Tier 1"))
+                    .andExpect(jsonPath("$.interventions[0].strategy").value("Check-in/Check-out"));
+        } catch (Exception e) {
+            org.junit.jupiter.api.Assertions.fail("Request failed: " + e.getMessage());
+        }
+
+        verify(students).create("Ada", "Lovelace", "A12345", "8");
+    }
 }

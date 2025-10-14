@@ -1,1 +1,14 @@
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/NorthStarApplication.java
+/Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/controller/StudentController.java
+/Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/dto/IncidentSummaryDTO.java
+/Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/repository/StudentRepository.java
+/Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/service/StudentService.java
+/Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/model/Intervention.java
+/Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/model/Incident.java
+/Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/model/Student.java
+/Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/dto/StudentDTO.java
+/Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/repository/InterventionRepository.java
+/Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/dto/InterventionSummaryDTO.java
+/Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/dto/IncidentDTO.java
+/Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/repository/IncidentRepository.java
+/Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/dto/CreateStudentRequest.java

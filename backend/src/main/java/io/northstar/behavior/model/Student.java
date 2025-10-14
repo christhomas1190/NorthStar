@@ -73,7 +73,7 @@ public class Student {
         this.grade = grade;
     }
 
-    public List<Incident> getInsicents() {
+    public List<Incident> getIncidents() {
         return insicents;
     }
 
@@ -88,5 +88,6 @@ public class Student {
     public void setInterventions(List<Intervention> interventions) {
         this.interventions = interventions;
     }
+
 
 }
