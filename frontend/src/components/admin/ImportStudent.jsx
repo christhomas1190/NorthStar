@@ -23,3 +23,22 @@ function splitCSVorTSV(line) {
 function parseLine(line, format) {
   const raw = line.trim();
   if (!raw) return null;
+
+  switch (format) {
+      case "FIRST_LAST": {
+        // "Ada Lovelace" -> ["Ada", "Lovelace"]
+        const parts = raw.split(/\s+/);
+        if (parts.length < 2) return null;
+        const first = parts.slice(0, parts.length - 1).join(" ");
+        const last = parts[parts.length - 1];
+        return { firstName: trimAll(first), lastName: trimAll(last) };
+        }
+            case "LAST_COMMA_FIRST": {
+      // "Lovelace, Ada Marie"
+              const parts = raw.split(/\s+/);
+              if (parts.length < 2) return null;
+              const last = m[0];
+              const first = m.slice(1).join(","); // keep any extra commas in first
+                return { firstName: trimAll(first), lastName: trimAll(last) };
+               }
+}
