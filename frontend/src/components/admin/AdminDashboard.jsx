@@ -1,7 +1,8 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import Page from "@/components/layout/Page";
 import PageTabs from "@/components/layout/PageTabs";
-import { BarChart3, Clock, Tag } from "lucide-react";
+import { Clock, Tag } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,16 +28,20 @@ const tiers = [
 
 export default function AdminDashboard() {
   const isAdmin = true;
+  const navigate = useNavigate(); // ✅ added this
 
   return (
     <Page title="Admin Dashboard" subtitle="School overview & quick actions">
-      <PageTabs items={[
-        { label: "Admin Dashboard", to: "/admin" },
-        { label: "Reports & Trends", to: "/reports" },
-        { label: "Import Students", to: "/admin/import-Students" },
-      ]} />
+      <PageTabs
+        items={[
+          { label: "Admin Dashboard", to: "/admin" },
+          { label: "Reports & Trends", to: "/reports" },
+          { label: "Import Students", to: "/admin/import-students" }, // ✅ fixed path
+        ]}
+      />
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        {/* Overview */}
         <Card className="xl:col-span-2 shadow-sm">
           <CardHeader><CardTitle className="text-base">School Overview</CardTitle></CardHeader>
           <CardContent>
@@ -52,32 +57,52 @@ export default function AdminDashboard() {
                 </div>
                 <Button variant="outline" size="sm">Open Full Analytics</Button>
               </div>
-              <div className="mt-3 h-36 w-full rounded-xl bg-slate-100 grid place-content-center text-slate-400">Chart Area</div>
+              <div className="mt-3 h-36 w-full rounded-xl bg-slate-100 grid place-content-center text-slate-400">
+                Chart Area
+              </div>
             </div>
           </CardContent>
         </Card>
 
+        {/* Quick Actions */}
         <Card className="shadow-sm">
           <CardHeader><CardTitle className="text-base">Quick Actions</CardTitle></CardHeader>
           <CardContent>
             <div className="grid gap-3">
-              <Button variant="outline" className="justify-between">Define Behavior Categories ▸</Button>
-              <Button variant="outline" className="justify-between">Manage Interventions ▸</Button>
-              <Button variant="outline" className="justify-between">Set Escalation Rules ▸</Button>
-              <Button variant="outline" className="justify-between">User & Role Management ▸</Button>
-              <Button variant="outline" className="justify-between">Compliance Export ▸</Button>
+              <Button
+                variant="outline"
+                className="justify-between"
+                onClick={() => navigate("/admin/define-behaviors")}
+              >
+                Define Behavior Categories ▸
+              </Button>
+              <Button variant="outline" className="justify-between">
+                Manage Interventions ▸
+              </Button>
+              <Button variant="outline" className="justify-between">
+                Set Escalation Rules ▸
+              </Button>
+              <Button variant="outline" className="justify-between">
+                User & Role Management ▸
+              </Button>
+              <Button variant="outline" className="justify-between">
+                Compliance Export ▸
+              </Button>
             </div>
 
+            {/* Admin Log */}
             {isAdmin && (
               <div className="mt-5 rounded-2xl border p-3 text-xs text-slate-600 flex items-start gap-2">
-                <Clock size={14} className="mt-0.5"/>
+                <Clock size={14} className="mt-0.5" />
                 <div className="w-full">
                   <p className="font-medium">Admin-only Activity Log</p>
                   <p>All inputs are auto-tagged with <code>userId</code> and <code>timestamp</code>.</p>
                   <div className="mt-2 max-h-28 overflow-auto rounded-lg bg-slate-50 p-2 border text-[11px]">
                     {incidents.map(it => (
                       <div key={it.id} className="flex items-center justify-between py-1">
-                        <span className="truncate">[{it.date}] <b>{it.by}</b> recorded incident <b>{it.id}</b> for <b>{it.student}</b></span>
+                        <span className="truncate">
+                          [{it.date}] <b>{it.by}</b> recorded incident <b>{it.id}</b> for <b>{it.student}</b>
+                        </span>
                         <Badge variant="outline" className="ml-2">{it.tier}</Badge>
                       </div>
                     ))}
@@ -89,10 +114,15 @@ export default function AdminDashboard() {
         </Card>
       </div>
 
+      {/* Tier Info */}
       <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
         {tiers.map(t => (
           <Card key={t.name} className={`border ${t.color} shadow-sm`}>
-            <CardHeader><CardTitle className="text-base flex items-center gap-2"><Tag size={16}/> {t.name}</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Tag size={16}/> {t.name}
+              </CardTitle>
+            </CardHeader>
             <CardContent>
               <p className="text-sm opacity-80">{t.desc}</p>
               <div className="mt-3 flex flex-wrap gap-2">
