@@ -55,7 +55,6 @@ function validateRow(r) {
   const errors = {};
   if (!trimAll(r.firstName)) errors.firstName = "First required";
   if (!trimAll(r.lastName)) errors.lastName = "Last required";
-  if (!trimAll(r.studentId)) errors.studentId = "Student ID required";
   if (!trimAll(r.grade)) errors.grade = "Grade required";
   return errors;
 }
@@ -65,7 +64,6 @@ export default function ImportStudents() {
   const [single, setSingle] = useState({
     firstName: "",
     lastName: "",
-    studentId: "",
     grade: "",
   });
   const [singleStatus, setSingleStatus] = useState(null);
@@ -74,7 +72,7 @@ export default function ImportStudents() {
   const [raw, setRaw] = useState("");
   const [format, setFormat] = useState(NAME_FORMATS[0].id);
   const [defaultGrade, setDefaultGrade] = useState("");
-  const [rows, setRows] = useState([]); // {firstName,lastName,studentId,grade,_errors?,_result?}
+  const [rows, setRows] = useState([]); // {firstName,lastName,grade,_errors?,_result?}
 
   const parsed = useMemo(() => {
     const lines = raw.split(/\r?\n/);
@@ -84,7 +82,6 @@ export default function ImportStudents() {
       if (!p) continue;
       out.push({
         ...p,
-        studentId: "",
         grade: defaultGrade || "",
       });
     }
@@ -124,7 +121,6 @@ export default function ImportStudents() {
         body: JSON.stringify({
           firstName: trimAll(single.firstName),
           lastName: trimAll(single.lastName),
-          studentId: trimAll(single.studentId),
           grade: trimAll(single.grade),
         }),
       });
@@ -132,7 +128,7 @@ export default function ImportStudents() {
         const text = await res.text();
         throw new Error(text || `HTTP ${res.status}`);
       }
-      setSingle({ firstName: "", lastName: "", studentId: "", grade: "" });
+      setSingle({ firstName: "", lastName: "", grade: "" });
       setSingleStatus({ ok: true, message: "Student added." });
     } catch (err) {
       setSingleStatus({ ok: false, message: String(err.message || err) });
@@ -153,7 +149,6 @@ export default function ImportStudents() {
           body: JSON.stringify({
             firstName: trimAll(r.firstName),
             lastName: trimAll(r.lastName),
-            studentId: trimAll(r.studentId),
             grade: trimAll(r.grade),
           }),
         }).then(async (res) => {
@@ -189,7 +184,7 @@ export default function ImportStudents() {
       {/* Single Add */}
       <section className="border rounded-xl p-4 space-y-4 bg-white">
         <h2 className="text-lg font-medium">Add a single student</h2>
-        <form onSubmit={submitSingle} className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <form onSubmit={submitSingle} className="grid grid-cols-2 md:grid-cols-3 gap-3">
           <input
             className="border rounded px-3 py-2"
             placeholder="First Name"
@@ -201,12 +196,6 @@ export default function ImportStudents() {
             placeholder="Last Name"
             value={single.lastName}
             onChange={(e) => setSingle((s) => ({ ...s, lastName: e.target.value }))}
-          />
-          <input
-            className="border rounded px-3 py-2"
-            placeholder="Student ID"
-            value={single.studentId}
-            onChange={(e) => setSingle((s) => ({ ...s, studentId: e.target.value }))}
           />
           <input
             className="border rounded px-3 py-2"
@@ -240,7 +229,7 @@ export default function ImportStudents() {
             <label className="text-sm font-medium">Paste names here</label>
             <textarea
               className="w-full border rounded px-3 py-2 h-40"
-              placeholder={`One per line. Examples:\nAda Lovelace\nTuring, Alan\nGrace\tHopper (tab-separated)`}
+              placeholder={`One per line. Examples:\nAda Lovelace\nLovelace, Ada\nGrace\tHopper (tab-separated)`}
               value={raw}
               onChange={(e) => setRaw(e.target.value)}
             />
@@ -286,7 +275,6 @@ export default function ImportStudents() {
                 <tr className="bg-gray-50">
                   <th className="text-left px-3 py-2 border">First Name</th>
                   <th className="text-left px-3 py-2 border">Last Name</th>
-                  <th className="text-left px-3 py-2 border">Student ID</th>
                   <th className="text-left px-3 py-2 border">Grade</th>
                   <th className="text-left px-3 py-2 border">Result</th>
                 </tr>
@@ -314,17 +302,6 @@ export default function ImportStudents() {
                         />
                         {e.lastName && (
                           <div className="text-xs text-red-700 mt-1">{e.lastName}</div>
-                        )}
-                      </td>
-                      <td className="px-3 py-2 border">
-                        <input
-                          className={`w-full border rounded px-2 py-1 ${e.studentId ? "border-red-500" : ""}`}
-                          placeholder="e.g., A12345"
-                          value={r.studentId}
-                          onChange={(ev) => updateCell(i, "studentId", ev.target.value)}
-                        />
-                        {e.studentId && (
-                          <div className="text-xs text-red-700 mt-1">{e.studentId}</div>
                         )}
                       </td>
                       <td className="px-3 py-2 border">
