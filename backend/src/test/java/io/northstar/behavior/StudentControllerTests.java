@@ -1,3 +1,4 @@
+package io.northstar.behavior;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.northstar.behavior.controller.StudentController;
@@ -13,6 +14,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
@@ -28,7 +30,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = StudentController.class)
-@AutoConfigureMockMvc(addFilters = false) // avoid 401/403 noise from Spring Security in slice test
+@AutoConfigureMockMvc(addFilters = false)
 public class StudentControllerTests {
 
     @Autowired MockMvc mvc;
@@ -107,5 +109,13 @@ public class StudentControllerTests {
                 .andExpect(jsonPath("$.interventions[0].strategy").value("Check-in/Check-out"));
 
         verify(students).create("Ada", "Lovelace", "A12345", "8");
+    }
+    @Test
+    void createStudent_validationError_400() throws Exception {
+        var bad = new CreateStudentRequest("", "", "", "");
+        mvc.perform(post("/api/students")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(bad)))
+                .andExpect(status().isBadRequest());
     }
 }

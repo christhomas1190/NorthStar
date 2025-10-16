@@ -28,4 +28,4 @@ public interface StudentService {
                                         LocalDate endDate);
 
         List<Intervention> listInterventions(long studentId);
-    }
+}
