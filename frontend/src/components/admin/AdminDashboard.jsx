@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import KPICard from "@/components/common/KPICard";
+import UserForm from "./UserForm";
+import RoleForm from "./RoleForm";
 
 const KPIS = [
   { label: "Active Students", value: 742, hint: "All grades" },
@@ -28,7 +30,15 @@ const tiers = [
 
 export default function AdminDashboard() {
   const isAdmin = true;
-  const navigate = useNavigate(); // ✅ added this
+  const navigate = useNavigate();
+
+  const createUser = async (payload) => {
+    console.log("create user =>", payload);
+  };
+
+  const createRole = async (payload) => {
+    console.log("create role =>", payload);
+  };
 
   return (
     <Page title="Admin Dashboard" subtitle="School overview & quick actions">
@@ -36,17 +46,21 @@ export default function AdminDashboard() {
         items={[
           { label: "Admin Dashboard", to: "/admin" },
           { label: "Reports & Trends", to: "/reports" },
-          { label: "Import Students", to: "/admin/import-students" }, // ✅ fixed path
+          { label: "Import Students", to: "/admin/import-students" },
         ]}
       />
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Overview */}
         <Card className="xl:col-span-2 shadow-sm">
-          <CardHeader><CardTitle className="text-base">School Overview</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-base">School Overview</CardTitle>
+          </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {KPIS.map(k => <KPICard key={k.label} {...k} />)}
+              {KPIS.map((k) => (
+                <KPICard key={k.label} {...k} />
+              ))}
             </div>
 
             <div className="mt-6 rounded-2xl border p-4">
@@ -55,7 +69,9 @@ export default function AdminDashboard() {
                   <p className="text-sm text-slate-500">30-Day Incident Trend</p>
                   <p className="text-sm text-slate-400">(Mock chart placeholder)</p>
                 </div>
-                <Button variant="outline" size="sm">Open Full Analytics</Button>
+                <Button variant="outline" size="sm">
+                  Open Full Analytics
+                </Button>
               </div>
               <div className="mt-3 h-36 w-full rounded-xl bg-slate-100 grid place-content-center text-slate-400">
                 Chart Area
@@ -64,11 +80,13 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        {/* Quick Actions */}
+        {/* Quick Actions + Forms */}
         <Card className="shadow-sm">
-          <CardHeader><CardTitle className="text-base">Quick Actions</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-base">Quick Actions</CardTitle>
+          </CardHeader>
           <CardContent>
-            <div className="grid gap-3">
+            <div className="grid gap-3 mb-6">
               <Button
                 variant="outline"
                 className="justify-between"
@@ -90,20 +108,35 @@ export default function AdminDashboard() {
               </Button>
             </div>
 
-            {/* Admin Log */}
+            <div className="grid gap-8 md:grid-cols-2">
+              <div>
+                <h2 className="mb-2 text-lg font-semibold">New User</h2>
+                <UserForm onSubmit={createUser} />
+              </div>
+              <div>
+                <h2 className="mb-2 text-lg font-semibold">New Role</h2>
+                <RoleForm onSubmit={createRole} />
+              </div>
+            </div>
+
             {isAdmin && (
               <div className="mt-5 rounded-2xl border p-3 text-xs text-slate-600 flex items-start gap-2">
                 <Clock size={14} className="mt-0.5" />
                 <div className="w-full">
                   <p className="font-medium">Admin-only Activity Log</p>
-                  <p>All inputs are auto-tagged with <code>userId</code> and <code>timestamp</code>.</p>
+                  <p>
+                    All inputs are auto-tagged with <code>userId</code> and <code>timestamp</code>.
+                  </p>
                   <div className="mt-2 max-h-28 overflow-auto rounded-lg bg-slate-50 p-2 border text-[11px]">
-                    {incidents.map(it => (
+                    {incidents.map((it) => (
                       <div key={it.id} className="flex items-center justify-between py-1">
                         <span className="truncate">
-                          [{it.date}] <b>{it.by}</b> recorded incident <b>{it.id}</b> for <b>{it.student}</b>
+                          [{it.date}] <b>{it.by}</b> recorded incident <b>{it.id}</b> for{" "}
+                          <b>{it.student}</b>
                         </span>
-                        <Badge variant="outline" className="ml-2">{it.tier}</Badge>
+                        <Badge variant="outline" className="ml-2">
+                          {it.tier}
+                        </Badge>
                       </div>
                     ))}
                   </div>
@@ -116,11 +149,11 @@ export default function AdminDashboard() {
 
       {/* Tier Info */}
       <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {tiers.map(t => (
+        {tiers.map((t) => (
           <Card key={t.name} className={`border ${t.color} shadow-sm`}>
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
-                <Tag size={16}/> {t.name}
+                <Tag size={16} /> {t.name}
               </CardTitle>
             </CardHeader>
             <CardContent>
