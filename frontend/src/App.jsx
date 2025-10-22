@@ -7,6 +7,7 @@ import ReportsPage from "@/components/reports/ReportsPage";
 import DefineBehaviorCategories from "@/components/admin/DefineBehaviorCategories";
 import UserRoleManagement from "@/components/admin/UserRoleManagement";
 import SetEscalationRules from "@/components/admin/SetEscalationRules.jsx";
+import ManageIntervention from "./components/admin/ManageIntervention.jsx";
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
       <Route path="/admin/define-behaviors" element={<AppShell><DefineBehaviorCategories /></AppShell>} />
       <Route path="/admin/user-role-management" element={<AppShell><UserRoleManagement /></AppShell>} />
       <Route path="/admin/escalation-rules" element={<AppShell><SetEscalationRules /></AppShell>} />
+      <Route path="/admin/interventions" element={<AppShell><ManageIntervention /></AppShell>} />
       <Route path="/reports" element={<AppShell><ReportsPage /></AppShell>} />
       <Route path="/teacher" element={<AppShell><TeacherDashboard /></AppShell>} />
     </Routes>

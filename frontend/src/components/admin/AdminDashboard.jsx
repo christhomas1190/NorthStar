@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import KPICard from "@/components/common/KPICard";
 
+
 const KPIS = [
   { label: "Active Students", value: 742, hint: "All grades" },
   { label: "Incidents (30d)", value: 128, hint: "+5 vs last wk" },

@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 
-export default function ManageInterventions() {
+export default function ManageIntervention() {
   const [form, setForm] = useState({
     title: "",
     tier: "Tier 1",
@@ -18,7 +18,7 @@ export default function ManageInterventions() {
 
   const onSubmit = (e) => {
     e.preventDefault();
-    // TODO: POST to /api/interventions
+    // TODO: POST to /api/intervention
     console.log("Save intervention", form);
   };
 
