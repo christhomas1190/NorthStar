@@ -32,13 +32,7 @@ export default function AdminDashboard() {
   const isAdmin = true;
   const navigate = useNavigate();
 
-  const createUser = async (payload) => {
-    console.log("create user =>", payload);
-  };
 
-  const createRole = async (payload) => {
-    console.log("create role =>", payload);
-  };
 
   return (
     <Page title="Admin Dashboard" subtitle="School overview & quick actions">
@@ -110,17 +104,6 @@ export default function AdminDashboard() {
               <Button variant="outline" className="justify-between">
                 Compliance Export ▸
               </Button>
-            </div>
-
-            <div className="grid gap-8 md:grid-cols-2">
-              <div>
-                <h2 className="mb-2 text-lg font-semibold">New User</h2>
-                <UserForm onSubmit={createUser} />
-              </div>
-              <div>
-                <h2 className="mb-2 text-lg font-semibold">New Role</h2>
-                <RoleForm onSubmit={createRole} />
-              </div>
             </div>
 
             {isAdmin && (
