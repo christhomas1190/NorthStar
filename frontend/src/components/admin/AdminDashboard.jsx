@@ -7,8 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import KPICard from "@/components/common/KPICard";
-import UserForm from "./UserForm";
-import RoleForm from "./RoleForm";
 
 const KPIS = [
   { label: "Active Students", value: 742, hint: "All grades" },
@@ -29,10 +27,9 @@ const tiers = [
 ];
 
 export default function AdminDashboard() {
-  const isAdmin = true;
   const navigate = useNavigate();
-
-
+  const isAdmin = true;
+  const btn = "justify-between rounded-2xl border border-slate-300 bg-white hover:bg-slate-50";
 
   return (
     <Page title="Admin Dashboard" subtitle="School overview & quick actions">
@@ -40,7 +37,6 @@ export default function AdminDashboard() {
         items={[
           { label: "Admin Dashboard", to: "/admin" },
           { label: "Reports & Trends", to: "/reports" },
-
         ]}
       />
 
@@ -74,7 +70,7 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        {/* Quick Actions + Forms */}
+        {/* Quick Actions */}
         <Card className="shadow-sm">
           <CardHeader>
             <CardTitle className="text-base">Quick Actions</CardTitle>
@@ -83,26 +79,42 @@ export default function AdminDashboard() {
             <div className="grid gap-3 mb-6">
               <Button
                 variant="outline"
-                className="justify-between"
+                className={btn}
                 onClick={() => navigate("/admin/define-behaviors")}
               >
                 Define Behavior Categories ▸
               </Button>
-              <Button variant="outline" className="justify-between">
+
+              <Button
+                variant="outline"
+                className={btn}
+                onClick={() => navigate("/admin/interventions")}
+              >
                 Manage Interventions ▸
               </Button>
-              <Button variant="outline" className="justify-between">
+
+              <Button
+                variant="outline"
+                className={btn}
+                onClick={() => navigate("/admin/escalation-rules")}
+              >
                 Set Escalation Rules ▸
               </Button>
-             <Button
-               variant="outline"
-               className="justify-between"
-               onClick={() => navigate("/admin/user-role-management")}
-             >
-               User & Student Management ▸
-             </Button>
-              <Button variant="outline" className="justify-between">
-                Compliance Export ▸
+
+              <Button
+                variant="outline"
+                className={btn}
+                onClick={() => navigate("/admin/user-role-management")}
+              >
+                User & Student Management ▸
+              </Button>
+
+              <Button
+                variant="outline"
+                className={btn}
+                onClick={() => navigate("/admin/import-students")}
+              >
+                Import Students ▸
               </Button>
             </div>
 
@@ -118,8 +130,7 @@ export default function AdminDashboard() {
                     {incidents.map((it) => (
                       <div key={it.id} className="flex items-center justify-between py-1">
                         <span className="truncate">
-                          [{it.date}] <b>{it.by}</b> recorded incident <b>{it.id}</b> for{" "}
-                          <b>{it.student}</b>
+                          [{it.date}] <b>{it.by}</b> recorded incident <b>{it.id}</b> for <b>{it.student}</b>
                         </span>
                         <Badge variant="outline" className="ml-2">
                           {it.tier}
