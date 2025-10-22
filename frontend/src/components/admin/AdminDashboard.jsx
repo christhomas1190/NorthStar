@@ -46,7 +46,7 @@ export default function AdminDashboard() {
         items={[
           { label: "Admin Dashboard", to: "/admin" },
           { label: "Reports & Trends", to: "/reports" },
-          { label: "Import Students", to: "/admin/import-students" },
+
         ]}
       />
 
@@ -100,9 +100,13 @@ export default function AdminDashboard() {
               <Button variant="outline" className="justify-between">
                 Set Escalation Rules ▸
               </Button>
-              <Button variant="outline" className="justify-between">
-                User & Role Management ▸
-              </Button>
+             <Button
+               variant="outline"
+               className="justify-between"
+               onClick={() => navigate("/admin/user-role-management")}
+             >
+               User & Student Management ▸
+             </Button>
               <Button variant="outline" className="justify-between">
                 Compliance Export ▸
               </Button>

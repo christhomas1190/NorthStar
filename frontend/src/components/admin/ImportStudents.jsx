@@ -1,4 +1,7 @@
 import React, { useMemo, useState } from "react";
+import Page from "@/components/layout/Page";
+import PageTabs from "@/components/layout/PageTabs";
+
 
 const NAME_FORMATS = [
   { id: "FIRST_LAST", label: "First Last (e.g., Ada Lovelace)" },
@@ -6,6 +9,7 @@ const NAME_FORMATS = [
   { id: "TSV_FIRST_LAST", label: "Tab/CSV: First  Last (columns or commas)" },
   { id: "TSV_LAST_FIRST", label: "Tab/CSV: Last  First (columns or commas)" },
 ];
+
 
 function trimAll(x = "") {
   return x.replace(/\s+/g, " ").trim();
@@ -173,6 +177,15 @@ export default function ImportStudents() {
   }
 
   return (
+      <Page title="User & Role Management" subtitle="Add users and define roles & permissions">
+            <PageTabs
+              items={[
+                { label: "Admin Dashboard", to: "/admin" },
+                { label: "User & Role Management", to: "/admin/user-role-management" },
+                { label: "Import Students", to: "/admin/import-students" },
+              ]}
+            />
+
     <div className="space-y-8">
       <header>
         <h1 className="text-2xl font-semibold">Import Students</h1>
@@ -355,6 +368,7 @@ export default function ImportStudents() {
           </div>
         )}
       </section>
-    </div>
-  );
-}
+         </div>
+       </Page>
+     );
+  }
