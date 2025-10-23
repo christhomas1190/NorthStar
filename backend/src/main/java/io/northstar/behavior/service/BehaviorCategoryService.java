@@ -15,4 +15,5 @@ public interface BehaviorCategoryService {
 
     void delete(Long id);
 
+    Object update(Long id, InterventionController dto);
 }
