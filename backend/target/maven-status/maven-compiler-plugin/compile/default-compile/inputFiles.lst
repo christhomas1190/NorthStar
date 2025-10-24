@@ -20,7 +20,9 @@
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/model/BehaviorCategory.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/model/Intervention.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/model/Student.java
+/Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/config/SecurityConfig.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/dto/StudentDTO.java
+/Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/config/WebCorsConfig.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/dto/InterventionSummaryDTO.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/dto/IncidentDTO.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/controller/IncidentController.java

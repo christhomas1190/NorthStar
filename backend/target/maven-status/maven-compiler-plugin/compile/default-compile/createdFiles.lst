@@ -3,6 +3,7 @@ io/northstar/behavior/model/Student.class
 io/northstar/behavior/service/InterventionService.class
 io/northstar/behavior/dto/StudentDTO.class
 io/northstar/behavior/dto/CreateIncidentRequest.class
+io/northstar/behavior/config/SecurityConfig.class
 io/northstar/behavior/dto/CreateStudentRequest.class
 io/northstar/behavior/dto/BulkStudentsRequest.class
 io/northstar/behavior/dto/BehaviorCategoryDTO.class
@@ -22,6 +23,7 @@ io/northstar/behavior/model/Incident.class
 io/northstar/behavior/service/BehaviorCategoryServiceImpl.class
 io/northstar/behavior/service/InterventionServiceImpl.class
 io/northstar/behavior/model/BehaviorCategory.class
+io/northstar/behavior/config/WebCorsConfig.class
 io/northstar/behavior/service/StudentService.class
 io/northstar/behavior/repository/BehaviorCategoryRepository.class
 io/northstar/behavior/controller/IncidentController.class
