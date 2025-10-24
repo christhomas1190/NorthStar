@@ -1,42 +1,39 @@
 package io.northstar.behavior.model;
 
-
 import jakarta.persistence.*;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
-
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
-@EntityScan
-@Table(name="intervention")
+@Entity
+@Table(name = "intervention")
 public class Intervention {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "student_id", nullable = false)
-    private Long studentId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "student_fk")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "student_id", nullable = false)   // << use JoinColumn
     private Student student;
 
     @Column(nullable = false)
     private String tier;
+
     @Column(nullable = false)
     private String strategy;
+
     @Column(nullable = false)
     private String assignedBy;
+
     @Column(nullable = false)
     private String reportedBy;
+
     @Column(nullable = false)
     private LocalDate startDate;
+
     private LocalDate endDate;
+
     @Column(nullable = false)
     private OffsetDateTime createdAt;
-
-    public Intervention() {
-    }
 
     public Long getId() {
         return id;
@@ -44,14 +41,6 @@ public class Intervention {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public Long getStudentId() {
-        return studentId;
-    }
-
-    public void setStudentId(Long studentId) {
-        this.studentId = studentId;
     }
 
     public Student getStudent() {
@@ -118,4 +107,3 @@ public class Intervention {
         this.createdAt = createdAt;
     }
 }
-

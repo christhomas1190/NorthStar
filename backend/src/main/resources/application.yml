@@ -1,5 +1,63 @@
-spring:
-  application:
-    name: northstar
+
+
 server:
   port: 8080
+
+# ===== Default: local dev on H2 =====
+spring:
+  datasource:
+    url: jdbc:h2:mem:northstar;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update        # use create-drop if you want a clean DB each run
+    show-sql: true
+    properties:
+      hibernate.format_sql: true
+      hibernate.jdbc.time_zone: UTC
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  flyway:
+    enabled: false           # leave off for dev unless you want to run migrations
+
+---
+# ===== Test profile (H2) =====
+spring:
+  config:
+    activate:
+      on-profile: test
+  datasource:
+    url: jdbc:h2:mem:northstar_test;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+  flyway:
+    enabled: false
+
+---
+# ===== AWS profile (Postgres placeholder) =====
+spring:
+  config:
+    activate:
+      on-profile: aws
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://YOUR_RDS_HOST:5432/northstar}
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:password}
+  jpa:
+    hibernate:
+      ddl-auto: validate      # let Flyway manage schema in AWS
+    show-sql: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migrations
+    baseline-on-migrate: true

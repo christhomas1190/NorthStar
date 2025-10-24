@@ -9,7 +9,10 @@
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/model/Incident.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/repository/InterventionRepository.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/controller/InterventionController.java
+/Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/service/StudentServiceImpl.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/service/IncidentServiceImpl.java
+/Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/service/InterventionServiceImpl.java
+/Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/service/InterventionService.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/service/IncidentService.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/controller/StudentController.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/dto/BulkStudentsRequest.java
@@ -21,7 +24,7 @@
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/dto/InterventionSummaryDTO.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/dto/IncidentDTO.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/controller/IncidentController.java
-/Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/service/BehaviorServiceImpl.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/repository/IncidentRepository.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/dto/CreateStudentRequest.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/dto/CreateInterventionRequest.java
+/Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/service/BehaviorCategoryServiceImpl.java

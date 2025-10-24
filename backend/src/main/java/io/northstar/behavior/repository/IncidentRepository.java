@@ -2,10 +2,11 @@ package io.northstar.behavior.repository;
 
 import io.northstar.behavior.model.Incident;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
-@Repository
+
 public interface IncidentRepository extends JpaRepository<Incident, Long> {
-    List<Incident> findByStudentIdOrderByOccurredAtDesc(long studentId);
+    List<Incident> findByStudentIdOrderByOccurredAtDesc(Long studentId); // primary
+    // keep this for backward compatibility if used anywhere:
+    List<Incident> findByStudent_Id(Long studentId);
 }

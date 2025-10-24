@@ -1,19 +1,12 @@
 package io.northstar.behavior.service;
 
-import io.northstar.behavior.model.BehaviorCategory;
+import io.northstar.behavior.dto.BehaviorCategoryDTO;
 import java.util.List;
 
 public interface BehaviorCategoryService {
-
-    BehaviorCategory create(String name, String severity, String tier, String description);
-
-    List<BehaviorCategory> list();
-
-    BehaviorCategory getById(Long id);
-
-    BehaviorCategory update(Long id, String name, String severity, String tier, String description);
-
+    BehaviorCategoryDTO create(BehaviorCategoryDTO dto);
+    List<BehaviorCategoryDTO> findAll();
+    BehaviorCategoryDTO findById(Long id);
+    BehaviorCategoryDTO update(Long id, BehaviorCategoryDTO dto);
     void delete(Long id);
-
-    Object update(Long id, InterventionController dto);
 }

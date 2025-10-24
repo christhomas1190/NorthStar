@@ -1,16 +1,16 @@
 package io.northstar.behavior.controller;
 
 import io.northstar.behavior.dto.BehaviorCategoryDTO;
-import io.northstar.behavior.model.BehaviorCategory;
 import io.northstar.behavior.service.BehaviorCategoryService;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/behavior-categories")
-@CrossOrigin(origins = "*")
+@RequestMapping("/api/behaviors")
 public class BehaviorCategoryController {
 
     private final BehaviorCategoryService service;
@@ -19,45 +19,39 @@ public class BehaviorCategoryController {
         this.service = service;
     }
 
-    @PostMapping
-    public ResponseEntity<BehaviorCategory> create(@RequestBody BehaviorCategoryDTO dto) {
-        BehaviorCategory created = service.create(
-                dto.name(),
-                dto.severity(),
-                dto.tier(),
-                dto.description()
-        );
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    // POST /api/behaviors -> 201 + Location + JSON body
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<BehaviorCategoryDTO> create(@RequestBody BehaviorCategoryDTO dto) {
+        BehaviorCategoryDTO saved = service.create(dto);
+        return ResponseEntity
+                .created(URI.create("/api/behaviors/" + saved.id()))
+                .body(saved);
     }
 
-    @GetMapping
-    public ResponseEntity<List<BehaviorCategory>> list() {
-        return ResponseEntity.ok(service.list());
+    // GET /api/behaviors -> 200 + JSON list
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<BehaviorCategoryDTO> findAll() {
+        return service.findAll();
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<BehaviorCategory> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(service.getById(id));
+    // GET /api/behaviors/{id} -> 200 + JSON item
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<BehaviorCategoryDTO> findById(@PathVariable Long id) {
+        return ResponseEntity.ok(service.findById(id));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<BehaviorCategory> update(
-            @PathVariable Long id,
-            @RequestBody BehaviorCategoryDTO dto
-    ) {
-        BehaviorCategory updated = service.update(
-                id,
-                dto.name(),
-                dto.severity(),
-                dto.tier(),
-                dto.description()
-        );
-        return ResponseEntity.ok(updated);
+    // PUT /api/behaviors/{id} -> 200 + JSON item
+    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public BehaviorCategoryDTO update(@PathVariable Long id, @RequestBody BehaviorCategoryDTO dto) {
+        return service.update(id, dto);
     }
 
+    // DELETE /api/behaviors/{id} -> 204
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+
 }

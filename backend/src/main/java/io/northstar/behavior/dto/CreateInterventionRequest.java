@@ -1,16 +1,15 @@
 package io.northstar.behavior.dto;
 
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 
 public record CreateInterventionRequest(
-    @Min(1) long studentId,
-    @NotBlank String tier,
-    @NotBlank String strategy,
-    @NotBlank String assignedBy,
-    @NotBlank String reportedBy,
-    @NotNull LocalDate startDate,
-    LocalDate endDate
+        Long studentId,           // <-- boxed
+        String tier,
+        String strategy,
+        String assignedBy,
+        String reportedBy,
+        LocalDate startDate,
+        LocalDate endDate,
+        OffsetDateTime createdAt
 ) {}

@@ -1,9 +1,15 @@
 package io.northstar.behavior.service;
 
-import io.northstar.behavior.model.Incident;
-import org.springframework.stereotype.Service;
+import io.northstar.behavior.dto.CreateIncidentRequest;
+import io.northstar.behavior.dto.IncidentDTO;
+import io.northstar.behavior.dto.IncidentSummaryDTO;
 
-@Service
+import java.util.List;
+
 public interface IncidentService {
-    Incident create(Incident inc);
+    IncidentDTO create(CreateIncidentRequest req);
+    List<IncidentDTO> findAll();
+    IncidentDTO findById(Long id);
+    List<IncidentSummaryDTO> summaryForStudent(Long studentId);
+    void delete(Long id);
 }

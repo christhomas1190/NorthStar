@@ -49,11 +49,11 @@ public class StudentController {
     // READ (by id)
     @GetMapping("/{id}")
     public ResponseEntity<StudentDTO> getOne(@PathVariable @Min(1) long id) {
-        Student s = students.getById(id);
+        Student s = students.findById(id);
         return ResponseEntity.ok(toDTO(s));
     }
 
-    // READ (list with optional search)
+    // READ (list with optional findsearch)
     @GetMapping
     public ResponseEntity<List<StudentDTO>> list(
             @RequestParam(required = false) String q,

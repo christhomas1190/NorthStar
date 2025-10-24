@@ -14,7 +14,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
@@ -69,7 +68,12 @@ public class StudentControllerTests {
     private Intervention intervention(long id, long studentId, String tier, String strategy) {
         Intervention iv = new Intervention();
         iv.setId(id);
-        iv.setStudentId(studentId);
+
+        // UPDATED: relate to Student entity instead of using setStudentId(...)
+        Student s = new Student();
+        s.setId(studentId);
+        iv.setStudent(s);
+
         iv.setTier(tier);
         iv.setStrategy(strategy);
         iv.setAssignedBy("AP Jones");
@@ -110,6 +114,7 @@ public class StudentControllerTests {
 
         verify(students).create("Ada", "Lovelace", "A12345", "8");
     }
+
     @Test
     void createStudent_validationError_400() throws Exception {
         var bad = new CreateStudentRequest("", "", "", "");

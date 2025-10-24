@@ -1,38 +1,47 @@
 package io.northstar.behavior.controller;
 
 import io.northstar.behavior.dto.CreateIncidentRequest;
-import io.northstar.behavior.model.Incident;
+import io.northstar.behavior.dto.IncidentDTO;
+import io.northstar.behavior.dto.IncidentSummaryDTO;
 import io.northstar.behavior.service.IncidentService;
-import io.northstar.behavior.service.IncidentServiceImpl;
-import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/incidents")
-@CrossOrigin(origins = "*")
 public class IncidentController {
-    private final IncidentServiceImpl incidentService;
-    public IncidentController(IncidentService incidentService) {
-        IncidentServiceImpl incidentService1;
-        incidentService1 = new io.northstar.behavior.service.IncidentServiceImpl(
-            null, null
-        );
-        this.incidentService = incidentService1;
+
+    private final IncidentService service;
+
+    public IncidentController(IncidentService service) {
+        this.service = service;
     }
 
-    @Override
-    public String toString() { return "IncidentController"; }
-
     @PostMapping
-    public ResponseEntity<Incident> create(@Valid @RequestBody CreateIncidentRequest req) {
-        Incident inc = new Incident();
-        inc.setStudentId(req.studentId());
-        inc.setCategory(req.category());
-        inc.setDescription(req.description());
-        inc.setSeverity(req.severity());
-        inc.setReportedBy(req.reportedBy());
-        inc.setOccurredAt(req.occurredAt());
-        return ResponseEntity.ok(incidentService.create(inc));
+    public ResponseEntity<IncidentDTO> create(@RequestBody CreateIncidentRequest req) {
+        return ResponseEntity.ok(service.create(req));
+    }
+
+    @GetMapping
+    public List<IncidentDTO> findAll() {
+        return service.findAll();
+    }
+
+    @GetMapping("/{id}")
+    public IncidentDTO findOne(@PathVariable Long id) {
+        return service.findById(id);
+    }
+
+    @GetMapping("/student/{studentId}/summary")
+    public List<IncidentSummaryDTO> studentSummary(@PathVariable Long studentId) {
+        return service.summaryForStudent(studentId);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

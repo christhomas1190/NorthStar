@@ -11,5 +11,4 @@ public record IncidentDTO(
         String reportedBy,
         OffsetDateTime occurredAt,
         OffsetDateTime createdAt
-) {
-}
+) {}

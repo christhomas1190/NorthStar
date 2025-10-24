@@ -32,25 +32,53 @@
       <artifactId>spring-boot-starter-security</artifactId>
     </dependency>
 
-    <!-- Validation -->
+    <!-- Validation (Jakarta Bean Validation) -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-validation</artifactId>
     </dependency>
 
-    <!-- AWS SDK v2 for DynamoDB (version pinned here) -->
+    <!-- JPA / Hibernate -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+
+    <!-- H2 for local dev & tests (default/test profiles) -->
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+
+<!--    &lt;!&ndash; PostgreSQL for AWS profile &ndash;&gt;-->
+<!--    <dependency>-->
+<!--      <groupId>org.postgresql</groupId>-->
+<!--      <artifactId>postgresql</artifactId>-->
+<!--      <scope>runtime</scope>-->
+<!--    </dependency>-->
+
+    <!-- AWS SDK v2 (DynamoDB) -->
     <dependency>
       <groupId>software.amazon.awssdk</groupId>
       <artifactId>dynamodb</artifactId>
       <version>2.25.58</version>
     </dependency>
 
-    <!-- OpenAPI UI (optional) -->
+    <!-- OpenAPI / Swagger UI -->
     <dependency>
       <groupId>org.springdoc</groupId>
       <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
       <version>2.5.0</version>
     </dependency>
+
+    <!-- Flyway (enable when you start using db/migrations) -->
+    <!--
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-core</artifactId>
+    </dependency>
+    -->
 
     <!-- Lombok (optional) -->
     <dependency>
@@ -59,14 +87,7 @@
       <optional>true</optional>
     </dependency>
 
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-data-jpa</artifactId>
-    </dependency>
-
-
-
-    <!-- Testing -->
+    <!-- Testing (JUnit 5, Mockito, Spring Test) -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
@@ -76,11 +97,15 @@
 
   <build>
     <plugins>
+      <!-- Spring Boot plugin (repackage to executable jar, etc.) -->
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
       </plugin>
+
+      <!-- Java 17 compilation -->
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.11.0</version>
         <configuration>
