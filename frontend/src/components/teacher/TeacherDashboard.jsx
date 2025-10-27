@@ -1,10 +1,9 @@
-// src/pages/TeacherDashboard.jsx
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Page from "@/components/layout/Page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { getJSON, postJSON } from "@/lib/api"; // <-- use our helpers
+import { getJSON, postJSON } from "@/lib/api";
 
 const behaviorCategories = [
   "Disruption",
@@ -17,43 +16,49 @@ const behaviorCategories = [
 
 const severities = ["Minor", "Major"];
 
+// For <input type="datetime-local" />
 function toLocalInputValue(date = new Date()) {
-  // for <input type="datetime-local" />
   const off = date.getTimezoneOffset() * 60000;
   const local = new Date(date.getTime() - off);
   return local.toISOString().slice(0, 16);
 }
 
+// Convert local input value back to UTC ISO for the API
 function localInputToUtcIso(localValue) {
-  // localValue example: "2025-10-26T14:05"
+  // example: "2025-10-26T14:05"
   const d = new Date(localValue);
-  return d.toISOString(); // UTC
+  return d.toISOString();
 }
 
 export default function TeacherDashboard() {
-  // form state
+  // ---- form state ----
   const [studentId, setStudentId] = useState(null); // numeric DB id
-  const [pickedLabel, setPickedLabel] = useState(""); // "Name • Sxxxxx"
+  const [pickedLabel, setPickedLabel] = useState(""); // readonly label like "Name • Sxxxxx"
   const [category, setCategory] = useState("Disruption");
   const [severity, setSeverity] = useState("Minor");
   const [reportedBy, setReportedBy] = useState("t_22 (Mr. Hill)");
   const [when, setWhen] = useState(() => toLocalInputValue());
   const [notes, setNotes] = useState("");
 
-  // search state
+  // ---- search state ----
   const [q, setQ] = useState("");
   const [results, setResults] = useState([]); // [{id, firstName, lastName, studentId, grade}]
   const [open, setOpen] = useState(false);
-  const boxRef = useRef(null);
   const [loading, setLoading] = useState(false);
-  const [msg, setMsg] = useState(""); // lightweight feedback
 
-  // click-outside to close suggestions
+  // ---- UX state ----
+  const [msg, setMsg] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const boxRef = useRef(null);
+
+  // Close typeahead on click-outside or ESC
   useEffect(() => {
-    const onDocClick = (e) => {
+    function onDocClick(e) {
       if (boxRef.current && !boxRef.current.contains(e.target)) setOpen(false);
-    };
-    const onEsc = (e) => e.key === "Escape" && setOpen(false);
+    }
+    function onEsc(e) {
+      if (e.key === "Escape") setOpen(false);
+    }
     document.addEventListener("mousedown", onDocClick);
     document.addEventListener("keydown", onEsc);
     return () => {
@@ -62,7 +67,7 @@ export default function TeacherDashboard() {
     };
   }, []);
 
-  // debounce search
+  // Debounced search against /api/students?q=
   useEffect(() => {
     if (!q.trim()) {
       setResults([]);
@@ -71,10 +76,8 @@ export default function TeacherDashboard() {
     setLoading(true);
     const t = setTimeout(async () => {
       try {
-        // hits StudentController#list(q,..)
         const data = await getJSON(`/api/students?q=${encodeURIComponent(q.trim())}&size=10`);
-        // data: List<StudentDTO>
-        setResults(data || []);
+        setResults(Array.isArray(data) ? data : []);
       } catch (e) {
         setResults([]);
         setMsg(`Search failed: ${String(e.message || e)}`);
@@ -85,12 +88,33 @@ export default function TeacherDashboard() {
     return () => clearTimeout(t);
   }, [q]);
 
-  const tier = "—"; // (optional) if you later expose tier on StudentDTO, show it here
+  // Auto-clear feedback after a moment
+  useEffect(() => {
+    if (!msg) return;
+    const t = setTimeout(() => setMsg(""), 4000);
+    return () => clearTimeout(t);
+  }, [msg]);
+
+  // (Optional) show tier if you add it to StudentDTO later
+  const tier = "—";
 
   function selectStudent(s) {
-    setStudentId(s.id); // numeric DB id used by IncidentDTO.studentId
+    setStudentId(s.id);
     setPickedLabel(`${s.firstName} ${s.lastName} • ${s.studentId}`);
     setQ("");
+    setOpen(false);
+  }
+
+  function resetForm() {
+    setStudentId(null);
+    setPickedLabel("");
+    setCategory("Disruption");
+    setSeverity("Minor");
+    setReportedBy("t_22 (Mr. Hill)");
+    setWhen(toLocalInputValue());
+    setNotes("");
+    setQ("");
+    setResults([]);
     setOpen(false);
   }
 
@@ -104,21 +128,23 @@ export default function TeacherDashboard() {
       setMsg("Please add a brief description of the incident.");
       return;
     }
+    setSubmitting(true);
     try {
       const body = {
-        studentId,                          // Long (DB id)
-        category,                           // String
-        description: notes.trim(),          // String -> IncidentDTO.description
-        severity,                           // "Minor" | "Major"
+        studentId,                         // Long (DB id)
+        category,                          // String
+        description: notes.trim(),         // String
+        severity,                          // "Minor" | "Major"
         reportedBy: reportedBy.trim() || "unknown",
         occurredAt: localInputToUtcIso(when),
       };
-      // Option A: POST /api/incidents
       const created = await postJSON("/api/incidents", body);
       setMsg(`Incident #${created.id} saved.`);
-      setNotes("");
+      resetForm();
     } catch (e) {
       setMsg(`Failed to submit: ${String(e.message || e)}`);
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -240,10 +266,10 @@ export default function TeacherDashboard() {
           <div className="mt-6 flex items-center justify-end gap-3">
             <Button
               onClick={onSubmit}
-              disabled={!studentId || !notes.trim()}
+              disabled={submitting || !studentId || !notes.trim()}
               title={!studentId ? "Pick a student first" : undefined}
             >
-              Submit Incident
+              {submitting ? "Saving..." : "Submit Incident"}
             </Button>
           </div>
 
