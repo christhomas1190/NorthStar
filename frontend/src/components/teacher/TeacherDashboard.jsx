@@ -1,204 +1,258 @@
-import React, { useMemo, useState, useEffect, useRef } from "react";
+// src/pages/TeacherDashboard.jsx
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import Page from "@/components/layout/Page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/toast.jsx";
-import Page from "@/components/layout/Page";
+import { getJSON, postJSON } from "@/lib/api"; // <-- use our helpers
 
-// Mock students for now; replace with API later
-const mockStudents = [
-  { id: "S-10235", name: "Marcus Lee",  tier: "Tier 2", interventions: ["Small group counseling", "Check-in/Check-out"] },
-  { id: "S-10236", name: "Sofia Perez", tier: "Tier 3", interventions: ["One-on-one mentoring"] },
-  { id: "S-10237", name: "David Chen",  tier: "Tier 1", interventions: ["Classroom participation goals"] },
-  { id: "S-10238", name: "Ariana Rivera", tier: "Tier 2", interventions: ["Seat change", "Positive reinforcement plan"] },
+const behaviorCategories = [
+  "Disruption",
+  "Defiance",
+  "Peer Conflict",
+  "Property Misuse",
+  "Safety Concern",
+  "Other",
 ];
 
-const behaviorCategories = ["Disruption", "Defiance", "Peer Conflict", "Property Misuse", "Safety Concern", "Other"];
+const severities = ["Minor", "Major"];
 
 function toLocalInputValue(date = new Date()) {
-  const tzOffsetMs = date.getTimezoneOffset() * 60_000;
-  const local = new Date(date.getTime() - tzOffsetMs);
+  // for <input type="datetime-local" />
+  const off = date.getTimezoneOffset() * 60000;
+  const local = new Date(date.getTime() - off);
   return local.toISOString().slice(0, 16);
 }
 
+function localInputToUtcIso(localValue) {
+  // localValue example: "2025-10-26T14:05"
+  const d = new Date(localValue);
+  return d.toISOString(); // UTC
+}
+
 export default function TeacherDashboard() {
-const { push } = useToast();
-
-function onSaveDraft() {
-  if (!student) return push("Pick a student first");
-  // TODO: POST /incidents/drafts
-  push("Draft saved");
-}
-
-function onSubmit() {
-  if (!student) return push("Pick a student first");
-  // TODO: POST /incidents
-  push("Incident submitted");
-  setNotes("");
-}
-
   // form state
-  const [studentId, setStudentId] = useState("");
+  const [studentId, setStudentId] = useState(null); // numeric DB id
+  const [pickedLabel, setPickedLabel] = useState(""); // "Name • Sxxxxx"
   const [category, setCategory] = useState("Disruption");
+  const [severity, setSeverity] = useState("Minor");
+  const [reportedBy, setReportedBy] = useState("t_22 (Mr. Hill)");
   const [when, setWhen] = useState(() => toLocalInputValue());
   const [notes, setNotes] = useState("");
 
-  // typeahead state
-  const [query, setQuery] = useState("");
-  const [showResults, setShowResults] = useState(false);
+  // search state
+  const [q, setQ] = useState("");
+  const [results, setResults] = useState([]); // [{id, firstName, lastName, studentId, grade}]
+  const [open, setOpen] = useState(false);
   const boxRef = useRef(null);
+  const [loading, setLoading] = useState(false);
+  const [msg, setMsg] = useState(""); // lightweight feedback
 
+  // click-outside to close suggestions
   useEffect(() => {
-    function onDocClick(e) {
-      if (boxRef.current && !boxRef.current.contains(e.target)) setShowResults(false);
-    }
-    function onKey(e) { if (e.key === "Escape") setShowResults(false); }
+    const onDocClick = (e) => {
+      if (boxRef.current && !boxRef.current.contains(e.target)) setOpen(false);
+    };
+    const onEsc = (e) => e.key === "Escape" && setOpen(false);
     document.addEventListener("mousedown", onDocClick);
-    document.addEventListener("keydown", onKey);
+    document.addEventListener("keydown", onEsc);
     return () => {
       document.removeEventListener("mousedown", onDocClick);
-      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("keydown", onEsc);
     };
   }, []);
 
-  // filter results as user types
-  const results = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return [];
-    return mockStudents.filter(
-      (s) => s.name.toLowerCase().includes(q) || s.id.toLowerCase().includes(q)
-    );
-  }, [query]);
+  // debounce search
+  useEffect(() => {
+    if (!q.trim()) {
+      setResults([]);
+      return;
+    }
+    setLoading(true);
+    const t = setTimeout(async () => {
+      try {
+        // hits StudentController#list(q,..)
+        const data = await getJSON(`/api/students?q=${encodeURIComponent(q.trim())}&size=10`);
+        // data: List<StudentDTO>
+        setResults(data || []);
+      } catch (e) {
+        setResults([]);
+        setMsg(`Search failed: ${String(e.message || e)}`);
+      } finally {
+        setLoading(false);
+      }
+    }, 250);
+    return () => clearTimeout(t);
+  }, [q]);
 
-  // selected student + admin-controlled tier (read-only)
-  const student = useMemo(() => mockStudents.find((s) => s.id === studentId) || null, [studentId]);
-  const tier = student ? student.tier : "—";
+  const tier = "—"; // (optional) if you later expose tier on StudentDTO, show it here
 
   function selectStudent(s) {
-    setStudentId(s.id);
-    setQuery(`${s.name} • ${s.id}`);
-    setShowResults(false);
+    setStudentId(s.id); // numeric DB id used by IncidentDTO.studentId
+    setPickedLabel(`${s.firstName} ${s.lastName} • ${s.studentId}`);
+    setQ("");
+    setOpen(false);
   }
 
-  function onSaveDraft() {
-    if (!student) return toast({ description: "Pick a student first" });
-    // TODO: POST /incidents/drafts
-    toast({ description: "Draft saved" });
-  }
-
-  function onSubmit() {
-    if (!student) return toast({ description: "Pick a student first" });
-    // TODO: POST /incidents
-    toast({ description: "Incident submitted" });
-    setNotes("");
+  async function onSubmit() {
+    setMsg("");
+    if (!studentId) {
+      setMsg("Pick a student first.");
+      return;
+    }
+    if (!notes.trim()) {
+      setMsg("Please add a brief description of the incident.");
+      return;
+    }
+    try {
+      const body = {
+        studentId,                          // Long (DB id)
+        category,                           // String
+        description: notes.trim(),          // String -> IncidentDTO.description
+        severity,                           // "Minor" | "Major"
+        reportedBy: reportedBy.trim() || "unknown",
+        occurredAt: localInputToUtcIso(when),
+      };
+      // Option A: POST /api/incidents
+      const created = await postJSON("/api/incidents", body);
+      setMsg(`Incident #${created.id} saved.`);
+      setNotes("");
+    } catch (e) {
+      setMsg(`Failed to submit: ${String(e.message || e)}`);
+    }
   }
 
   return (
-     <Page title="Teacher Dashboard" subtitle="Record incidents quickly and accurately">
-         <Card className="shadow-sm border-slate-200/70">
-          <CardHeader className="pb-0">
-            <CardTitle className="sr-only">Record Incident</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Student (typeahead) */}
-              <div className="relative" ref={boxRef}>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Student</label>
-                <Input
-                  placeholder="Type a name or student ID…"
-                  value={query}
-                  onChange={(e) => {
-                    setQuery(e.target.value);
-                    setShowResults(true);
-                    setStudentId(""); // clear selection until suggestion is chosen
-                  }}
-                  onFocus={() => setShowResults(true)}
-                />
-                {showResults && results.length > 0 && (
-                  <div className="absolute z-20 mt-2 w-full rounded-xl border bg-white shadow">
-                    {results.map((s) => (
+    <Page title="Teacher Dashboard" subtitle="Record incidents quickly and accurately">
+      <Card className="shadow-sm border-slate-200/70">
+        <CardHeader className="pb-0">
+          <CardTitle className="sr-only">Record Incident</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Student search/typeahead */}
+            <div className="relative" ref={boxRef}>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Student</label>
+              <Input
+                placeholder="Type a name or school ID…"
+                value={q || pickedLabel}
+                onChange={(e) => {
+                  setPickedLabel("");
+                  setStudentId(null);
+                  setQ(e.target.value);
+                  setOpen(true);
+                }}
+                onFocus={() => setOpen(true)}
+              />
+              {open && (q || loading) && (
+                <div className="absolute z-20 mt-2 w-full rounded-xl border bg-white shadow max-h-72 overflow-auto">
+                  {loading && (
+                    <div className="px-3 py-2 text-sm text-slate-500">Searching…</div>
+                  )}
+                  {!loading && results.length === 0 && (
+                    <div className="px-3 py-2 text-sm text-slate-500">No matches</div>
+                  )}
+                  {!loading &&
+                    results.map((s) => (
                       <button
                         key={s.id}
                         type="button"
                         className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50"
                         onClick={() => selectStudent(s)}
                       >
-                        {s.name} • {s.id}
+                        {s.firstName} {s.lastName} • {s.studentId}
                       </button>
                     ))}
-                  </div>
-                )}
-                {showResults && query && results.length === 0 && (
-                  <div className="absolute z-20 mt-2 w-full rounded-xl border bg-white shadow px-3 py-2 text-sm text-slate-500">
-                    No matches
-                  </div>
-                )}
-              </div>
-
-              {/* Behavior Category */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Behavior Category</label>
-                <select
-                  className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                >
-                  {behaviorCategories.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Tier (read-only, admin-controlled) */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Tier</label>
-                <div
-                  className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-700"
-                  aria-readonly
-                  title="Tier is set by Admin"
-                >
-                  {tier}
                 </div>
-              </div>
-
-              {/* Date & Time */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Time of Incident</label>
-                <input
-                  type="time"
-                  className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300"
-                  value={when}
-                  onChange={(e) => setWhen(e.target.value)}
-                />
-              </div>
-
-              {/* Notes */}
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-slate-700 mb-2">Notes</label>
-                <textarea
-                  className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm h-32 resize-vertical focus:outline-none focus:ring-2 focus:ring-slate-300"
-                  placeholder="What happened? What was the context?"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                />
-              </div>
+              )}
             </div>
 
-            {/* Actions */}
-            <div className="mt-6 flex items-center justify-end gap-3">
-              <Button variant="outline" onClick={onSaveDraft}>
-                Save Draft
-              </Button>
-              <Button onClick={onSubmit} disabled={!student}>
-                Submit Incident
-              </Button>
+            {/* Behavior Category */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Behavior Category
+              </label>
+              <select
+                className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+              >
+                {behaviorCategories.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
             </div>
 
-            <p className="mt-4 text-xs text-slate-500">Tier is managed by Admin and cannot be changed here.</p>
-          </CardContent>
-        </Card>
+            {/* Severity */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Severity</label>
+              <select
+                className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300"
+                value={severity}
+                onChange={(e) => setSeverity(e.target.value)}
+              >
+                {severities.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Reported By */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Reported By</label>
+              <Input
+                placeholder="e.g., t_22 (Mr. Hill)"
+                value={reportedBy}
+                onChange={(e) => setReportedBy(e.target.value)}
+              />
+            </div>
+
+            {/* Date & Time (local) */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Time of Incident
+              </label>
+              <input
+                type="datetime-local"
+                className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300"
+                value={when}
+                onChange={(e) => setWhen(e.target.value)}
+              />
+            </div>
+
+            {/* Notes -> description */}
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-slate-700 mb-2">Notes</label>
+              <textarea
+                className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm h-32 resize-vertical focus:outline-none focus:ring-2 focus:ring-slate-300"
+                placeholder="What happened? What was the context?"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="mt-6 flex items-center justify-end gap-3">
+            <Button
+              onClick={onSubmit}
+              disabled={!studentId || !notes.trim()}
+              title={!studentId ? "Pick a student first" : undefined}
+            >
+              Submit Incident
+            </Button>
+          </div>
+
+          {msg && <p className="mt-4 text-sm text-slate-600">{msg}</p>}
+          <p className="mt-4 text-xs text-slate-500">
+            Tier is managed by Admin and cannot be changed here.
+          </p>
+        </CardContent>
+      </Card>
     </Page>
   );
 }

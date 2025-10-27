@@ -25,14 +25,10 @@ public class IncidentController {
     }
 
     @GetMapping
-    public List<IncidentDTO> findAll() {
-        return service.findAll();
-    }
+    public List<IncidentDTO> findAll() { return service.findAll(); }
 
     @GetMapping("/{id}")
-    public IncidentDTO findOne(@PathVariable Long id) {
-        return service.findById(id);
-    }
+    public IncidentDTO findOne(@PathVariable Long id) { return service.findById(id); }
 
     @GetMapping("/student/{studentId}/summary")
     public List<IncidentSummaryDTO> studentSummary(@PathVariable Long studentId) {

@@ -1,15 +1,12 @@
 package io.northstar.behavior.controller;
 
-import io.northstar.behavior.dto.CreateStudentRequest;
-import io.northstar.behavior.dto.StudentDTO;
-import io.northstar.behavior.dto.IncidentDTO;
-import io.northstar.behavior.dto.IncidentSummaryDTO;
-import io.northstar.behavior.dto.InterventionSummaryDTO;
+import io.northstar.behavior.dto.*;
 
 import io.northstar.behavior.model.Student;
 import io.northstar.behavior.model.Incident;
 import io.northstar.behavior.model.Intervention;
 
+import io.northstar.behavior.service.IncidentService;
 import io.northstar.behavior.service.StudentService;
 
 import jakarta.validation.Valid;
@@ -112,5 +109,9 @@ public class StudentController {
                 inc.getCreatedAt()
         );
     }
+     IncidentService incidentService;
+
+
+
 
 }
