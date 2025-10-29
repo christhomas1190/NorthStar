@@ -27,7 +27,7 @@ public class TeacherServiceImpl implements TeacherService {
         this.repo = repo;
     }
 
-    private TeacherDTO toDto(Teacher t){
+    public TeacherDTO toDto(Teacher t){
         return new TeacherDTO(
                 t.getId(),
                 t.getFirstName(),

@@ -5,6 +5,6 @@ public record AdminDTO
             String firstName,
             String lastName,
             String email,
-            String username)
-         {}
+            String userName)
+{}
 
