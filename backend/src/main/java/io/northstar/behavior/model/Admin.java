@@ -4,26 +4,26 @@ import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name="admin")
+@Table(
+        name = "admins",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_admin_email", columnNames = "email"),
+                @UniqueConstraint(name = "uk_admin_username", columnNames = "userName")
+        }
+)
 public class Admin {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column (nullable=false)
-    private String firstName;
-    @Column (nullable=false)
-    private String lastName;
-    @Column (nullable=false)
-    private String email;
-    @Column (nullable=false)
-    private String userName;
-    @Column (nullable=false)
-    private String passwordHash;
+    @Column(nullable=false) private String firstName;
+    @Column(nullable=false) private String lastName;
+    @Column(nullable=false) private String email;
+    @Column(nullable=false) private String userName;
+    @Column(nullable=false) private String passwordHash;
 
-    @Column (nullable=false)
-    private String permissionTag;
+    @Column(nullable=false)
+    private String permissionTag; // e.g., "SUPER_ADMIN", "ADMIN"
 
     public Long getId() {
         return id;

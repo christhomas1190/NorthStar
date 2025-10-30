@@ -15,35 +15,30 @@ public class AdminController {
     private final AdminService service;
 
     public AdminController(AdminService service){
-        this.service=service;
+        this.service = service;
     }
 
-    // CREATE
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public AdminDTO create(@RequestBody AdminDTO dto) {
         return service.create(dto);
     }
 
-    //FindAll
     @GetMapping
     public List<AdminDTO> list(){
         return service.findAll();
     }
 
-    //Read One
     @GetMapping("/{id}")
     public AdminDTO findById(@PathVariable Long id){
         return service.findById(id);
     }
 
-    //Update
     @PutMapping("/{id}")
     public AdminDTO update(@PathVariable Long id, @RequestBody AdminDTO dto){
         return service.update(id, dto);
     }
 
-    //Delete
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {

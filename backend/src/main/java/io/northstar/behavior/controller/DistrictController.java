@@ -1,6 +1,5 @@
 package io.northstar.behavior.controller;
 
-
 import io.northstar.behavior.dto.DistrictDTO;
 import io.northstar.behavior.service.DistrictService;
 import org.springframework.http.HttpStatus;
@@ -9,13 +8,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping
+@RequestMapping("/api/districts")
 public class DistrictController {
 
     private final DistrictService service;
 
     public DistrictController(DistrictService service){
-        this.service=service;
+        this.service = service;
     }
 
     // CREATE
@@ -25,24 +24,25 @@ public class DistrictController {
         return service.create(dto);
     }
 
-    //FindAll
+    // READ ALL
     @GetMapping
     public List<DistrictDTO> list(){
         return service.findAll();
     }
 
-    //Read One
+    // READ ONE
     @GetMapping("/{id}")
-    public DistrictDTO findById(@PathVariable DistrictDTO dto){
-        return service.findDistrict(dto);
+    public DistrictDTO findById(@PathVariable Long id){
+        return service.findDistrict(id);
     }
 
-    //Update
+    // UPDATE
     @PutMapping("/{id}")
     public DistrictDTO update(@PathVariable Long id, @RequestBody DistrictDTO dto){
         return service.update(id, dto);
     }
-    //Delete
+
+    // DELETE
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {

@@ -20,7 +20,7 @@ public class TeacherServiceImpl implements TeacherService {
 
     private final TeacherRepository repo;
 
-    @Value("${app.default-teacher-password:SetMeNow!2025}")
+    @Value("${app.default-teacher-password:Teach!2025#}")
     private String defaultTeacherPassword;
 
     public TeacherServiceImpl(TeacherRepository repo) {

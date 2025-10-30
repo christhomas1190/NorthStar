@@ -5,6 +5,7 @@ public record AdminDTO
             String firstName,
             String lastName,
             String email,
-            String userName)
+            String userName,
+             String permissionTag)
 {}
 

@@ -1,5 +1,8 @@
 server:
   port: 8080
+  app:
+    default-teacher-password: "Teach!2025#"
+    default-admin-password: "Admin!2025#"
 
 # ===== Default: local dev on H2 (PERSISTENT FILE) =====
 spring:
