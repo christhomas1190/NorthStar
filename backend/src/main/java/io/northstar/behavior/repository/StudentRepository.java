@@ -5,9 +5,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface StudentRepository extends JpaRepository<Student, Long> {
+import java.util.List;
+import java.util.Optional;
 
-    Page<Student> findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCaseOrStudentIdContainingIgnoreCase(
-            String firstName, String lastName, String studentId, Pageable pageable
-    );
+public interface StudentRepository extends JpaRepository<Student, Long> {
+    List<Student> findByDistrict_DistrictId(Long districtId);
+    Optional<Student> findByIdAndDistrict_DistrictId(Long id, Long districtId);
+    boolean existsByStudentIdAndDistrict_DistrictId(String studentId, Long districtId);
+
 }

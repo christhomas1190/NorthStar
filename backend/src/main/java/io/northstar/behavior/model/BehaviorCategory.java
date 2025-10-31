@@ -25,6 +25,9 @@ public class BehaviorCategory {
 
     @Column(nullable = false, updatable = false)
     private OffsetDateTime createdAt = OffsetDateTime.now();
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name="district_id", nullable=false)
+    private District district;
 
     public BehaviorCategory() {}
 

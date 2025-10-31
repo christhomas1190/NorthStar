@@ -42,7 +42,10 @@ public class StudentController {
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(toDTO(s));
     }
-
+    @GetMapping("/district/{districtId}")
+    public List<StudentDTO> listByDistrict(@PathVariable Long districtId) {
+        return students.findAllForDistrict(districtId);
+    }
     // READ (by id)
     @GetMapping("/{id}")
     public ResponseEntity<StudentDTO> getOne(@PathVariable @Min(1) long id) {

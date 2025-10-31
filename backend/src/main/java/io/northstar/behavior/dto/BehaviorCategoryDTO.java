@@ -8,5 +8,7 @@ public record BehaviorCategoryDTO(
         String severity,
         String tier,
         String description,
-        OffsetDateTime createdAt
+        OffsetDateTime createdAt,
+        Long districtId
+
 ) {}

@@ -10,5 +10,7 @@ public record IncidentDTO(
         String severity,
         String reportedBy,
         OffsetDateTime occurredAt,
-        OffsetDateTime createdAt
+        OffsetDateTime createdAt,
+        Long districtId
+
 ) {}

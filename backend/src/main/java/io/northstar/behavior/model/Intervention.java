@@ -5,7 +5,12 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
 @Entity
-@Table(name = "intervention")
+@Table(
+        name = "interventions",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_intervention_id_per_district", columnNames = {"district_id", "id"})
+        }
+)
 public class Intervention {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -14,6 +19,10 @@ public class Intervention {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "student_id", nullable = false)   // << use JoinColumn
     private Student student;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name="district_id", nullable=false)
+    private District district;
 
     @Column(nullable = false)
     private String tier;

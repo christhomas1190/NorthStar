@@ -4,10 +4,13 @@ package io.northstar.behavior.model;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "teachers", uniqueConstraints = {
-        @UniqueConstraint(name="uk_teacher_email", columnNames = "email"),
-        @UniqueConstraint(name="uk_teacher_username", columnNames = "username")
-})
+@Table(
+        name = "teachers",
+        uniqueConstraints = {
+                @UniqueConstraint(name="uk_teacher_email_per_district", columnNames={"district_id","email"}),
+                @UniqueConstraint(name="uk_teacher_username_per_district", columnNames={"district_id","username"})
+        }
+)
 public class Teacher {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,6 +28,10 @@ public class Teacher {
 
     @Column(nullable = false)
     private String passwordHash; // BCrypt hash of default password
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name="district_id", nullable=false)
+    private District district;
 
     public Long getId() {
         return id;

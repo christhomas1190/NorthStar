@@ -4,7 +4,13 @@ import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 
 @Entity
-@Table(name = "incident")
+@Table(
+        name = "incidents",
+        uniqueConstraints = {
+                // optional: ensure uniqueness per district if you ever have external IDs
+                @UniqueConstraint(name = "uk_incident_id_per_district", columnNames = {"district_id", "id"})
+        }
+)
 public class Incident {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,7 +41,10 @@ public class Incident {
     @Column(nullable = false)
     private OffsetDateTime createdAt;
 
-    // getters/setters matching StudentController usage
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name="district_id", nullable=false)
+    private District district;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

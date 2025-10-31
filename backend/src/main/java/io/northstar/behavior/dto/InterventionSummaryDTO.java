@@ -6,5 +6,7 @@ public record InterventionSummaryDTO(long id,
                                      String tier,
                                      String strategy,
                                      LocalDate startDate,
-                                     LocalDate endDate) {
+                                     LocalDate endDate,
+                                     Long districtId
+) {
 }

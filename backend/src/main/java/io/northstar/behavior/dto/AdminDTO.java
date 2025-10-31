@@ -6,6 +6,7 @@ public record AdminDTO
             String lastName,
             String email,
             String userName,
+             Long districtId,
              String permissionTag)
 {}
 

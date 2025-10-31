@@ -9,5 +9,8 @@ public record StudentDTO (
         String studentId,
         String grade,
         List<IncidentSummaryDTO> incidents,
-        List<InterventionSummaryDTO> interventions
+        List<InterventionSummaryDTO> interventions,
+
+        Long districtId
+
 ) {}

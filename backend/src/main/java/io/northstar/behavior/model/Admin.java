@@ -5,12 +5,11 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(
-        name = "admins",
+        name = "admin",
         uniqueConstraints = {
-                @UniqueConstraint(name = "uk_admin_email", columnNames = "email"),
-                @UniqueConstraint(name = "uk_admin_username", columnNames = "userName")
-        }
-)
+                @UniqueConstraint(name="uk_admin_email_per_district", columnNames={"district_id","email"}),
+                @UniqueConstraint(name="uk_admin_username_per_district", columnNames={"district_id","username"})
+        })
 public class Admin {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)

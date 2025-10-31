@@ -5,7 +5,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "students")
+@Table(
+        name = "students",
+        uniqueConstraints = {
+                // ensures studentId is unique *within a district* (not globally)
+                @UniqueConstraint(name = "uk_student_id_per_district", columnNames = {"district_id", "studentId"})
+        })
 public class Student {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,6 +32,10 @@ public class Student {
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("startDate DESC")
     private List<Intervention> interventions = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name="district_id", nullable=false)
+    private District district;
 
     public Student() {}
 
