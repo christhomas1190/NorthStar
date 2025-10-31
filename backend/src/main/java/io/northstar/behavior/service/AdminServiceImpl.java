@@ -4,6 +4,7 @@ package io.northstar.behavior.service;
 import io.northstar.behavior.dto.AdminDTO;
 import io.northstar.behavior.model.Admin;
 import io.northstar.behavior.repository.AdminRepository;
+import io.northstar.behavior.repository.DistrictRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -19,13 +20,15 @@ import java.util.List;
 public class AdminServiceImpl implements AdminService {
 
     private final AdminRepository repo;
+    private final DistrictRepository districtRepo;
 
     // Prefer a distinct key for admins:
     @Value("${app.default-admin-password:Admin!2025#}")
     private String defaultAdminPassword;
 
-    public AdminServiceImpl(AdminRepository repo) {
+    public AdminServiceImpl(AdminRepository repo, DistrictRepository districtRepo) {
         this.repo = repo;
+        this.districtRepo= districtRepo;
     }
 
     private AdminDTO toDto(Admin a){
@@ -35,7 +38,8 @@ public class AdminServiceImpl implements AdminService {
                 a.getLastName(),
                 a.getEmail(),
                 a.getUserName(),
-                a.getPermissionTag()
+                a.getPermissionTag(),
+                a.getDistrictId()
         );
     }
 

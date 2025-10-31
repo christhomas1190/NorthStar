@@ -10,7 +10,5 @@ public record StudentDTO (
         String grade,
         List<IncidentSummaryDTO> incidents,
         List<InterventionSummaryDTO> interventions,
-
         Long districtId
-
 ) {}

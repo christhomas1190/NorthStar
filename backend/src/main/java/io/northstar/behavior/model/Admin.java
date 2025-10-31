@@ -23,6 +23,8 @@ public class Admin {
 
     @Column(nullable=false)
     private String permissionTag; // e.g., "SUPER_ADMIN", "ADMIN"
+    @Column(nullable=false)
+    private String districtId;
 
     public Long getId() {
         return id;
@@ -78,5 +80,13 @@ public class Admin {
 
     public void setPermissionTag(String permissionTag) {
         this.permissionTag = permissionTag;
+    }
+
+    public String getDistrictId() {
+        return districtId;
+    }
+
+    public void setDistrictId(String districtId) {
+        this.districtId = districtId;
     }
 }

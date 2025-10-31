@@ -8,19 +8,21 @@ import java.util.List;
 @Table(
         name = "students",
         uniqueConstraints = {
-                // ensures studentId is unique *within a district* (not globally)
-                @UniqueConstraint(name = "uk_student_id_per_district", columnNames = {"district_id", "studentId"})
-        })
+                @UniqueConstraint(
+                        name = "uk_student_id_per_district",
+                        columnNames = {"district_id", "studentId"}
+                )
+        }
+)
 public class Student {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(nullable = false)
     private Long id;
 
     @Column(nullable = false) private String firstName;
     @Column(nullable = false) private String lastName;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String studentId;
 
     @Column(nullable = false) private String grade;
@@ -34,7 +36,7 @@ public class Student {
     private List<Intervention> interventions = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name="district_id", nullable=false)
+    @JoinColumn(name = "district_id", nullable = false)
     private District district;
 
     public Student() {}
@@ -60,4 +62,12 @@ public class Student {
 
     public List<Intervention> getInterventions() { return interventions; }
     public void setInterventions(List<Intervention> interventions) { this.interventions = interventions; }
+
+    public District getDistrict() {
+        return district;
+    }
+
+    public void setDistrict(District district) {
+        this.district = district;
+    }
 }

@@ -2,11 +2,7 @@ package io.northstar.behavior.controller;
 
 import io.northstar.behavior.dto.*;
 
-import io.northstar.behavior.model.Student;
-import io.northstar.behavior.model.Incident;
-import io.northstar.behavior.model.Intervention;
 
-import io.northstar.behavior.service.IncidentService;
 import io.northstar.behavior.service.StudentService;
 
 import jakarta.validation.Valid;
@@ -31,90 +27,29 @@ public class StudentController {
         this.students = students;
     }
 
-    // CREATE
     @PostMapping
-    public ResponseEntity<StudentDTO> create(@Valid @RequestBody CreateStudentRequest req) {
-        Student s = students.create(
-                req.firstName(),
-                req.lastName(),
-                req.studentId(),
-                req.grade()
-        );
-        return ResponseEntity.status(HttpStatus.CREATED).body(toDTO(s));
-    }
-    @GetMapping("/district/{districtId}")
-    public List<StudentDTO> listByDistrict(@PathVariable Long districtId) {
-        return students.findAllForDistrict(districtId);
-    }
-    // READ (by id)
-    @GetMapping("/{id}")
-    public ResponseEntity<StudentDTO> getOne(@PathVariable @Min(1) long id) {
-        Student s = students.findById(id);
-        return ResponseEntity.ok(toDTO(s));
+    public ResponseEntity<StudentDTO> create(@Valid @RequestBody StudentDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(students.create(dto));
     }
 
-    // READ (list with optional findsearch)
     @GetMapping
-    public ResponseEntity<List<StudentDTO>> list(
-            @RequestParam(required = false) String q,
-            @RequestParam(defaultValue = "0") @Min(0) int page,
-            @RequestParam(defaultValue = "25") @Min(1) int size
-    ) {
-        List<Student> results;
-        if (q == null || q.isBlank()) {
-            results = students.list(page, size);
-        } else {
-            results = students.search(q, page, size);
-        }
-
-        // simple “beginner-style” mapping with a for loop
-        List<StudentDTO> dtos = new ArrayList<>();
-        for (int i = 0; i < results.size(); i++) {
-            dtos.add(toDTO(results.get(i)));
-        }
-
-        return ResponseEntity.ok(dtos);
-    }
-    // --- DTO mappers (kept simple, with for-loops where helpful) ---
-
-    private StudentDTO toDTO(Student s) {
-        List<IncidentSummaryDTO> incidents = new ArrayList<>();
-        for (int i = 0; i < s.getIncidents().size(); i++) {
-            Incident inc = s.getIncidents().get(i);
-            incidents.add(new IncidentSummaryDTO(inc.getId(), inc.getCategory(), inc.getSeverity(), inc.getOccurredAt()));
-        }
-
-        List<InterventionSummaryDTO> interventions = new ArrayList<>();
-        for (int i = 0; i < s.getInterventions().size(); i++) {
-            Intervention iv = s.getInterventions().get(i);
-            interventions.add(new InterventionSummaryDTO(iv.getId(), iv.getTier(), iv.getStrategy(), iv.getStartDate(), iv.getEndDate()));
-        }
-        return new StudentDTO(
-                s.getId(),
-                s.getFirstName(),
-                s.getLastName(),
-                s.getStudentId(),
-                s.getGrade(),
-                incidents,
-                interventions
-        );
+    public List<StudentDTO> list() {
+        return students.findAll();
     }
 
-    private IncidentDTO toDTO(Incident inc) {
-        return new IncidentDTO(
-                inc.getId(),
-                inc.getStudentId(),
-                inc.getCategory(),
-                inc.getDescription(),
-                inc.getSeverity(),
-                inc.getReportedBy(),
-                inc.getOccurredAt(),
-                inc.getCreatedAt()
-        );
+    @GetMapping("/{id}")
+    public StudentDTO getOne(@PathVariable @Min(1) Long id) {
+        return students.findById(id);
     }
-     IncidentService incidentService;
 
+    @PutMapping("/{id}")
+    public StudentDTO update(@PathVariable Long id, @Valid @RequestBody StudentDTO dto) {
+        return students.update(id, dto);
+    }
 
-
-
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id) {
+        students.delete(id);
+    }
 }

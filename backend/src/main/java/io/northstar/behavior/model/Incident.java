@@ -1,5 +1,6 @@
 package io.northstar.behavior.model;
 
+import io.northstar.behavior.tenant.TenantContext;
 import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 
@@ -71,4 +72,12 @@ public class Incident {
 
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
+
+    public District getDistrict() {
+        return district;
+    }
+
+    public void setDistrict(District district) {
+        this.district = district;
+    }
 }
