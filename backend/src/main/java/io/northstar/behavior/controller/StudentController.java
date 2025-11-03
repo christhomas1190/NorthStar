@@ -18,7 +18,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/students")
-@Validated
 public class StudentController {
 
     private final StudentService students;
@@ -28,8 +27,9 @@ public class StudentController {
     }
 
     @PostMapping
-    public ResponseEntity<StudentDTO> create(@Valid @RequestBody StudentDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(students.create(dto));
+    public ResponseEntity<StudentDTO> create(@RequestBody StudentDTO body) {
+        StudentDTO saved = students.create(body);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved); // <<< 201 Created
     }
 
     @GetMapping

@@ -20,11 +20,11 @@ public class Teacher {
     private String firstName;
     @Column(nullable = false)
     private String lastName;
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String email;
 
-    @Column(nullable = false, unique = true)
-    private String username;         // auto-generated (see service)
+    @Column(nullable = false)
+    private String username;
 
     @Column(nullable = false)
     private String passwordHash; // BCrypt hash of default password
@@ -80,4 +80,14 @@ public class Teacher {
     public void setPasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
     }
+
+    public District getDistrict() {
+        return district;
+    }
+
+    public void setDistrict(District district) {
+        this.district = district;
+    }
+
+
 }

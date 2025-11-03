@@ -8,5 +8,4 @@ public record IncidentSummaryDTO(
         String severity,
         OffsetDateTime occurredAt,
         Long districtId
-
 ) {}

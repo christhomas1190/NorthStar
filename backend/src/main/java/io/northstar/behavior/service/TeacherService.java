@@ -6,8 +6,8 @@ import java.util.List;
 
 public interface TeacherService {
     TeacherDTO create(TeacherDTO dto);
-    List<TeacherDTO> findAll();
-    TeacherDTO findById(Long id);
-    TeacherDTO update(Long id, TeacherDTO dto); // does NOT allow changing username directly
+    TeacherDTO update(Long id, TeacherDTO dto);
     void delete(Long id);
+    TeacherDTO findById(Long id);
+    List<TeacherDTO> findAll();
 }

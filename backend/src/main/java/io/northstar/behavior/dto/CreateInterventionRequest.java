@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
 public record CreateInterventionRequest(
-        Long studentId,           // <-- boxed
+        Long studentId,
         String tier,
         String strategy,
         String assignedBy,

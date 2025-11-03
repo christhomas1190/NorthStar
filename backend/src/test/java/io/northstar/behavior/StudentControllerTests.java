@@ -2,13 +2,15 @@ package io.northstar.behavior;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.northstar.behavior.controller.StudentController;
-import io.northstar.behavior.dto.CreateStudentRequest;
-import io.northstar.behavior.model.Incident;
+import io.northstar.behavior.dto.IncidentSummaryDTO;
+import io.northstar.behavior.dto.InterventionSummaryDTO;
+import io.northstar.behavior.dto.StudentDTO;
 import io.northstar.behavior.model.Intervention;
 import io.northstar.behavior.model.Student;
 import io.northstar.behavior.service.StudentService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -22,7 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -37,39 +40,13 @@ public class StudentControllerTests {
 
     @MockBean StudentService students;
 
-    // --- helpers: build domain objects that service returns ---
-
-    private Student student(long id, String first, String last, String sid, String grade,
-                            List<Incident> incs, List<Intervention> ivs) {
-        Student s = new Student();
-        s.setId(id);
-        s.setFirstName(first);
-        s.setLastName(last);
-        s.setStudentId(sid);
-        s.setGrade(grade);
-        s.setIncidents(incs != null ? incs : new ArrayList<>());
-        s.setInterventions(ivs != null ? ivs : new ArrayList<>());
-        return s;
-    }
-
-    private Incident incident(long id, long studentId, String category, String severity) {
-        Incident inc = new Incident();
-        inc.setId(id);
-        inc.setStudentId(studentId);
-        inc.setCategory(category);
-        inc.setDescription("desc");
-        inc.setSeverity(severity);
-        inc.setReportedBy("Teacher A");
-        inc.setOccurredAt(OffsetDateTime.parse("2025-09-01T08:00:00Z")); // past -> OK for @PastOrPresent
-        inc.setCreatedAt(OffsetDateTime.parse("2025-09-01T09:00:00Z"));
-        return inc;
-    }
+    // --- helpers (only used locally; safe to keep) ---
 
     private Intervention intervention(long id, long studentId, String tier, String strategy) {
         Intervention iv = new Intervention();
         iv.setId(id);
 
-        // UPDATED: relate to Student entity instead of using setStudentId(...)
+        // Relate to Student entity (setter now requires an argument)
         Student s = new Student();
         s.setId(studentId);
         iv.setStudent(s);
@@ -85,22 +62,51 @@ public class StudentControllerTests {
     @Test
     @DisplayName("POST /api/students => 201 Created with mapped incidents/interventions")
     void createStudent_created_201() throws Exception {
-        // Given
-        CreateStudentRequest req = new CreateStudentRequest("Ada", "Lovelace", "A12345", "8");
-
-        Student returned = student(
-                10L, "Ada", "Lovelace", "A12345", "8",
-                List.of(incident(1L, 10L, "Disruption", "Minor")),
-                List.of(intervention(7L, 10L, "Tier 1", "Check-in/Check-out"))
+        // Given: service will return a fully-populated StudentDTO
+        var returned = new StudentDTO(
+                10L,                       // id
+                "Ada",                     // firstName
+                "Lovelace",                // lastName
+                "A12345",                  // studentId
+                "8",                       // grade
+                List.of(                   // incidents
+                        new IncidentSummaryDTO(
+                                1L,
+                                "Disruption",
+                                "Minor",
+                                OffsetDateTime.parse("2025-01-01T12:00:00Z"),
+                                10L                // districtId on the incident
+                        )
+                ),
+                List.of(                   // interventions
+                        new InterventionSummaryDTO(
+                                7L,
+                                "Tier 1",
+                                "Check-in/Check-out",
+                                LocalDate.parse("2025-01-02"),
+                                null,              // endDate
+                                10L                // districtId on the intervention
+                        )
+                ),
+                10L                        // student districtId
         );
 
-        when(students.create(eq("Ada"), eq("Lovelace"), eq("A12345"), eq("8")))
-                .thenReturn(returned);
+        when(students.create(any(StudentDTO.class))).thenReturn(returned);
+
+        // Minimal request body that maps to StudentDTO (id omitted)
+        String reqBody = """
+          {
+            "firstName": "Ada",
+            "lastName": "Lovelace",
+            "studentId": "A12345",
+            "grade": "8"
+          }
+        """;
 
         // When / Then
         mvc.perform(post("/api/students")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(req)))
+                        .content(reqBody))
                 .andExpect(status().isCreated())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(10))
@@ -112,15 +118,25 @@ public class StudentControllerTests {
                 .andExpect(jsonPath("$.interventions[0].tier").value("Tier 1"))
                 .andExpect(jsonPath("$.interventions[0].strategy").value("Check-in/Check-out"));
 
-        verify(students).create("Ada", "Lovelace", "A12345", "8");
+        // Verify the controller called the service with the right DTO
+        ArgumentCaptor<StudentDTO> cap = ArgumentCaptor.forClass(StudentDTO.class);
+        verify(students).create(cap.capture());
+        StudentDTO sent = cap.getValue();
+        assertEquals("Ada", sent.firstName());
+        assertEquals("Lovelace", sent.lastName());
+        assertEquals("A12345", sent.studentId());
+        assertEquals("8", sent.grade());
     }
 
     @Test
     void createStudent_validationError_400() throws Exception {
-        var bad = new CreateStudentRequest("", "", "", "");
+        // Send clearly invalid JSON (missing required fields)
+        String badJson = """
+          { "firstName": "", "lastName": "", "studentId": "", "grade": "" }
+        """;
         mvc.perform(post("/api/students")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(bad)))
+                        .content(badJson))
                 .andExpect(status().isBadRequest());
     }
 }

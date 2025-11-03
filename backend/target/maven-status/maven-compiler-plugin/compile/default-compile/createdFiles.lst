@@ -15,6 +15,7 @@ io/northstar/behavior/model/Incident.class
 io/northstar/behavior/service/TeacherServiceImpl.class
 io/northstar/behavior/service/BehaviorCategoryServiceImpl.class
 io/northstar/behavior/service/AdminServiceImpl.class
+io/northstar/behavior/tenant/TenantFilter.class
 io/northstar/behavior/dto/TeacherDTO.class
 io/northstar/behavior/service/StudentService.class
 io/northstar/behavior/model/Teacher.class
@@ -33,6 +34,7 @@ io/northstar/behavior/config/SecurityConfig.class
 io/northstar/behavior/dto/CreateStudentRequest.class
 io/northstar/behavior/dto/BulkStudentsRequest.class
 io/northstar/behavior/dto/IncidentSummaryDTO.class
+io/northstar/behavior/tenant/TenantContext.class
 io/northstar/behavior/dto/IncidentDTO.class
 io/northstar/behavior/controller/BehaviorCategoryController.class
 io/northstar/behavior/repository/InterventionRepository.class

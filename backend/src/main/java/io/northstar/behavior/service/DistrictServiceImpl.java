@@ -1,16 +1,16 @@
 package io.northstar.behavior.service;
 
-import io.northstar.behavior.dto.*;
-import io.northstar.behavior.model.*;
+import io.northstar.behavior.dto.DistrictDTO;
+import io.northstar.behavior.model.District;
 import io.northstar.behavior.repository.DistrictRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
-
 
 @Service
 @Transactional
@@ -22,6 +22,12 @@ public class DistrictServiceImpl implements DistrictService {
         this.repo = repo;
     }
 
+    private String toSlug(String name) {
+        String base = Normalizer.normalize(name, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "");
+        return base.toLowerCase().replaceAll("[^a-z0-9]+", "-").replaceAll("(^-|-$)", "");
+    }
+
     private DistrictDTO toDto(District d){
         return new DistrictDTO(
                 d.getDistrictId(),
@@ -30,7 +36,10 @@ public class DistrictServiceImpl implements DistrictService {
     }
 
     private void apply(District d, DistrictDTO dto){
-        d.setDistrictName(dto.districtName());
+        if (dto.districtName() != null && !dto.districtName().isBlank()) {
+            d.setDistrictName(dto.districtName().trim());
+            d.setSlug(toSlug(dto.districtName().trim()));
+        }
     }
 
     @Override
@@ -48,6 +57,7 @@ public class DistrictServiceImpl implements DistrictService {
 
         District d = new District();
         d.setDistrictName(name);
+        d.setSlug(toSlug(name)); // ensure required
 
         District saved = repo.save(d);
         return toDto(saved);
@@ -57,7 +67,6 @@ public class DistrictServiceImpl implements DistrictService {
     public List<DistrictDTO> findAll() {
         List<District> all = repo.findAll();
         List<DistrictDTO> out = new ArrayList<>();
-        // per your preference, use a for loop
         for (int i = 0; i < all.size(); i++) {
             out.add(toDto(all.get(i)));
         }
@@ -75,15 +84,7 @@ public class DistrictServiceImpl implements DistrictService {
     public DistrictDTO update(Long id, DistrictDTO dto) {
         District d = repo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "district not found"));
-
-        if (dto.districtName() != null && !dto.districtName().isBlank()) {
-            String name = dto.districtName().trim();
-            // optional duplicate check on rename
-            if (!name.equals(d.getDistrictName()) && repo.existsByDistrictName(name)) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "district already exists");
-            }
-            d.setDistrictName(name);
-        }
+        apply(d, dto);
         return toDto(d);
     }
 

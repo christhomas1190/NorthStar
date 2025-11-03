@@ -10,7 +10,7 @@ import java.util.List;
         uniqueConstraints = {
                 @UniqueConstraint(
                         name = "uk_student_id_per_district",
-                        columnNames = {"district_id", "studentId"}
+                        columnNames = {"district_id", "student_id"}  // <- use physical column name
                 )
         }
 )

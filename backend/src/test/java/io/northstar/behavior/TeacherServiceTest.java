@@ -1,7 +1,9 @@
 package io.northstar.behavior;
 
 import io.northstar.behavior.dto.TeacherDTO;
+import io.northstar.behavior.model.District;
 import io.northstar.behavior.model.Teacher;
+import io.northstar.behavior.repository.DistrictRepository;
 import io.northstar.behavior.repository.TeacherRepository;
 import io.northstar.behavior.service.TeacherServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,12 +22,28 @@ import static org.mockito.Mockito.*;
 class TeacherServiceTest {
 
     TeacherRepository repo;
+    DistrictRepository districtRepo;
     TeacherServiceImpl service;
+
+    // use one district id throughout
+    private static final Long DID = 10L;
 
     @BeforeEach
     void setUp() {
         repo = mock(TeacherRepository.class);
-        service = new TeacherServiceImpl(repo);
+        districtRepo = mock(DistrictRepository.class);
+
+        // return a lightweight District proxy for the id we use
+        when(districtRepo.getReferenceById(anyLong())).thenAnswer(inv -> {
+            Long id = inv.getArgument(0);
+            District d = new District();
+            d.setDistrictId(id);
+            d.setDistrictName("D-" + id);
+            return d;
+        });
+
+        service = new TeacherServiceImpl(repo, districtRepo);
+
         // set default password via reflection since @Value won't run here
         try {
             var f = TeacherServiceImpl.class.getDeclaredField("defaultTeacherPassword");
@@ -47,8 +65,8 @@ class TeacherServiceTest {
             return t;
         });
 
-        // When
-        TeacherDTO in = new TeacherDTO(null, "John", "Doe", "john.doe@school.org", null);
+        // When (note the 6th arg: districtId)
+        TeacherDTO in = new TeacherDTO(null, "John", "Doe", "john.doe@school.org", null, DID);
         TeacherDTO out = service.create(in);
 
         // Then
@@ -57,6 +75,7 @@ class TeacherServiceTest {
         assertEquals("Doe", out.lastName());
         assertEquals("john.doe@school.org", out.email());
         assertEquals("jdoe", out.username());
+        assertEquals(DID, out.districtId());
 
         // And the password is hashed (not empty)
         ArgumentCaptor<Teacher> cap = ArgumentCaptor.forClass(Teacher.class);
@@ -74,10 +93,11 @@ class TeacherServiceTest {
         when(repo.save(any())).thenAnswer(inv -> { Teacher t = inv.getArgument(0); t.setId(2L); return t; });
 
         // When
-        TeacherDTO out = service.create(new TeacherDTO(null, "James", "Doe", "james.doe@school.org", null));
+        TeacherDTO out = service.create(new TeacherDTO(null, "James", "Doe", "james.doe@school.org", null, DID));
 
         // Then
         assertEquals("jadoe", out.username());
+        assertEquals(DID, out.districtId());
     }
 
     @Test
@@ -91,8 +111,9 @@ class TeacherServiceTest {
 
         when(repo.save(any())).thenAnswer(inv -> { Teacher t = inv.getArgument(0); t.setId(3L); return t; });
 
-        TeacherDTO out = service.create(new TeacherDTO(null, "Jane", "Doe", "jane.doe@school.org", null));
+        TeacherDTO out = service.create(new TeacherDTO(null, "Jane", "Doe", "jane.doe@school.org", null, DID));
         assertEquals("jadoe2", out.username());
+        assertEquals(DID, out.districtId());
     }
 
     @Test
@@ -102,15 +123,16 @@ class TeacherServiceTest {
         when(repo.existsByUsername("jnunez")).thenReturn(false);
         when(repo.save(any())).thenAnswer(inv -> { Teacher t = inv.getArgument(0); t.setId(4L); return t; });
 
-        TeacherDTO out = service.create(new TeacherDTO(null, "José", "Núñez", "jose.nunez@school.org", null));
+        TeacherDTO out = service.create(new TeacherDTO(null, "José", "Núñez", "jose.nunez@school.org", null, DID));
         assertEquals("jnunez", out.username());
+        assertEquals(DID, out.districtId());
     }
 
     @Test
     void create_conflictOnEmail_throws409() {
         when(repo.existsByEmail("dup@school.org")).thenReturn(true);
         ResponseStatusException ex = assertThrows(ResponseStatusException.class, () ->
-                service.create(new TeacherDTO(null, "A", "B", "dup@school.org", null))
+                service.create(new TeacherDTO(null, "A", "B", "dup@school.org", null, DID))
         );
         assertEquals(HttpStatus.CONFLICT, ex.getStatusCode());
     }
@@ -125,15 +147,17 @@ class TeacherServiceTest {
         existing.setEmail("john.doe@school.org");
         existing.setUsername("jdoe");
         existing.setPasswordHash("$2a$something");
+        // give it a district to keep mapper happy
+        District d = new District(); d.setDistrictId(DID); existing.setDistrict(d);
 
         when(repo.findById(10L)).thenReturn(Optional.of(existing));
         when(repo.existsByEmail("johnny.doe@school.org")).thenReturn(false);
 
-        TeacherDTO out = service.update(10L, new TeacherDTO(null, "Johnny", "Doe", "johnny.doe@school.org", null));
+        TeacherDTO out = service.update(10L, new TeacherDTO(null, "Johnny", "Doe", "johnny.doe@school.org", null, DID));
         assertEquals("Johnny", out.firstName());
         assertEquals("johnny.doe@school.org", out.email());
-        // username unchanged by default
-        assertEquals("jdoe", out.username());
+        assertEquals("jdoe", out.username()); // unchanged
+        assertEquals(DID, out.districtId());
     }
 
     @Test
@@ -145,12 +169,13 @@ class TeacherServiceTest {
         existing.setEmail("john.doe@school.org");
         existing.setUsername("jdoe");
         existing.setPasswordHash("$2a$something");
+        District d = new District(); d.setDistrictId(DID); existing.setDistrict(d);
 
         when(repo.findById(11L)).thenReturn(Optional.of(existing));
         when(repo.existsByEmail("taken@school.org")).thenReturn(true);
 
         ResponseStatusException ex = assertThrows(ResponseStatusException.class, () ->
-                service.update(11L, new TeacherDTO(null, "John", "Doe", "taken@school.org", null))
+                service.update(11L, new TeacherDTO(null, "John", "Doe", "taken@school.org", null, DID))
         );
         assertEquals(HttpStatus.CONFLICT, ex.getStatusCode());
     }
@@ -166,15 +191,16 @@ class TeacherServiceTest {
             t.setEmail("f" + i + ".l" + i + "@school.org");
             t.setUsername("fl" + i);
             t.setPasswordHash("hash");
+            District d = new District(); d.setDistrictId(DID); t.setDistrict(d);
             db.add(t);
         }
         when(repo.findAll()).thenReturn(db);
 
         var list = service.findAll();
-        // beginner-style loop per your preference
         int count = 0;
         for (int i = 0; i < list.size(); i++) {
             assertNotNull(list.get(i).id());
+            assertEquals(DID, list.get(i).districtId());
             count++;
         }
         assertEquals(3, count);
@@ -201,4 +227,3 @@ class TeacherServiceTest {
         verify(repo).deleteById(1L);
     }
 }
-

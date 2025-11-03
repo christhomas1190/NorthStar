@@ -1,7 +1,6 @@
 package io.northstar.behavior.service;
 
 import io.northstar.behavior.dto.AdminDTO;
-
 import java.util.List;
 
 public interface AdminService {

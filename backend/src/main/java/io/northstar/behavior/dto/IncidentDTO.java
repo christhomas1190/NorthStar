@@ -12,5 +12,4 @@ public record IncidentDTO(
         OffsetDateTime occurredAt,
         OffsetDateTime createdAt,
         Long districtId
-
 ) {}

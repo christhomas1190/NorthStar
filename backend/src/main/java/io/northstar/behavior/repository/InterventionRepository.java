@@ -1,7 +1,6 @@
 package io.northstar.behavior.repository;
 
 import io.northstar.behavior.model.Intervention;
-import org.hibernate.query.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

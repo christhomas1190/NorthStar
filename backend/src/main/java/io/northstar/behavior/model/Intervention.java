@@ -44,6 +44,7 @@ public class Intervention {
     @Column(nullable = false)
     private OffsetDateTime createdAt;
 
+
     public Long getId() {
         return id;
     }
@@ -56,10 +57,9 @@ public class Intervention {
         return student;
     }
 
-    public void setStudent(Student student) {
+    public void setStudent(Student student) {  // <-- take a Student
         this.student = student;
     }
-
     public String getTier() {
         return tier;
     }
@@ -115,4 +115,14 @@ public class Intervention {
     public void setCreatedAt(OffsetDateTime createdAt) {
         this.createdAt = createdAt;
     }
+
+    public District getDistrict() {
+        return district;
+    }
+
+    public void setDistrict(District district) {
+        this.district = district;
+    }
+
+
 }

@@ -4,9 +4,7 @@ import io.northstar.behavior.dto.CreateIncidentRequest;
 import io.northstar.behavior.dto.IncidentDTO;
 import io.northstar.behavior.dto.IncidentSummaryDTO;
 import io.northstar.behavior.model.Incident;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
-import org.springframework.stereotype.Service;
+
 
 import java.util.List;
 
