@@ -33,7 +33,11 @@ public class District {
 
     @Column(nullable = true)
     private String contactName;
+    @Version
+    private Long version;
 
+    @Column(name="max_schools", nullable=false)
+    private int maxSchools = 100;
 
     public Long getDistrictId() { return districtId; }
     public void setDistrictId(Long districtId) { this.districtId = districtId; }
@@ -58,4 +62,22 @@ public class District {
 
     public String getContactName() { return contactName; }
     public void setContactName(String contactName) { this.contactName = contactName; }
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
+    }
+
+    public int getMaxSchools() {
+        return maxSchools;
+    }
+
+    public void setMaxSchools(int maxSchools) {
+        this.maxSchools = maxSchools;
+    }
+
+
 }

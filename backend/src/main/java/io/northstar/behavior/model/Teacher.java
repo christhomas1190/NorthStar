@@ -33,6 +33,15 @@ public class Teacher {
     @JoinColumn(name="district_id", nullable=false)
     private District district;
 
+
+
+    @Column(name = "district_id", insertable = false, updatable = false)
+    private Long districtId;
+
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "school_id", nullable = false)
+    private School school;
+
     public Long getId() {
         return id;
     }
@@ -89,5 +98,20 @@ public class Teacher {
         this.district = district;
     }
 
+    public School getSchool() {
+        return school;
+    }
 
+    public void setSchool(School school) {
+        this.school = school;
+    }
+
+
+    public Long getDistrictId() {
+        return districtId;
+    }
+
+    public void setDistrictId(Long districtId) {
+        this.districtId = districtId;
+    }
 }

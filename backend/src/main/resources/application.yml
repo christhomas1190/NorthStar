@@ -4,6 +4,16 @@ server:
     default-teacher-password: "Teach!2025#"
     default-admin-password: "Admin!2025#"
 
+# Expose actuator endpoints (top-level block)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
 # ===== Default: local dev on H2 (PERSISTENT FILE) =====
 spring:
   datasource:
@@ -13,7 +23,7 @@ spring:
     password:
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: create-drop   # (you added this)
     show-sql: true
     properties:
       hibernate.format_sql: true

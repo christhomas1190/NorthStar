@@ -1,6 +1,7 @@
 package io.northstar.behavior.service;
 
 import io.northstar.behavior.dto.DistrictDTO;
+import io.northstar.behavior.dto.DistrictLimitDTO;
 
 import java.util.List;
 

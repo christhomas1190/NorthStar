@@ -39,6 +39,10 @@ public class Student {
     @JoinColumn(name = "district_id", nullable = false)
     private District district;
 
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "school_id", nullable = false)
+    private School school;
+
     public Student() {}
 
     // getters/setters
@@ -69,5 +73,13 @@ public class Student {
 
     public void setDistrict(District district) {
         this.district = district;
+    }
+
+    public School getSchool() {
+        return school;
+    }
+
+    public void setSchool(School school) {
+        this.school = school;
     }
 }
