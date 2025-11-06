@@ -54,6 +54,7 @@ public class IncidentServiceImpl implements IncidentService {
         inc.setStudent(s);
         inc.setStudentId(s.getId());
         inc.setDistrict(s.getDistrict());
+        inc.setSchool(s.getSchool()); // ✅ tie to the student's school
         inc.setCategory(req.category());
         inc.setDescription(req.description());
         inc.setSeverity(req.severity());
@@ -114,6 +115,7 @@ public class IncidentServiceImpl implements IncidentService {
         inc.setStudent(s);
         inc.setStudentId(s.getId());
         inc.setDistrict(s.getDistrict());
+        inc.setSchool(s.getSchool());
         inc.setCategory(req.category());
         inc.setDescription(req.description());
         inc.setSeverity(req.severity());

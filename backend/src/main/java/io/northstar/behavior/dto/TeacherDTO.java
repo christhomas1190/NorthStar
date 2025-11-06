@@ -6,6 +6,6 @@ public record TeacherDTO(
         String lastName,
         String email,
         String username,
-        Long districtId
-
+        Long districtId,
+        Long schoolId
 ) {}

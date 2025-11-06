@@ -1,13 +1,18 @@
 package io.northstar.behavior.service;
 
+import io.northstar.behavior.dto.CreateStudentRequest;
 import io.northstar.behavior.dto.StudentDTO;
-import io.northstar.behavior.model.Student;
 
 import java.util.List;
 
 public interface StudentService {
+        // New: create with schoolId
+        StudentDTO create(CreateStudentRequest req);
+
+        // Legacy path (kept for now)
         StudentDTO create(StudentDTO dto);
-        List<StudentDTO> findAll();             // district-scoped
+
+        List<StudentDTO> findAll();
         StudentDTO findById(Long id);
         StudentDTO update(Long id, StudentDTO dto);
         void delete(Long id);

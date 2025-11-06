@@ -7,5 +7,6 @@ public record AdminDTO(
         String email,
         String userName,
         String permissionTag,
-        Long districtId
+        Long districtId,
+        Long schoolId
 ) {}

@@ -1,19 +1,15 @@
+// src/main/java/io/northstar/behavior/controller/StudentController.java
 package io.northstar.behavior.controller;
 
-import io.northstar.behavior.dto.*;
-
-
+import io.northstar.behavior.dto.CreateStudentRequest;
+import io.northstar.behavior.dto.StudentDTO;
 import io.northstar.behavior.service.StudentService;
-
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -26,10 +22,11 @@ public class StudentController {
         this.students = students;
     }
 
+    // ✅ Now takes CreateStudentRequest with schoolId
     @PostMapping
-    public ResponseEntity<StudentDTO> create(@RequestBody StudentDTO body) {
+    public ResponseEntity<StudentDTO> create(@Valid @RequestBody CreateStudentRequest body) {
         StudentDTO saved = students.create(body);
-        return ResponseEntity.status(HttpStatus.CREATED).body(saved); // <<< 201 Created
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
     @GetMapping

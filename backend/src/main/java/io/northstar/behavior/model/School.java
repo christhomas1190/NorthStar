@@ -11,23 +11,24 @@ import jakarta.persistence.*;
 )
 public class School {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long schoolId; // << was id
 
     @Column(nullable=false)
     private String name;
 
-    // Parent tenant node
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "district_id", nullable = false)
     private District district;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getSchoolId() { return schoolId; }
+    public void setSchoolId(Long schoolId) { this.schoolId = schoolId; }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
     public District getDistrict() { return district; }
     public void setDistrict(District district) { this.district = district; }
+
 }

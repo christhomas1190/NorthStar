@@ -26,7 +26,11 @@ public class SchoolServiceImpl implements SchoolService {
     }
 
     private static SchoolDTO toDto(School s) {
-        return new SchoolDTO(s.getId(), s.getName(), s.getDistrict().getDistrictId());
+        return new SchoolDTO(
+                s.getSchoolId(),                    // << was getId()
+                s.getName(),
+                s.getDistrict().getDistrictId()     // << was getId()
+        );
     }
 
     @Override
@@ -52,7 +56,7 @@ public class SchoolServiceImpl implements SchoolService {
     @Override
     @Transactional(readOnly = true)
     public List<SchoolDTO> listByDistrict(Long districtId) {
-        List<School> all = schools.findByDistrict_Id(districtId);
+        List<School> all = schools.findByDistrict_DistrictId(districtId); // << fixed
         List<SchoolDTO> out = new ArrayList<>();
         for (School s : all) out.add(toDto(s));
         return out;

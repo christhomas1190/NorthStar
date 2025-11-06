@@ -11,6 +11,8 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.northstar.behavior.model.District.slugify;
+
 
 @Service
 @Transactional
@@ -48,6 +50,7 @@ public class DistrictServiceImpl implements DistrictService {
 
         District d = new District();
         d.setDistrictName(name);
+        d.setSlug(slugify(name));
 
         District saved = repo.save(d);
         return toDto(saved);

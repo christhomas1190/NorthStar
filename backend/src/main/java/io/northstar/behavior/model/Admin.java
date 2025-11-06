@@ -6,8 +6,8 @@ import jakarta.persistence.*;
 @Table(
         name = "admin",
         uniqueConstraints = {
-                @UniqueConstraint(name="uk_admin_email_per_district",    columnNames={"district_id","email"}),
-                @UniqueConstraint(name="uk_admin_username_per_district", columnNames={"district_id","username"})
+                @UniqueConstraint(name="uk_admin_email_per_school",    columnNames={"school_id","email"}),
+                @UniqueConstraint(name="uk_admin_username_per_school", columnNames={"school_id","username"})
         }
 )
 public class Admin {
@@ -25,9 +25,14 @@ public class Admin {
     @Column(nullable=false) private String passwordHash;
     @Column(nullable=false) private String permissionTag;
 
+    // keep district for easy scoping
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name="district_id", nullable=false)
     private District district;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name="school_id", nullable=false)
+    private School school;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -52,4 +57,7 @@ public class Admin {
 
     public District getDistrict() { return district; }
     public void setDistrict(District district) { this.district = district; }
+
+    public School getSchool() { return school; }
+    public void setSchool(School school) { this.school = school; }
 }

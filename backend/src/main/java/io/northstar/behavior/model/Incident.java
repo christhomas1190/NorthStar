@@ -1,6 +1,5 @@
 package io.northstar.behavior.model;
 
-import io.northstar.behavior.tenant.TenantContext;
 import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 
@@ -8,7 +7,6 @@ import java.time.OffsetDateTime;
 @Table(
         name = "incidents",
         uniqueConstraints = {
-                // optional: ensure uniqueness per district if you ever have external IDs
                 @UniqueConstraint(name = "uk_incident_id_per_district", columnNames = {"district_id", "id"})
         }
 )
@@ -22,30 +20,25 @@ public class Incident {
     private Student student;
 
     @Column(name = "student_id", insertable = false, updatable = false)
-    private Long studentId; // convenient scalar
+    private Long studentId;
 
-    @Column(nullable = false)
-    private String category;
+    @Column(nullable = false) private String category;
+    @Column(nullable = false, length = 1000) private String description;
+    @Column(nullable = false) private String severity;
+    @Column(nullable = false) private String reportedBy;
 
-    @Column(nullable = false, length = 1000)
-    private String description;
-
-    @Column(nullable = false)
-    private String severity;
-
-    @Column(nullable = false)
-    private String reportedBy;
-
-    @Column(nullable = false)
-    private OffsetDateTime occurredAt;
-
-    @Column(nullable = false)
-    private OffsetDateTime createdAt;
+    @Column(nullable = false) private OffsetDateTime occurredAt;
+    @Column(nullable = false) private OffsetDateTime createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name="district_id", nullable=false)
     private District district;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name="school_id", nullable=false)
+    private School school;
+
+    // getters/setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -73,11 +66,9 @@ public class Incident {
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
 
-    public District getDistrict() {
-        return district;
-    }
+    public District getDistrict() { return district; }
+    public void setDistrict(District district) { this.district = district; }
 
-    public void setDistrict(District district) {
-        this.district = district;
-    }
+    public School getSchool() { return school; }
+    public void setSchool(School school) { this.school = school; }
 }

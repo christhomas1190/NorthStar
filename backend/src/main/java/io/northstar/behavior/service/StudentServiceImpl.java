@@ -1,13 +1,16 @@
 package io.northstar.behavior.service;
 
+import io.northstar.behavior.dto.CreateStudentRequest;
 import io.northstar.behavior.dto.IncidentSummaryDTO;
 import io.northstar.behavior.dto.InterventionSummaryDTO;
 import io.northstar.behavior.dto.StudentDTO;
 import io.northstar.behavior.model.District;
 import io.northstar.behavior.model.Incident;
 import io.northstar.behavior.model.Intervention;
+import io.northstar.behavior.model.School;
 import io.northstar.behavior.model.Student;
 import io.northstar.behavior.repository.DistrictRepository;
+import io.northstar.behavior.repository.SchoolRepository;
 import io.northstar.behavior.repository.StudentRepository;
 import io.northstar.behavior.tenant.TenantContext;
 import jakarta.transaction.Transactional;
@@ -24,13 +27,17 @@ public class StudentServiceImpl implements StudentService {
 
     private final StudentRepository repo;
     private final DistrictRepository districtRepo;
+    private final SchoolRepository schools;
 
-    public StudentServiceImpl(StudentRepository repo, DistrictRepository districtRepo) {
+    public StudentServiceImpl(StudentRepository repo,
+                              DistrictRepository districtRepo,
+                              SchoolRepository schools) {
         this.repo = repo;
         this.districtRepo = districtRepo;
+        this.schools = schools;
     }
 
-    // ---------- MAPPERS (for-loops) ----------
+    // ---------- helpers (keep private; not in interface) ----------
 
     private List<IncidentSummaryDTO> toIncidentSummaries(List<Incident> incs) {
         List<IncidentSummaryDTO> out = new ArrayList<>();
@@ -72,6 +79,7 @@ public class StudentServiceImpl implements StudentService {
     private StudentDTO toDto(Student s) {
         long id = (s.getId() == null ? 0L : s.getId());
         Long did = (s.getDistrict() != null) ? s.getDistrict().getDistrictId() : null;
+        Long sid = (s.getSchool() != null) ? s.getSchool().getSchoolId() : null;
 
         return new StudentDTO(
                 id,
@@ -81,28 +89,62 @@ public class StudentServiceImpl implements StudentService {
                 s.getGrade(),
                 toIncidentSummaries(s.getIncidents()),
                 toInterventionSummaries(s.getInterventions()),
-                did
+                did,
+                sid
         );
     }
 
-    // ---------- CRUD (district-aware) ----------
-
+    // ---------- create with schoolId (new path) ----------
     @Override
-    public StudentDTO create(StudentDTO dto) {
-        if (dto == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "body is required");
-        }
-        if (dto.firstName() == null || dto.firstName().isBlank()
-                || dto.lastName() == null || dto.lastName().isBlank()
-                || dto.studentId() == null || dto.studentId().isBlank()
-                || dto.grade() == null || dto.grade().isBlank()) {
+    public StudentDTO create(CreateStudentRequest req) {
+        if (req == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "body is required");
+        if (req.firstName() == null || req.firstName().isBlank()
+                || req.lastName() == null || req.lastName().isBlank()
+                || req.studentId() == null || req.studentId().isBlank()
+                || req.grade() == null || req.grade().isBlank()
+                || req.schoolId() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "missing required fields");
         }
 
         Long districtId = TenantContext.getDistrictId();
-        if (districtId == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "district not found in context");
+        if (districtId == null) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "district not found in context");
+
+        if (repo.existsByStudentIdAndDistrict_DistrictId(req.studentId().trim(), districtId)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "student already exists in district");
         }
+
+        // Verify the school belongs to the current district
+        School school = schools.findById(req.schoolId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "school not found"));
+        if (school.getDistrict() == null || !districtId.equals(school.getDistrict().getDistrictId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "school not in current district");
+        }
+
+        Student s = new Student();
+        s.setFirstName(req.firstName().trim());
+        s.setLastName(req.lastName().trim());
+        s.setStudentId(req.studentId().trim());
+        s.setGrade(req.grade().trim());
+        s.setDistrict(districtRepo.getReferenceById(districtId));
+        s.setSchool(school);
+
+        return toDto(repo.save(s));
+    }
+
+    // ---------- legacy create (DTO) ----------
+    @Override
+    public StudentDTO create(StudentDTO dto) {
+        if (dto == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "body is required");
+
+        // If schoolId is present in the DTO, delegate to the new path
+        if (dto.schoolId() != null) {
+            return create(new CreateStudentRequest(
+                    dto.firstName(), dto.lastName(), dto.studentId(), dto.grade(), dto.schoolId()
+            ));
+        }
+
+        Long districtId = TenantContext.getDistrictId();
+        if (districtId == null) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "district not found in context");
 
         if (repo.existsByStudentIdAndDistrict_DistrictId(dto.studentId().trim(), districtId)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "student already exists in district");
@@ -114,23 +156,19 @@ public class StudentServiceImpl implements StudentService {
         s.setStudentId(dto.studentId().trim());
         s.setGrade(dto.grade().trim());
         s.setDistrict(districtRepo.getReferenceById(districtId));
+        // no school set in this legacy path
 
-        Student saved = repo.save(s);
-        return toDto(saved);
+        return toDto(repo.save(s));
     }
 
     @Override
     public List<StudentDTO> findAll() {
         Long districtId = TenantContext.getDistrictId();
-        if (districtId == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "district not found in context");
-        }
+        if (districtId == null) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "district not found in context");
 
         List<Student> list = repo.findByDistrict_DistrictId(districtId);
         List<StudentDTO> out = new ArrayList<>();
-        for (int i = 0; i < list.size(); i++) {
-            out.add(toDto(list.get(i)));
-        }
+        for (int i = 0; i < list.size(); i++) out.add(toDto(list.get(i)));
         return out;
     }
 
@@ -149,10 +187,10 @@ public class StudentServiceImpl implements StudentService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "student not found"));
 
         if (dto.firstName() != null && !dto.firstName().isBlank()) s.setFirstName(dto.firstName().trim());
-        if (dto.lastName() != null && !dto.lastName().isBlank()) s.setLastName(dto.lastName().trim());
-        if (dto.grade() != null && !dto.grade().isBlank()) s.setGrade(dto.grade().trim());
+        if (dto.lastName() != null && !dto.lastName().isBlank())   s.setLastName(dto.lastName().trim());
+        if (dto.grade() != null && !dto.grade().isBlank())         s.setGrade(dto.grade().trim());
 
-        return toDto(s); // managed entity; saved on tx commit
+        return toDto(s); // managed entity; flushed on commit
     }
 
     @Override

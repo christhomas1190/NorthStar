@@ -1,12 +1,13 @@
-// src/main/java/io/northstar/behavior/service/TeacherServiceImpl.java
 package io.northstar.behavior.service;
 
 import io.northstar.behavior.dto.TeacherDTO;
+import io.northstar.behavior.model.School;
 import io.northstar.behavior.model.Teacher;
 import io.northstar.behavior.repository.DistrictRepository;
+import io.northstar.behavior.repository.SchoolRepository;   // <-- add
 import io.northstar.behavior.repository.TeacherRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Value;  // <-- keep this
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -20,24 +21,30 @@ public class TeacherServiceImpl implements TeacherService {
 
     private final TeacherRepository repo;
     private final DistrictRepository districtRepository;
+    private final SchoolRepository schoolRepository;       // <-- add
 
     @Value("${app.default-teacher-password:Teach!2025#}")
     private String defaultTeacherPassword;
 
-    public TeacherServiceImpl(TeacherRepository repo, DistrictRepository districtRepository) {
+    public TeacherServiceImpl(TeacherRepository repo,
+                              DistrictRepository districtRepository,
+                              SchoolRepository schoolRepository) {   // <-- add
         this.repo = repo;
         this.districtRepository = districtRepository;
+        this.schoolRepository = schoolRepository;                     // <-- add
     }
 
     private TeacherDTO toDto(Teacher t){
         Long did = (t.getDistrict() != null) ? t.getDistrict().getDistrictId() : null;
+        Long sid = (t.getSchool()   != null) ? t.getSchool().getSchoolId()           : null; // <-- add
         return new TeacherDTO(
                 t.getId(),
                 t.getFirstName(),
                 t.getLastName(),
                 t.getEmail(),
                 t.getUsername(),
-                did
+                did,
+                sid                                               // <-- add
         );
     }
 
@@ -83,9 +90,26 @@ public class TeacherServiceImpl implements TeacherService {
         if (dto.email() == null || dto.email().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "email is required");
         }
+        if (dto.districtId() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "districtId is required");
+        }
+        if (dto.schoolId() == null) {                                     // <-- require school
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "schoolId is required");
+        }
+
         String email = dto.email().trim().toLowerCase();
         if (repo.existsByEmail(email)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "email already exists");
+        }
+
+        // load refs
+        var district = districtRepository.getReferenceById(dto.districtId());
+        School school = schoolRepository.findById(dto.schoolId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "school not found"));
+
+        // (optional) district-school consistency check
+        if (school.getDistrict() == null || !district.getDistrictId().equals(school.getDistrict().getDistrictId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "school not in given district");
         }
 
         Teacher t = new Teacher();
@@ -94,11 +118,8 @@ public class TeacherServiceImpl implements TeacherService {
         t.setEmail(email);
         t.setUsername(generateUsername(t.getFirstName(), t.getLastName()));
         t.setPasswordHash(bcrypt(defaultTeacherPassword));
-
-        // >>> add this: set district from dto.districtId() if provided
-        if (dto.districtId() != null) {
-            t.setDistrict(districtRepository.getReferenceById(dto.districtId()));
-        }
+        t.setDistrict(district);
+        t.setSchool(school);                                              // <-- set school
 
         return toDto(repo.save(t));
     }
@@ -125,17 +146,21 @@ public class TeacherServiceImpl implements TeacherService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "teacher not found"));
 
         if (dto.firstName() != null && !dto.firstName().isBlank()) t.setFirstName(dto.firstName().trim());
-        if (dto.lastName() != null && !dto.lastName().isBlank())   t.setLastName(dto.lastName().trim());
-        if (dto.email() != null && !dto.email().isBlank()) {
+        if (dto.lastName()  != null && !dto.lastName().isBlank())  t.setLastName(dto.lastName().trim());
+        if (dto.email()     != null && !dto.email().isBlank()) {
             String newEmail = dto.email().trim().toLowerCase();
             if (!newEmail.equals(t.getEmail()) && repo.existsByEmail(newEmail)) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "email already exists");
             }
             t.setEmail(newEmail);
         }
-        // optional: allow district change when dto provides it
         if (dto.districtId() != null) {
             t.setDistrict(districtRepository.getReferenceById(dto.districtId()));
+        }
+        if (dto.schoolId() != null) {                                     // <-- allow school change
+            School school = schoolRepository.findById(dto.schoolId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "school not found"));
+            t.setSchool(school);
         }
 
         return toDto(t);
