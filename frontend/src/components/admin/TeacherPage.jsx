@@ -4,16 +4,24 @@ import Page from "@/components/layout/Page";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/state/auth.jsx";
 
 export default function TeacherPage() {
   const navigate = useNavigate();
+  const { activeDistrictId, activeSchoolId } = useAuth();
 
   const [teachers, setTeachers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const [editingId, setEditingId] = useState(null);
-  const [editForm, setEditForm] = useState({ firstName: "", lastName: "", email: "" });
+  const [editForm, setEditForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    districtId: "",
+    schoolId: "",
+  });
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
 
@@ -25,9 +33,7 @@ export default function TeacherPage() {
       if (!res.ok) throw new Error(`Failed to load teachers (${res.status})`);
       const data = await res.json();
       const list = [];
-      for (let i = 0; i < data.length; i++) {
-        list.push(data[i]);
-      }
+      for (let i = 0; i < data.length; i++) list.push(data[i]);
       setTeachers(list);
     } catch (e) {
       setError(String(e.message || e));
@@ -44,11 +50,19 @@ export default function TeacherPage() {
       firstName: t.firstName || "",
       lastName: t.lastName || "",
       email: t.email || "",
+      districtId: t.districtId ?? activeDistrictId ?? "",
+      schoolId: t.schoolId ?? activeSchoolId ?? "",
     });
   }
   function cancelEdit() {
     setEditingId(null);
-    setEditForm({ firstName: "", lastName: "", email: "" });
+    setEditForm({
+      firstName: "",
+      lastName: "",
+      email: "",
+      districtId: "",
+      schoolId: "",
+    });
   }
   function onEditChange(e) {
     const { name, value } = e.target;
@@ -60,10 +74,18 @@ export default function TeacherPage() {
     setSaving(true);
     setError("");
     try {
+      const payload = {
+        firstName: editForm.firstName.trim(),
+        lastName: editForm.lastName.trim(),
+        email: editForm.email.trim(),
+        districtId: Number(editForm.districtId),
+        schoolId: Number(editForm.schoolId),
+      };
+
       const res = await fetch(`/api/teachers/${editingId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editForm),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error((await res.text()) || `Failed to save (${res.status})`);
       await load();
@@ -143,6 +165,24 @@ export default function TeacherPage() {
                         onChange={onEditChange}
                         required
                       />
+                      <div className="grid grid-cols-2 gap-3">
+                        <Input
+                          name="districtId"
+                          type="number"
+                          placeholder="District ID"
+                          value={editForm.districtId}
+                          onChange={onEditChange}
+                          required
+                        />
+                        <Input
+                          name="schoolId"
+                          type="number"
+                          placeholder="School ID"
+                          value={editForm.schoolId}
+                          onChange={onEditChange}
+                          required
+                        />
+                      </div>
                       <div className="flex gap-2">
                         <Button onClick={saveEdit} disabled={saving}>
                           {saving ? "Saving..." : "Save"}
@@ -161,6 +201,8 @@ export default function TeacherPage() {
                         <div className="text-sm text-muted-foreground">
                           {t.email}
                           {t.username ? <> · <span className="font-mono">{t.username}</span></> : null}
+                          {t.districtId ? <> · Dist #{t.districtId}</> : null}
+                          {t.schoolId ? <> · School #{t.schoolId}</> : null}
                         </div>
                       </div>
                       <div className="flex gap-2">

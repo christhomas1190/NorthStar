@@ -1,8 +1,9 @@
-// src/App.jsx
-import { Routes, Route, Navigate } from "react-router-dom";
+import React from "react";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 
 // Layout
 import AppShell from "@/components/layout/AppShell";
+import { Protected, useAuth } from "@/state/auth.jsx";
 
 // Admin
 import AdminDashboard from "@/components/admin/AdminDashboard.jsx";
@@ -15,33 +16,123 @@ import TeachersPage from "@/components/admin/TeacherPage.jsx";
 import AdminTeacherCreate from "@/components/admin/AdminTeacherCreate.jsx";
 
 // Other sections
+import LoginPage from "@/components/auth/LoginPage.jsx";
 import ReportsPage from "@/components/reports/ReportsPage.jsx";
 import TeacherDashboard from "@/components/teacher/TeacherDashboard.jsx";
+
+/** Redirect "/" to a sensible home after login; otherwise go to /login */
+function HomeRedirect() {
+  const { user } = useAuth();
+  const location = useLocation();
+  if (!user) return <Navigate to="/login" replace state={{ from: location }} />;
+  return <Navigate to={user.role === "Teacher" ? "/teacher" : "/admin"} replace />;
+}
 
 export default function App() {
   return (
     <Routes>
-      {/* Default redirect */}
-      <Route path="/" element={<Navigate to="/admin" replace />} />
+      {/* Root -> role-based home or /login */}
+      <Route path="/" element={<HomeRedirect />} />
 
-      {/* Admin core */}
-      <Route path="/admin" element={<AppShell><AdminDashboard /></AppShell>} />
-      <Route path="/admin/import-students" element={<AppShell><ImportStudents /></AppShell>} />
-      <Route path="/admin/define-behaviors" element={<AppShell><DefineBehaviorCategories /></AppShell>} />
-      <Route path="/admin/user-role-management" element={<AppShell><UserRoleManagement /></AppShell>} />
-      <Route path="/admin/escalation-rules" element={<AppShell><SetEscalationRules /></AppShell>} />
-      <Route path="/admin/interventions" element={<AppShell><ManageIntervention /></AppShell>} />
+      {/* Login stays OUTSIDE AppShell (no header before auth) */}
+      <Route path="/login" element={<LoginPage />} />
 
-      {/* Teachers */}
-      <Route path="/admin/teachers" element={<AppShell><TeachersPage /></AppShell>} />
-      <Route path="/admin/teachers/new" element={<AppShell><AdminTeacherCreate /></AppShell>} />
+      {/* Admin area (Admin-only) */}
+      <Route
+        path="/admin"
+        element={
+          <Protected roles={["Admin"]}>
+            <AppShell><AdminDashboard /></AppShell>
+          </Protected>
+        }
+      />
+      <Route
+        path="/admin/import-students"
+        element={
+          <Protected roles={["Admin"]}>
+            <AppShell><ImportStudents /></AppShell>
+          </Protected>
+        }
+      />
+      <Route
+        path="/admin/define-behaviors"
+        element={
+          <Protected roles={["Admin"]}>
+            <AppShell><DefineBehaviorCategories /></AppShell>
+          </Protected>
+        }
+      />
+      <Route
+        path="/admin/user-role-management"
+        element={
+          <Protected roles={["Admin"]}>
+            <AppShell><UserRoleManagement /></AppShell>
+          </Protected>
+        }
+      />
+      <Route
+        path="/admin/escalation-rules"
+        element={
+          <Protected roles={["Admin"]}>
+            <AppShell><SetEscalationRules /></AppShell>
+          </Protected>
+        }
+      />
+      <Route
+        path="/admin/interventions"
+        element={
+          <Protected roles={["Admin"]}>
+            <AppShell><ManageIntervention /></AppShell>
+          </Protected>
+        }
+      />
 
-      {/* Other sections */}
-      <Route path="/reports" element={<AppShell><ReportsPage /></AppShell>} />
-      <Route path="/teacher" element={<AppShell><TeacherDashboard /></AppShell>} />
+      {/* Teachers CRUD page is admin-only, but if you want counselors too, add them here */}
+      <Route
+        path="/admin/teachers"
+        element={
+          <Protected roles={["Admin"]}>
+            <AppShell><TeachersPage /></AppShell>
+          </Protected>
+        }
+      />
+      <Route
+        path="/admin/teachers/new"
+        element={
+          <Protected roles={["Admin"]}>
+            <AppShell><AdminTeacherCreate /></AppShell>
+          </Protected>
+        }
+      />
 
-      {/* Catch-all -> Admin */}
-      <Route path="*" element={<Navigate to="/admin" replace />} />
+      {/* Reports — currently admin-only; widen roles if you like */}
+      <Route
+        path="/reports"
+        element={
+          <Protected roles={["Admin"]}>
+            <AppShell><ReportsPage /></AppShell>
+          </Protected>
+        }
+      />
+
+      {/* Teacher dashboard — allow Teachers (and Admins if you want to peek) */}
+      <Route
+        path="/teacher"
+        element={
+          <Protected roles={["Teacher", "Admin"]}>
+            <AppShell><TeacherDashboard /></AppShell>
+          </Protected>
+        }
+      />
+
+      {/* Unauthorized helper */}
+      <Route
+        path="/unauthorized"
+        element={<AppShell><div className="p-6">Unauthorized</div></AppShell>}
+      />
+
+      {/* Catch-all */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

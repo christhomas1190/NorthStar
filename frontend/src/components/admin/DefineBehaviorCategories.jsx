@@ -11,18 +11,13 @@
    // form state
    const [editId, setEditId] = useState(null);
    const [saving, setSaving] = useState(false);
-   const [form, setForm] = useState({
-     name: "",
-     severity: "MINOR", // MINOR | MAJOR
-     tier: "Tier 1",    // Tier 1 | Tier 2 | Tier 3
-     description: "",
-   });
+   const [form, setForm] = useState({ name:"", severity:"Minor", tier:"Tier 1", description:"" });
 
    // load categories
    useEffect(() => {
      (async () => {
        try {
-         const res = await fetch("/api/behavior-categories");
+         const res = await fetch("/api/behaviors", { headers: { "X-District-Id": "" } });
          const data = await res.json();
          setItems(Array.isArray(data) ? data : []);
        } catch (e) {
@@ -49,7 +44,7 @@
      setSaving(true);
      try {
        const method = editId ? "PUT" : "POST";
-       const url = editId ? `/api/behavior-categories/${editId}` : "/api/behavior-categories";
+       const url = editId ? `/api/behaviors/${editId}` : "/api/behaviors";
        const res = await fetch(url, {
          method,
          headers: { "Content-Type": "application/json" },
@@ -128,8 +123,8 @@
                    onChange={onChange}
                    className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm"
                  >
-                   <option value="MINOR">MINOR</option>
-                   <option value="MAJOR">MAJOR</option>
+                   <option value="Minor">Minor</option>
+                   <option value="Major">MAJOR</option>
                  </select>
                </div>
 

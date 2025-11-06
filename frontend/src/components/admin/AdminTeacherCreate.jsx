@@ -1,18 +1,37 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Page from "@/components/layout/Page";
 import PageTabs from "@/components/layout/PageTabs";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/state/auth.jsx";
 
 export default function AdminTeacherCreate() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ firstName: "", lastName: "", email: "" });
+  const { activeDistrictId, activeSchoolId } = useAuth();
+
+  const [form, setForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    districtId: "",
+    schoolId: "",
+  });
+
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [created, setCreated] = useState(null); // { id, firstName, lastName, email, username }
   const [addAnother, setAddAnother] = useState(false);
+
+  // Prefill IDs from auth context so you don't type them every time
+  useEffect(() => {
+    setForm((prev) => ({
+      ...prev,
+      districtId: activeDistrictId || "",
+      schoolId: activeSchoolId || "",
+    }));
+  }, [activeDistrictId, activeSchoolId]);
 
   function update(e) {
     const { name, value } = e.target;
@@ -24,15 +43,20 @@ export default function AdminTeacherCreate() {
     setError("");
     setSubmitting(true);
     setCreated(null);
+
     try {
+      const payload = {
+        firstName: form.firstName.trim(),
+        lastName: form.lastName.trim(),
+        email: form.email.trim(),
+        districtId: Number(form.districtId),
+        schoolId: Number(form.schoolId),
+      };
+
       const r = await fetch("/api/teachers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          firstName: form.firstName,
-          lastName: form.lastName,
-          email: form.email,
-        }),
+        body: JSON.stringify(payload),
       });
       if (!r.ok) {
         const msg = await r.text();
@@ -40,8 +64,14 @@ export default function AdminTeacherCreate() {
       }
       const data = await r.json();
       setCreated(data);
+
       if (addAnother) {
-        setForm({ firstName: "", lastName: "", email: "" });
+        setForm((prev) => ({
+          ...prev,
+          firstName: "",
+          lastName: "",
+          email: "",
+        }));
       } else {
         // navigate("/admin/teachers"); // enable if you want an auto-redirect
       }
@@ -77,7 +107,7 @@ export default function AdminTeacherCreate() {
               <div className="mb-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-emerald-800 text-sm">
                 <div className="font-medium">Teacher created</div>
                 <div className="text-xs opacity-80">
-                  Username: <code>{created.username}</code> (password set to admin default)
+                  Username: <code>{created.username}</code> (password set to default)
                 </div>
               </div>
             )}
@@ -99,6 +129,7 @@ export default function AdminTeacherCreate() {
                   required
                 />
               </div>
+
               <Input
                 name="email"
                 type="email"
@@ -108,8 +139,27 @@ export default function AdminTeacherCreate() {
                 required
               />
 
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <Input
+                  name="districtId"
+                  type="number"
+                  placeholder="District ID"
+                  value={form.districtId}
+                  onChange={update}
+                  required
+                />
+                <Input
+                  name="schoolId"
+                  type="number"
+                  placeholder="School ID"
+                  value={form.schoolId}
+                  onChange={update}
+                  required
+                />
+              </div>
+
               <p className="text-xs text-slate-500">
-                Username is generated as first initial + last name. If taken, we'll try first two letters + last name, then add a number.
+                Username is generated as first initial + last name (falls back to append a number if taken).
               </p>
 
               <div className="flex items-center justify-between gap-3 pt-1">
@@ -136,7 +186,7 @@ export default function AdminTeacherCreate() {
         </Card>
 
         <div className="mt-4 text-xs text-slate-500">
-          The default password is configured by the administrator in the server settings and is not shown here.
+          Default password is configured on the server (BCrypt). It is not shown here.
         </div>
       </div>
     </Page>
