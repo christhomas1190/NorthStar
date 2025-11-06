@@ -42,7 +42,7 @@ public class AdminServiceImpl implements AdminService {
 
     private AdminDTO toDto(Admin a){
         Long did = (a.getDistrict() != null) ? a.getDistrict().getDistrictId() : null;
-        Long sid = (a.getSchool()   != null) ? a.getSchool().getSchoolId()           : null; // if you added school
+        Long sid = (a.getSchool()   != null) ? a.getSchool().getSchoolId()     : null;
         return new AdminDTO(
                 a.getId(),
                 a.getFirstName(),
@@ -51,7 +51,7 @@ public class AdminServiceImpl implements AdminService {
                 a.getUserName(),
                 a.getPermissionTag(),
                 did,
-                sid // if your AdminDTO has schoolId; if not, remove this and the param above
+                sid
         );
     }
 
@@ -59,34 +59,34 @@ public class AdminServiceImpl implements AdminService {
     public AdminDTO create(AdminDTO dto) {
         if (dto == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "body is required");
         if (dto.firstName() == null || dto.firstName().isBlank()
-                || dto.lastName() == null || dto.lastName().isBlank()
-                || dto.email() == null || dto.email().isBlank()
-                || dto.userName() == null || dto.userName().isBlank()
+                || dto.lastName()  == null || dto.lastName().isBlank()
+                || dto.email()     == null || dto.email().isBlank()
+                || dto.userName()  == null || dto.userName().isBlank()
                 || dto.permissionTag() == null || dto.permissionTag().isBlank()
-                || dto.districtId() == null) {
+                || dto.districtId() == null
+                || dto.schoolId()   == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "missing required fields");
+        }
+
+        var district = districts.getReferenceById(dto.districtId());
+        School school = schools.findById(dto.schoolId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "school not found"));
+
+        // safety: school must belong to provided district
+        if (school.getDistrict() == null ||
+                !district.getDistrictId().equals(school.getDistrict().getDistrictId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "school not in given district");
         }
 
         String email = dto.email().trim().toLowerCase();
         String user  = dto.userName().trim();
 
-        if (repo.existsByEmail(email)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "email already exists");
+        // uniqueness is per SCHOOL (matches your table constraints)
+        if (repo.existsByEmailAndSchool_SchoolId(email, school.getSchoolId())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "email already exists in this school");
         }
-        if (repo.existsByUserNameAndDistrict_DistrictId(user, dto.districtId())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "username already exists in district");
-        }
-
-        var district = districts.getReferenceById(dto.districtId());
-
-        School school = null;
-        if (dto.schoolId() != null) {
-            school = schools.findById(dto.schoolId())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "school not found"));
-            if (school.getDistrict() == null ||
-                    !district.getDistrictId().equals(school.getDistrict().getDistrictId())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "school not in given district");
-            }
+        if (repo.existsByUserNameAndSchool_SchoolId(user, school.getSchoolId())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "username already exists in this school");
         }
 
         Admin a = new Admin();
@@ -96,8 +96,8 @@ public class AdminServiceImpl implements AdminService {
         a.setUserName(user);
         a.setPermissionTag(dto.permissionTag().trim());
         a.setDistrict(district);
-        if (school != null) a.setSchool(school); // requires Admin entity to have a `School school` field
-        a.setPasswordHash(bcrypt(defaultAdminPassword)); // <<< CRITICAL: satisfies NOT NULL
+        a.setSchool(school); // NOT NULL column
+        a.setPasswordHash(bcrypt(defaultAdminPassword)); // NOT NULL column
 
         return toDto(repo.save(a));
     }
@@ -126,11 +126,15 @@ public class AdminServiceImpl implements AdminService {
         if (dto.email()     != null && !dto.email().isBlank())     a.setEmail(dto.email().trim().toLowerCase());
         if (dto.userName()  != null && !dto.userName().isBlank())  a.setUserName(dto.userName().trim());
         if (dto.permissionTag() != null && !dto.permissionTag().isBlank()) a.setPermissionTag(dto.permissionTag().trim());
-        if (dto.districtId() != null) a.setDistrict(districts.getReferenceById(dto.districtId()));
-        if (dto.schoolId()   != null) {
-            var school = schools.findById(dto.schoolId())
+
+        if (dto.districtId() != null) {
+            var d = districts.getReferenceById(dto.districtId());
+            a.setDistrict(d);
+        }
+        if (dto.schoolId() != null) {
+            var s = schools.findById(dto.schoolId())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "school not found"));
-            a.setSchool(school);
+            a.setSchool(s);
         }
 
         return toDto(a);

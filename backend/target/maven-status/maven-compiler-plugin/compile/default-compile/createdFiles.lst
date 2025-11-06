@@ -28,6 +28,7 @@ io/northstar/behavior/service/StudentServiceImpl.class
 io/northstar/behavior/service/AnalyticsService.class
 io/northstar/behavior/repository/TeacherRepository.class
 io/northstar/behavior/repository/AdminRepository.class
+io/northstar/behavior/config/ApiErrorAdvice.class
 io/northstar/behavior/dto/SchoolDTO.class
 io/northstar/behavior/controller/StudentController.class
 io/northstar/behavior/dto/DistrictDTO.class

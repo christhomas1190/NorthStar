@@ -42,6 +42,7 @@
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/repository/InterventionRepository.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/service/DistrictServiceImpl.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/model/Teacher.java
+/Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/config/ApiErrorAdvice.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/controller/InterventionController.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/dto/AdminDTO.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/service/IncidentServiceImpl.java
