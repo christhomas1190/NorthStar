@@ -1,6 +1,7 @@
 io/northstar/behavior/dto/CreateTeacherRequest.class
 io/northstar/behavior/service/DistrictService.class
 io/northstar/behavior/repository/DistrictRepository.class
+io/northstar/behavior/controller/EscalationRulesController.class
 io/northstar/behavior/model/Admin.class
 io/northstar/behavior/service/InterventionService.class
 io/northstar/behavior/service/TeacherService.class
@@ -15,12 +16,14 @@ io/northstar/behavior/controller/InterventionController.class
 io/northstar/behavior/NorthStarApplication.class
 io/northstar/behavior/model/Incident.class
 io/northstar/behavior/service/TeacherServiceImpl.class
+io/northstar/behavior/service/EscalationRulesServiceImpl.class
 io/northstar/behavior/service/BehaviorCategoryServiceImpl.class
 io/northstar/behavior/controller/SchoolController.class
 io/northstar/behavior/service/AdminServiceImpl.class
 io/northstar/behavior/dto/DistrictLimitDTO.class
 io/northstar/behavior/tenant/TenantFilter.class
 io/northstar/behavior/dto/TeacherDTO.class
+io/northstar/behavior/service/EscalationRulesService.class
 io/northstar/behavior/service/StudentService.class
 io/northstar/behavior/model/Teacher.class
 io/northstar/behavior/service/DistrictServiceImpl.class
@@ -36,9 +39,11 @@ io/northstar/behavior/model/Student.class
 io/northstar/behavior/service/AdminService.class
 io/northstar/behavior/service/SchoolServiceImpl.class
 io/northstar/behavior/service/SchoolService.class
+io/northstar/behavior/dto/EscalationRulesDTO.class
 io/northstar/behavior/dto/CreateSchoolRequest.class
 io/northstar/behavior/dto/StudentDTO.class
 io/northstar/behavior/controller/DistrictController.class
+io/northstar/behavior/repository/EscalationRulesRepository.class
 io/northstar/behavior/dto/CreateIncidentRequest.class
 io/northstar/behavior/config/SecurityConfig.class
 io/northstar/behavior/controller/AnalyticsController.class
@@ -60,6 +65,7 @@ io/northstar/behavior/config/WebCorsConfig.class
 io/northstar/behavior/model/District.class
 io/northstar/behavior/repository/BehaviorCategoryRepository.class
 io/northstar/behavior/service/AnalyticsServiceImpl.class
+io/northstar/behavior/model/EscalationRules.class
 io/northstar/behavior/controller/IncidentController.class
 io/northstar/behavior/model/School.class
 io/northstar/behavior/service/BehaviorCategoryService.class

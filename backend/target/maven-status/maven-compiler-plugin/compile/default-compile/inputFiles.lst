@@ -39,14 +39,18 @@
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/repository/SchoolRepository.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/model/District.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/model/Incident.java
+/Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/repository/EscalationRulesRepository.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/repository/InterventionRepository.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/service/DistrictServiceImpl.java
+/Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/dto/EscalationRulesDTO.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/model/Teacher.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/config/ApiErrorAdvice.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/controller/InterventionController.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/dto/AdminDTO.java
+/Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/service/EscalationRulesService.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/service/IncidentServiceImpl.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/dto/CreateSchoolRequest.java
+/Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/controller/EscalationRulesController.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/dto/SchoolDTO.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/service/InterventionService.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/service/IncidentService.java
@@ -62,5 +66,7 @@
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/service/SchoolServiceImpl.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/dto/CreateStudentRequest.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/dto/CreateInterventionRequest.java
+/Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/model/EscalationRules.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/model/School.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/service/BehaviorCategoryServiceImpl.java
+/Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/service/EscalationRulesServiceImpl.java
