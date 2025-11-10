@@ -1,0 +1,117 @@
+2025-11-10 09:21:01.051798-05:00 jdbc[15]: null
+org.h2.message.DbException: The connection was not closed by the application and is garbage collected [90018-224]
+	at org.h2.message.DbException.get(DbException.java:223)
+	at org.h2.message.DbException.get(DbException.java:199)
+	at org.h2.message.DbException.get(DbException.java:188)
+	at org.h2.jdbc.JdbcConnection.closeOld(JdbcConnection.java:218)
+	at org.h2.jdbc.JdbcConnection.<init>(JdbcConnection.java:135)
+	at org.h2.Driver.connect(Driver.java:59)
+	at com.zaxxer.hikari.util.DriverDataSource.getConnection(DriverDataSource.java:137)
+	at com.zaxxer.hikari.pool.PoolBase.newConnection(PoolBase.java:360)
+	at com.zaxxer.hikari.pool.PoolBase.newPoolEntry(PoolBase.java:202)
+	at com.zaxxer.hikari.pool.HikariPool.createPoolEntry(HikariPool.java:461)
+	at com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call(HikariPool.java:724)
+	at com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call(HikariPool.java:703)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1575)
+Caused by: org.h2.jdbc.JdbcSQLNonTransientConnectionException: The connection was not closed by the application and is garbage collected [90018-224]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:690)
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:489)
+	... 16 more
+2025-11-10 09:29:35.787809-05:00 jdbc[14]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "INCIDENT" not found; SQL statement:
+SELECT *
+FROM incident
+WHERE LOWER(reported_by) LIKE '%thomas%' [42102-224]
+2025-11-10 09:30:26.321201-05:00 jdbc[14]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "INCIDENT" not found; SQL statement:
+SELECT *
+FROM incident
+WHERE LOWER(reported_by) LIKE '%thomas%' [42102-224]
+2025-11-10 09:30:27.038403-05:00 jdbc[14]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "INCIDENT" not found; SQL statement:
+SELECT *
+FROM incident
+WHERE LOWER(reported_by) LIKE '%thomas%' [42102-224]
+2025-11-10 09:30:27.233335-05:00 jdbc[14]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "INCIDENT" not found; SQL statement:
+SELECT *
+FROM incident
+WHERE LOWER(reported_by) LIKE '%thomas%' [42102-224]
+2025-11-10 09:30:27.420641-05:00 jdbc[14]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "INCIDENT" not found; SQL statement:
+SELECT *
+FROM incident
+WHERE LOWER(reported_by) LIKE '%thomas%' [42102-224]
+2025-11-10 09:30:27.587775-05:00 jdbc[14]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "INCIDENT" not found; SQL statement:
+SELECT *
+FROM incident
+WHERE LOWER(reported_by) LIKE '%thomas%' [42102-224]
+2025-11-10 09:30:27.770232-05:00 jdbc[14]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "INCIDENT" not found; SQL statement:
+SELECT *
+FROM incident
+WHERE LOWER(reported_by) LIKE '%thomas%' [42102-224]
+2025-11-10 09:30:27.936986-05:00 jdbc[14]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "INCIDENT" not found; SQL statement:
+SELECT *
+FROM incident
+WHERE LOWER(reported_by) LIKE '%thomas%' [42102-224]
+2025-11-10 09:30:28.101788-05:00 jdbc[14]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "INCIDENT" not found; SQL statement:
+SELECT *
+FROM incident
+WHERE LOWER(reported_by) LIKE '%thomas%' [42102-224]
+2025-11-10 09:30:28.269697-05:00 jdbc[14]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "INCIDENT" not found; SQL statement:
+SELECT *
+FROM incident
+WHERE LOWER(reported_by) LIKE '%thomas%' [42102-224]
+2025-11-10 09:30:28.430554-05:00 jdbc[14]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "INCIDENT" not found; SQL statement:
+SELECT *
+FROM incident
+WHERE LOWER(reported_by) LIKE '%thomas%' [42102-224]
+2025-11-10 09:30:28.618619-05:00 jdbc[14]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "INCIDENT" not found; SQL statement:
+SELECT *
+FROM incident
+WHERE LOWER(reported_by) LIKE '%thomas%' [42102-224]
+2025-11-10 09:30:28.786842-05:00 jdbc[14]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "INCIDENT" not found; SQL statement:
+SELECT *
+FROM incident
+WHERE LOWER(reported_by) LIKE '%thomas%' [42102-224]
+2025-11-10 09:30:28.952485-05:00 jdbc[14]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "INCIDENT" not found; SQL statement:
+SELECT *
+FROM incident
+WHERE LOWER(reported_by) LIKE '%thomas%' [42102-224]
+2025-11-10 09:30:29.135915-05:00 jdbc[14]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "INCIDENT" not found; SQL statement:
+SELECT *
+FROM incident
+WHERE LOWER(reported_by) LIKE '%thomas%' [42102-224]
+2025-11-10 09:31:05.355894-05:00 jdbc[14]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "INCIDENT" not found; SQL statement:
+SELECT *
+FROM INCIDENT
+WHERE LOWER(REPORTED_BY) LIKE '%thomas%' [42102-224]
+2025-11-10 09:31:11.338285-05:00 jdbc[14]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "INCIDENT" not found; SQL statement:
+SELECT *
+FROM INCIDENT
+WHERE LOWER(REPORTED_BY) LIKE 'thomas' [42102-224]
+2025-11-10 09:31:13.338792-05:00 jdbc[14]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "INCIDENT" not found; SQL statement:
+SELECT *
+FROM INCIDENT
+WHERE LOWER(REPORTED_BY) LIKE 'thomas' [42102-224]
+2025-11-10 09:31:48.098348-05:00 jdbc[14]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "INCIDENT" not found; SQL statement:
+SELECT *
+FROM incident
+WHERE reported_by = 'Jaimie Thomas' [42102-224]
