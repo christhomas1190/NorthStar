@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.OffsetDateTime;
+
 @Service
 @Transactional
 public class EscalationRulesServiceImpl implements EscalationRulesService {
@@ -49,6 +51,18 @@ public class EscalationRulesServiceImpl implements EscalationRulesService {
       e.getDecayCount(), e.getDecayDays()
     );
   }
+  public EscalationRulesDTO create(Long schoolId, EscalationRulesDTO dto) {
+    Long districtId = TenantContext.getDistrictId();
+    if (districtId == null) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+
+    EscalationRules e = new EscalationRules();
+    apply(e, dto);
+    e.setDistrict(districtRepo.getReferenceById(districtId));
+    e.setSchool(schoolRepo.getReferenceById(schoolId));
+    e.setCreatedAt(OffsetDateTime.now());
+    e.setUpdatedAt(OffsetDateTime.now());
+    return toDto(repo.save(e));
+  }
 
   private void apply(EscalationRules e, EscalationRulesDTO d) {
     e.setTier1WindowDays(d.tier1WindowDays());
@@ -65,7 +79,7 @@ public class EscalationRulesServiceImpl implements EscalationRulesService {
     e.setTier2MajorToTier3(d.tier2MajorToTier3());
     e.setRequireParentContact(Boolean.TRUE.equals(d.requireParentContact()));
     e.setRequireAdminApproval(Boolean.TRUE.equals(d.requireAdminApproval()));
-    e.setNotifyRoles(d.notifyRoles() == null ? "" : d.notifyRoles());
+    e.setNotifyRoles(d.notifyRoles());
     e.setDecayCount(d.decayCount());
     e.setDecayDays(d.decayDays());
   }

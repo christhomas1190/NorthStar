@@ -48,6 +48,7 @@ public class EscalationRules {
   @Column(nullable = false, updatable = false) private OffsetDateTime createdAt = OffsetDateTime.now();
   @Column(nullable = false) private OffsetDateTime updatedAt = OffsetDateTime.now();
 
+
   @PreUpdate void onUpdate(){ this.updatedAt = OffsetDateTime.now(); }
 
   public Long getId(){ return id; }
@@ -95,4 +96,24 @@ public class EscalationRules {
   public void setDecayCount(Integer v){ this.decayCount = v; }
   public Integer getDecayDays(){ return decayDays; }
   public void setDecayDays(Integer v){ this.decayDays = v; }
+
+  public void setId(Long id) {
+    this.id = id;
+  }
+
+  public OffsetDateTime getUpdatedAt() {
+    return updatedAt;
+  }
+
+  public void setUpdatedAt(OffsetDateTime updatedAt) {
+    this.updatedAt = updatedAt;
+  }
+
+  public OffsetDateTime getCreatedAt() {
+    return createdAt;
+  }
+
+  public void setCreatedAt(OffsetDateTime createdAt) {
+    this.createdAt = createdAt;
+  }
 }

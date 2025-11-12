@@ -24,4 +24,10 @@ public class EscalationRulesController {
   public EscalationRulesDTO upsert(@RequestBody EscalationRulesDTO dto) {
     return service.upsert(dto);
   }
+
+  @PostMapping("/api/escalation-rules")
+  public EscalationRulesDTO save(@RequestParam Long schoolId,
+                                 @RequestBody EscalationRulesDTO body) {
+    return service.create(schoolId, body);
+  }
 }
