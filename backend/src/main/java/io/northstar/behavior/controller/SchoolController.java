@@ -5,6 +5,7 @@ import io.northstar.behavior.dto.SchoolDTO;
 import io.northstar.behavior.service.SchoolService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,10 +21,10 @@ public class SchoolController {
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public SchoolDTO create(@PathVariable Long districtId, @Valid @RequestBody CreateSchoolRequest req) {
-        // prefer path districtId; validate consistency if req carries one
-        return schools.createForDistrict(districtId, req.name());
+    public ResponseEntity<SchoolDTO> create(@PathVariable Long districtId,
+                                            @Valid @RequestBody CreateSchoolRequest req) {
+        SchoolDTO saved = schools.create(districtId, req);
+        return ResponseEntity.status(201).body(saved);
     }
 
     @GetMapping

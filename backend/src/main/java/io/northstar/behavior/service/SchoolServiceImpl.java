@@ -1,5 +1,6 @@
 package io.northstar.behavior.service;
 
+import io.northstar.behavior.dto.CreateSchoolRequest;
 import io.northstar.behavior.dto.SchoolDTO;
 import io.northstar.behavior.model.District;
 import io.northstar.behavior.model.School;
@@ -27,20 +28,23 @@ public class SchoolServiceImpl implements SchoolService {
 
     private static SchoolDTO toDto(School s) {
         return new SchoolDTO(
-                s.getSchoolId(),                    // << was getId()
+                s.getSchoolId(),
                 s.getName(),
-                s.getDistrict().getDistrictId()     // << was getId()
+                s.getDistrict().getDistrictId()
         );
     }
 
     @Override
-    public SchoolDTO create(SchoolDTO dto) {
-        District d = districts.findById(dto.districtId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "district not found"));
+    public SchoolDTO create(Long districtId, CreateSchoolRequest req) {
+        District d = districts.findById(districtId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "district missing"));
+
         School s = new School();
-        s.setName(dto.name());
+        s.setName(req.name());
         s.setDistrict(d);
-        return toDto(schools.save(s));
+
+        School saved = schools.save(s);
+        return toDto(saved);
     }
 
     @Override
