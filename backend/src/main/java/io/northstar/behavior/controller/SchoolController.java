@@ -21,16 +21,16 @@ public class SchoolController {
     }
 
     @PostMapping
-    public ResponseEntity<SchoolDTO> create(@PathVariable Long districtId,
-                                            @Valid @RequestBody CreateSchoolRequest req) {
-        SchoolDTO saved = schools.create(districtId, req);
-        return ResponseEntity.status(201).body(saved);
+    public SchoolDTO create(@PathVariable Long districtId,
+                            @RequestBody CreateSchoolRequest req) {
+        return schools.create(districtId, req);
     }
 
     @GetMapping
     public List<SchoolDTO> list(@PathVariable Long districtId) {
         return schools.listByDistrict(districtId);
     }
+
 
     @GetMapping("/{schoolId}")
     public SchoolDTO findOne(@PathVariable Long schoolId) {

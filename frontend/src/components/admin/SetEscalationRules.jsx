@@ -1,37 +1,27 @@
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { useAuth } from "@/state/auth.jsx";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 const DEFAULTS = Object.freeze({
-  // Window / cadence
   tier1WindowDays: 14,
   reviewEveryDays: 10,
-
-  // Caution thresholds (your rules)
-  sameCautionDetentionThreshold: 4,   // SAME caution → detention
-  mixedCautionDetentionThreshold: 6,  // ANY cautions → detention
-  sameCautionTier2Threshold: 8,       // SAME caution → Tier 2
-
-  // Consequence labels & durations (UI-first; persist if backend supports)
+  sameCautionDetentionThreshold: 4,
+  mixedCautionDetentionThreshold: 6,
+  sameCautionTier2Threshold: 8,
   detentionLabel: "Saturday detention",
   detentionDurationDays: 1,
   tier2Label: "Escalate to Tier 2",
   tier2DurationDays: 10,
-
-  // Legacy MTSS knobs
   tier1MajorToTier2: 1,
   tier2NoResponseCount: 3,
   tier2MajorToTier3: 2,
-
-  // Policy toggles & notifications
   requireParentContact: true,
   requireAdminApproval: false,
   notifyRoles: "Admin,Counselor",
-
-  // Caution decay (weekdays-only)
-  decayCount: 1,   // lose X cautions
-  decayDays: 7     // after Y clean WEEKDAYS
+  decayCount: 1,
+  decayDays: 7,
 });
 
 const clampInt = (n, min = 0, fallback = 0) => {
@@ -40,49 +30,58 @@ const clampInt = (n, min = 0, fallback = 0) => {
 };
 
 export default function SetEscalationRules() {
+  const { activeDistrictId, activeSchoolId } = useAuth();
+
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
   const [rules, setRules] = useState({ ...DEFAULTS });
   const [initial, setInitial] = useState({ ...DEFAULTS });
 
-  // Load from API (merge over defaults)
   useEffect(() => {
+    if (!activeDistrictId || !activeSchoolId) {
+      setLoaded(true);
+      return;
+    }
     let alive = true;
     (async () => {
       try {
-        const res = await fetch("/api/escalation-rules");
+        const res = await fetch(
+          `/api/escalation-rules?schoolId=${encodeURIComponent(activeSchoolId)}`,
+          {
+            headers: {
+              "X-District-Id": String(activeDistrictId),
+              "Content-Type": "application/json",
+            },
+          }
+        );
         if (res.ok) {
           const data = await res.json();
-          if (alive && data) {
-            setRules((r) => ({ ...r, ...data }));
-            setInitial((r) => ({ ...r, ...data }));
-          }
+          if (!alive) return;
+          setRules((r) => ({ ...r, ...data }));
+          setInitial((r) => ({ ...r, ...data }));
         }
-      } catch (e) {
-        console.warn("Failed to load escalation rules:", e);
+      } catch {
       } finally {
         if (alive) setLoaded(true);
       }
     })();
-    return () => { alive = false; };
-  }, []);
+    return () => {
+      alive = false;
+    };
+  }, [activeDistrictId, activeSchoolId]);
 
-  // Validation
   const errors = useMemo(() => {
     const e = {};
     if (rules.tier1WindowDays < 1) e.tier1WindowDays = "Must be ≥ 1 day.";
     if (rules.reviewEveryDays < 1) e.reviewEveryDays = "Must be ≥ 1 day.";
-
     if (rules.sameCautionDetentionThreshold < 1) e.sameCautionDetentionThreshold = "Must be ≥ 1.";
     if (rules.mixedCautionDetentionThreshold < 1) e.mixedCautionDetentionThreshold = "Must be ≥ 1.";
     if (rules.sameCautionTier2Threshold < 1) e.sameCautionTier2Threshold = "Must be ≥ 1.";
     if (rules.sameCautionTier2Threshold <= rules.sameCautionDetentionThreshold)
       e.sameCautionTier2Threshold = "Tier 2 should be higher than detention threshold.";
-
     if (rules.tier1MajorToTier2 < 0) e.tier1MajorToTier2 = "Cannot be negative.";
     if (rules.tier2NoResponseCount < 0) e.tier2NoResponseCount = "Cannot be negative.";
     if (rules.tier2MajorToTier3 < 0) e.tier2MajorToTier3 = "Cannot be negative.";
-
     if (rules.detentionDurationDays < 0) e.detentionDurationDays = "Cannot be negative.";
     if (rules.tier2DurationDays < 0) e.tier2DurationDays = "Cannot be negative.";
     if (rules.decayCount < 0) e.decayCount = "Cannot be negative.";
@@ -96,38 +95,38 @@ export default function SetEscalationRules() {
   );
   const isValid = Object.keys(errors).length === 0;
 
-  // Handlers
   const onNum = (name, min = 0) => (e) =>
     setRules((r) => ({ ...r, [name]: clampInt(e.target.value, min, r[name]) }));
-  const onText = (name) => (e) =>
-    setRules((r) => ({ ...r, [name]: e.target.value }));
-  const onToggle = (name) => (e) =>
-    setRules((r) => ({ ...r, [name]: e.target.checked }));
+  const onText = (name) => (e) => setRules((r) => ({ ...r, [name]: e.target.value }));
+  const onToggle = (name) => (e) => setRules((r) => ({ ...r, [name]: e.target.checked }));
 
   const onRestoreDefaults = () => setRules({ ...DEFAULTS });
   const onCancel = () => setRules(initial);
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    if (!isValid) {
-      alert("Please fix the highlighted fields before saving.");
-      return;
-    }
+    if (!isValid) return alert("Please fix the highlighted fields before saving.");
+    if (!activeDistrictId || !activeSchoolId) return alert("Select a District & School first.");
     setSaving(true);
     try {
-      const res = await fetch("/api/escalation-rules", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(rules),
-      });
+      const res = await fetch(
+        `/api/escalation-rules?schoolId=${encodeURIComponent(activeSchoolId)}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-District-Id": String(activeDistrictId),
+          },
+          body: JSON.stringify(rules),
+        }
+      );
       if (!res.ok) throw new Error("Save failed");
       const saved = await res.json();
       setRules((r) => ({ ...r, ...saved }));
       setInitial((r) => ({ ...r, ...saved }));
       alert("Rules saved.");
     } catch (err) {
-      console.error(err);
-      alert("Could not save rules.");
+      alert(err.message || "Could not save rules.");
     } finally {
       setSaving(false);
     }
@@ -137,7 +136,6 @@ export default function SetEscalationRules() {
     return <div className="p-6 text-sm text-slate-600">Loading escalation rules…</div>;
   }
 
-  // Small labeled field with inline error
   const Field = ({ label, name, type = "number", min = 0, placeholder, className = "" }) => (
     <div className={`space-y-1 ${className}`}>
       <label className="text-sm font-medium text-slate-700">{label}</label>
@@ -167,8 +165,6 @@ export default function SetEscalationRules() {
 
       <CardContent>
         <form onSubmit={onSubmit} className="space-y-8">
-
-          {/* Mad-Libs Sentence 1 */}
           <section className="space-y-3">
             <h2 className="font-medium">Rule 1 — Same Caution → {rules.detentionLabel}</h2>
             <div className="rounded-xl border p-4 bg-slate-50">
@@ -186,7 +182,6 @@ export default function SetEscalationRules() {
             </div>
           </section>
 
-          {/* Mad-Libs Sentence 2 */}
           <section className="space-y-3">
             <h2 className="font-medium">Rule 2 — Mixed Cautions → {rules.detentionLabel}</h2>
             <div className="rounded-xl border p-4 bg-slate-50">
@@ -203,7 +198,6 @@ export default function SetEscalationRules() {
             </div>
           </section>
 
-          {/* Mad-Libs Sentence 3 */}
           <section className="space-y-3">
             <h2 className="font-medium">Rule 3 — Same Caution → Tier Escalation</h2>
             <div className="rounded-xl border p-4 bg-slate-50">
@@ -221,7 +215,6 @@ export default function SetEscalationRules() {
             </div>
           </section>
 
-          {/* Statement about administrator discretion */}
           <section className="rounded-xl border p-4 bg-slate-50">
             <p className="text-sm">
               If both same-caution and mixed-caution detention triggers fire at once, assign one detention.
@@ -229,7 +222,6 @@ export default function SetEscalationRules() {
             </p>
           </section>
 
-          {/* Mad-Libs Sentence 4 — Caution Decay */}
           <section className="space-y-3">
             <h2 className="font-medium">Rule 4 — Caution Decay (Weekdays Only)</h2>
             <div className="rounded-xl border p-4 bg-slate-50">
@@ -271,7 +263,6 @@ export default function SetEscalationRules() {
             </div>
           </section>
 
-          {/* Legacy MTSS knobs */}
           <section className="space-y-3">
             <h2 className="font-medium">Legacy MTSS Options (optional)</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -281,10 +272,12 @@ export default function SetEscalationRules() {
             </div>
           </section>
 
-          {/* Actions */}
           <div className="flex flex-col sm:flex-row gap-3 pt-2">
-            <Button type="submit" disabled={!isDirty || !isValid || saving}
-              className={!isDirty || !isValid || saving ? "opacity-60 cursor-not-allowed" : ""}>
+            <Button
+              type="submit"
+              disabled={!isDirty || !isValid || saving}
+              className={!isDirty || !isValid || saving ? "opacity-60 cursor-not-allowed" : ""}
+            >
               {saving ? "Saving..." : "Save Rules"}
             </Button>
             <Button type="button" variant="outline" onClick={onCancel} disabled={!isDirty || saving}>

@@ -1,9 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import Page from "@/components/layout/Page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getJSON, postJSON } from "@/lib/api";
+import { useAuth } from "@/state/auth.jsx";
 
 const behaviorCategories = [
   "Disruption",
@@ -25,24 +26,48 @@ function toLocalInputValue(date = new Date()) {
 
 // Convert local input value back to UTC ISO for the API
 function localInputToUtcIso(localValue) {
-  // example: "2025-10-26T14:05"
   const d = new Date(localValue);
   return d.toISOString();
 }
 
+// Build a "reportedBy" value from the logged-in account (username-style)
+function deriveReportedBy(user) {
+  if (!user) return "";
+
+  // Prefer explicit username-like fields
+  let username =
+    user.username ||
+    user.userName ||
+    null;
+
+  // Fall back to email local-part if present
+  if (!username && user.email) {
+    username = String(user.email).split("@")[0];
+  }
+
+  // Last resort: name/fullName
+  if (!username) {
+    username = user.name || user.fullName || "";
+  }
+
+  return String(username).trim(); // e.g. "cthomas"
+}
+
 export default function TeacherDashboard() {
+  const { user } = useAuth();
+
   // ---- form state ----
   const [studentId, setStudentId] = useState(null); // numeric DB id
   const [pickedLabel, setPickedLabel] = useState(""); // readonly label like "Name • Sxxxxx"
   const [category, setCategory] = useState("Disruption");
   const [severity, setSeverity] = useState("Minor");
-  const [reportedBy, setReportedBy] = useState("t_22 (Mr. Hill)");
+  const [reportedBy, setReportedBy] = useState(() => deriveReportedBy(user));
   const [when, setWhen] = useState(() => toLocalInputValue());
   const [notes, setNotes] = useState("");
 
   // ---- search state ----
   const [q, setQ] = useState("");
-  const [results, setResults] = useState([]); // [{id, firstName, lastName, studentId, grade}]
+  const [students, setStudents] = useState([]); // full list from backend
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -50,6 +75,13 @@ export default function TeacherDashboard() {
   const [msg, setMsg] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const boxRef = useRef(null);
+
+  // keep reportedBy in sync with current user if it's empty
+  useEffect(() => {
+    const next = deriveReportedBy(user);
+    if (!next) return;
+    setReportedBy((prev) => prev || next);
+  }, [user]);
 
   // Close typeahead on click-outside or ESC
   useEffect(() => {
@@ -67,26 +99,49 @@ export default function TeacherDashboard() {
     };
   }, []);
 
-  // Debounced search against /api/students?q=
+  // Load all students once; filter client-side (case-insensitive)
   useEffect(() => {
-    if (!q.trim()) {
-      setResults([]);
-      return;
-    }
-    setLoading(true);
-    const t = setTimeout(async () => {
+    let alive = true;
+    (async () => {
+      setLoading(true);
       try {
-        const data = await getJSON(`/api/students?q=${encodeURIComponent(q.trim())}&size=10`);
-        setResults(Array.isArray(data) ? data : []);
+        const data = await getJSON("/api/students");
+        if (!alive) return;
+        setStudents(Array.isArray(data) ? data : []);
       } catch (e) {
-        setResults([]);
-        setMsg(`Search failed: ${String(e.message || e)}`);
+        if (!alive) return;
+        setMsg(`Could not load students: ${String(e.message || e)}`);
       } finally {
-        setLoading(false);
+        if (alive) setLoading(false);
       }
-    }, 250);
-    return () => clearTimeout(t);
-  }, [q]);
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  // Case-insensitive filtering by name or ID
+  const results = useMemo(() => {
+    const term = q.trim().toLowerCase();
+    if (!term) return [];
+    return students
+      .filter((s) => {
+        const first = (s.firstName || "").toLowerCase();
+        const last = (s.lastName || "").toLowerCase();
+        const full = `${first} ${last}`.trim();
+        const schoolId = String(s.studentId || "").toLowerCase();
+        const dbId = String(s.id || "").toLowerCase();
+
+        return (
+          first.includes(term) ||
+          last.includes(term) ||
+          full.includes(term) ||
+          schoolId.includes(term) ||
+          dbId.includes(term)
+        );
+      })
+      .slice(0, 10); // cap suggestions
+  }, [q, students]);
 
   // Auto-clear feedback after a moment
   useEffect(() => {
@@ -95,7 +150,6 @@ export default function TeacherDashboard() {
     return () => clearTimeout(t);
   }, [msg]);
 
-  // (Optional) show tier if you add it to StudentDTO later
   const tier = "—";
 
   function selectStudent(s) {
@@ -110,11 +164,10 @@ export default function TeacherDashboard() {
     setPickedLabel("");
     setCategory("Disruption");
     setSeverity("Minor");
-    setReportedBy("t_22 (Mr. Hill)");
+    setReportedBy(deriveReportedBy(user));
     setWhen(toLocalInputValue());
     setNotes("");
     setQ("");
-    setResults([]);
     setOpen(false);
   }
 
@@ -130,12 +183,13 @@ export default function TeacherDashboard() {
     }
     setSubmitting(true);
     try {
+      const fallbackReporter = deriveReportedBy(user) || "unknown";
       const body = {
-        studentId,                         // Long (DB id)
-        category,                          // String
-        description: notes.trim(),         // String
-        severity,                          // "Minor" | "Major"
-        reportedBy: reportedBy.trim() || "unknown",
+        studentId,
+        category,
+        description: notes.trim(),
+        severity,
+        reportedBy: reportedBy.trim() || fallbackReporter,
         occurredAt: localInputToUtcIso(when),
       };
       const created = await postJSON("/api/incidents", body);
@@ -173,9 +227,9 @@ export default function TeacherDashboard() {
               {open && (q || loading) && (
                 <div className="absolute z-20 mt-2 w-full rounded-xl border bg-white shadow max-h-72 overflow-auto">
                   {loading && (
-                    <div className="px-3 py-2 text-sm text-slate-500">Searching…</div>
+                    <div className="px-3 py-2 text-sm text-slate-500">Loading students…</div>
                   )}
-                  {!loading && results.length === 0 && (
+                  {!loading && q && results.length === 0 && (
                     <div className="px-3 py-2 text-sm text-slate-500">No matches</div>
                   )}
                   {!loading &&
@@ -231,13 +285,13 @@ export default function TeacherDashboard() {
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Reported By</label>
               <Input
-                placeholder="e.g., t_22 (Mr. Hill)"
+                placeholder="e.g., auto-filled from your account"
                 value={reportedBy}
                 onChange={(e) => setReportedBy(e.target.value)}
               />
             </div>
 
-            {/* Date & Time (local) */}
+            {/* Time of Incident */}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Time of Incident
@@ -250,7 +304,7 @@ export default function TeacherDashboard() {
               />
             </div>
 
-            {/* Notes -> description */}
+            {/* Notes */}
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-slate-700 mb-2">Notes</label>
               <textarea

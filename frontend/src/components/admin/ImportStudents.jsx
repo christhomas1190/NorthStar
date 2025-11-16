@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import Page from "@/components/layout/Page";
 import PageTabs from "@/components/layout/PageTabs";
-import { postJSON } from "@/lib/api";
+import { useAuth } from "@/state/auth.jsx";
 
 const NAME_FORMATS = [
   { id: "FIRST_LAST", label: "First Last (e.g., Ada Lovelace)" },
@@ -38,7 +38,7 @@ function parseLine(line, format) {
       const m = raw.split(",");
       if (m.length < 2) return null;
       const last = m[0];
-      const first = m.slice(1).join(","); // keep extra commas
+      const first = m.slice(1).join(",");
       return { firstName: trimAll(first), lastName: trimAll(last) };
     }
     case "TSV_FIRST_LAST": {
@@ -84,12 +84,28 @@ function validateRow(r) {
 }
 
 function newId() {
-  // short readable ID; swap with a real generator if needed
   return (crypto?.randomUUID?.() || Math.random().toString(36).slice(2)).slice(0, 8);
 }
 
 export default function ImportStudents() {
-  // Single add
+  const { activeDistrictId, activeSchoolId } = useAuth();
+
+  async function postStudent(body) {
+    const res = await fetch("/api/students", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-District-Id": String(activeDistrictId),
+      },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const txt = await res.text().catch(() => "");
+      throw new Error(txt || `HTTP ${res.status}`);
+    }
+    return res.json();
+  }
+
   const [single, setSingle] = useState({
     firstName: "",
     lastName: "",
@@ -98,11 +114,10 @@ export default function ImportStudents() {
   });
   const [singleStatus, setSingleStatus] = useState(null);
 
-  // Bulk
   const [raw, setRaw] = useState("");
   const [format, setFormat] = useState(NAME_FORMATS[0].id);
   const [defaultGrade, setDefaultGrade] = useState("");
-  const [rows, setRows] = useState([]); // {firstName,lastName,grade,studentId,_errors?,_result?}
+  const [rows, setRows] = useState([]);
 
   const parsed = useMemo(() => {
     const lines = raw.split(/\r?\n/);
@@ -150,6 +165,7 @@ export default function ImportStudents() {
       lastName: trimAll(single.lastName),
       grade: trimAll(single.grade),
       studentId: trimAll(single.studentId) || newId(),
+      schoolId: activeSchoolId,
     };
     const errs = validateRow(payload);
     if (Object.keys(errs).length) {
@@ -157,7 +173,7 @@ export default function ImportStudents() {
       return;
     }
     try {
-      await postJSON("/api/students", payload);
+      await postStudent(payload);
       setSingle({ firstName: "", lastName: "", grade: "", studentId: "" });
       setSingleStatus({ ok: true, message: "Student added." });
     } catch (err) {
@@ -176,11 +192,12 @@ export default function ImportStudents() {
 
     const results = await Promise.allSettled(
       validated.map((r) =>
-        postJSON("/api/students", {
+        postStudent({
           firstName: trimAll(r.firstName),
           lastName: trimAll(r.lastName),
           grade: trimAll(r.grade),
           studentId: trimAll(r.studentId),
+          schoolId: activeSchoolId,
         })
       )
     );
@@ -214,7 +231,6 @@ export default function ImportStudents() {
           </p>
         </header>
 
-        {/* Single Add */}
         <section className="border rounded-xl p-4 space-y-4 bg-white">
           <h2 className="text-lg font-medium">Add a single student</h2>
           <form onSubmit={submitSingle} className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -259,7 +275,6 @@ export default function ImportStudents() {
           </form>
         </section>
 
-        {/* Bulk Paste */}
         <section className="border rounded-xl p-4 space-y-4 bg-white">
           <h2 className="text-lg font-medium">Bulk add from list</h2>
 
@@ -306,7 +321,6 @@ export default function ImportStudents() {
             </div>
           </div>
 
-          {/* Preview Table */}
           {rows.length > 0 && (
             <div className="mt-4 overflow-x-auto">
               <table className="min-w-full border rounded-lg overflow-hidden">
