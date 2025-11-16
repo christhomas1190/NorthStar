@@ -1,4 +1,3 @@
-// src/components/admin/AdminDashboard.jsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Page from "@/components/layout/Page";
 import PageTabs from "@/components/layout/PageTabs";
@@ -12,7 +11,8 @@ import { useAuth } from "@/state/auth.jsx";
 
 function fmtDay(d) { return new Date(d).toISOString().slice(0, 10); }
 function today() { return fmtDay(new Date()); }
-function thirtyDaysAgo() { return fmtDay(new Date(Date.now() - 29 * 864e5)); }
+// generic helper for presets
+function daysAgo(n) { return fmtDay(new Date(Date.now() - n * 864e5)); }
 
 function niceTicks(max, count = 4) {
   if (max <= 0) return [0];
@@ -141,7 +141,8 @@ function LineChartWithAxes({ points = [], width = 420, height = 220 }) {
 export default function AdminDashboard() {
   const { activeDistrictId, activeSchoolId } = useAuth();
 
-  const [from, setFrom] = useState(thirtyDaysAgo());
+  // 🔹 Default range: last 7 days (today + previous 6)
+  const [from, setFrom] = useState(daysAgo(6));
   const [to, setTo] = useState(today());
 
   const [loading, setLoading] = useState(true);
@@ -227,6 +228,13 @@ export default function AdminDashboard() {
 
   const btnCls = "justify-between rounded-2xl border border-slate-300 bg-white hover:bg-slate-50";
 
+  // 🔹 Shared preset helper for 7 / 14 / 30 / 45
+  function setPreset(days) {
+    // e.g. days = 7 -> from = 6 days ago, to = today
+    setFrom(daysAgo(days - 1));
+    setTo(today());
+  }
+
   return (
     <Page title="Admin Dashboard" subtitle="School overview & quick actions">
       <PageTabs
@@ -256,18 +264,56 @@ export default function AdminDashboard() {
                   <p className="text-sm text-slate-500">Incident Trend</p>
                   <p className="text-xs text-slate-400">{from} → {to}</p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="space-y-1">
-                    <label className="text-xs text-slate-600">From</label>
-                    <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+                <div className="flex flex-col sm:flex-row sm:items-end gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="space-y-1">
+                      <label className="text-xs text-slate-600">From</label>
+                      <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs text-slate-600">To</label>
+                      <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+                    </div>
+                    <Badge variant="outline" className="gap-1 h-9 flex items-center">
+                      <BarChart3 size={14} /> Live
+                    </Badge>
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-xs text-slate-600">To</label>
-                    <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+
+                  {/* 🔹 Preset buttons: 7 / 14 / 30 / 45 days */}
+                  <div className="flex flex-wrap gap-1 text-[11px]">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-7 px-2"
+                      onClick={() => setPreset(7)}
+                    >
+                      Last 7d
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-7 px-2"
+                      onClick={() => setPreset(14)}
+                    >
+                      Last 14d
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-7 px-2"
+                      onClick={() => setPreset(30)}
+                    >
+                      Last 30d
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-7 px-2"
+                      onClick={() => setPreset(45)}
+                    >
+                      Last 45d
+                    </Button>
                   </div>
-                  <Badge variant="outline" className="gap-1 h-9 flex items-center">
-                    <BarChart3 size={14} /> Live
-                  </Badge>
                 </div>
               </div>
 

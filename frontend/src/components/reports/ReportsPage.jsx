@@ -131,7 +131,8 @@ function LineChartAxes({ points, from, to, className="" }) {
 export default function ReportsPage() {
   const { activeDistrictId, activeSchoolId } = useAuth();
 
-  const [from, setFrom] = useState(daysAgo(29));
+  // 🔹 Default: last 7 days (today + previous 6 days)
+  const [from, setFrom] = useState(daysAgo(6));
   const [to, setTo] = useState(today());
   const [search, setSearch] = useState("");          // student search text
   const [studentIdFilter, setStudentIdFilter] = useState(null); // selected student id
@@ -257,6 +258,7 @@ export default function ReportsPage() {
   const minor = analytics.bySeverity.find(s => (s.severity||"").toLowerCase()==="minor")?.count ?? 0;
   const major = analytics.bySeverity.find(s => (s.severity||"").toLowerCase()==="major")?.count ?? 0;
 
+  // 🔹 Updated preset helper: used by 7 / 14 / 30 / 45 day buttons
   function setPreset(days){
     setFrom(daysAgo(days-1));
     setTo(today());
@@ -293,6 +295,7 @@ export default function ReportsPage() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-6 gap-3 items-end">
+              {/* From / To stay the same, just default to last 7 days now */}
               <div className="sm:col-span-2 space-y-1">
                 <label className="text-xs text-slate-600 flex items-center gap-1"><CalendarRange size={14}/> From</label>
                 <Input type="date" value={from} onChange={e=>setFrom(e.target.value)} />
@@ -301,10 +304,13 @@ export default function ReportsPage() {
                 <label className="text-xs text-slate-600 flex items-center gap-1"><CalendarRange size={14}/> To</label>
                 <Input type="date" value={to} onChange={e=>setTo(e.target.value)} />
               </div>
-              <div className="sm:col-span-2 flex gap-2">
+
+              {/* 🔹 Updated presets: 7, 14, 30, 45 */}
+              <div className="sm:col-span-2 flex flex-wrap gap-2">
                 <Button type="button" variant="outline" onClick={()=>setPreset(7)}>Last 7d</Button>
+                <Button type="button" variant="outline" onClick={()=>setPreset(14)}>Last 14d</Button>
                 <Button type="button" variant="outline" onClick={()=>setPreset(30)}>Last 30d</Button>
-                <Button type="button" variant="outline" onClick={()=>setPreset(90)}>Last 90d</Button>
+                <Button type="button" variant="outline" onClick={()=>setPreset(45)}>Last 45d</Button>
               </div>
 
               <div className="sm:col-span-3 space-y-1">
