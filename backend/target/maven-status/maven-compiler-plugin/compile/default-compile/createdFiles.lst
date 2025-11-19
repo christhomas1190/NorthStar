@@ -7,6 +7,7 @@ io/northstar/behavior/service/InterventionService.class
 io/northstar/behavior/service/TeacherService.class
 io/northstar/behavior/dto/UpdateTeacherRequest.class
 io/northstar/behavior/dto/BehaviorCategoryDTO.class
+io/northstar/behavior/dto/CreateBehaviorCategoryRequest.class
 io/northstar/behavior/repository/StudentRepository.class
 io/northstar/behavior/repository/IncidentRepository.class
 io/northstar/behavior/dto/InterventionSummaryDTO.class

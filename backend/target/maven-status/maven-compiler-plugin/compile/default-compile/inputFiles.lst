@@ -9,6 +9,7 @@
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/controller/AdminController.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/service/AnalyticsServiceImpl.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/tenant/TenantFilter.java
+/Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/dto/CreateBehaviorCategoryRequest.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/dto/UpdateTeacherRequest.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/dto/CreateTeacherRequest.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/model/Admin.java

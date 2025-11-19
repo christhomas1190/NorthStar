@@ -29,6 +29,10 @@ public class BehaviorCategory {
     @JoinColumn(name="district_id", nullable=false)
     private District district;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name="school_id", nullable=false)
+    private School school;
+
     public BehaviorCategory() {}
 
     public BehaviorCategory(String name, String severity, String tier, String description) {
@@ -63,5 +67,13 @@ public class BehaviorCategory {
 
     public void setDistrict(District district) {
         this.district = district;
+    }
+
+    public School getSchool() {
+        return school;
+    }
+
+    public void setSchool(School school) {
+        this.school = school;
     }
 }

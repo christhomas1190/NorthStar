@@ -2,8 +2,10 @@
 package io.northstar.behavior.controller;
 
 import io.northstar.behavior.dto.BehaviorCategoryDTO;
+import io.northstar.behavior.dto.CreateBehaviorCategoryRequest;
 import io.northstar.behavior.service.BehaviorCategoryService;
 import io.northstar.behavior.tenant.TenantContext;
+import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,18 +23,23 @@ public class BehaviorCategoryController {
         this.service = service;
     }
 
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<BehaviorCategoryDTO> create(
-            @RequestHeader("X-District-Id") Long districtId,
-            @RequestBody BehaviorCategoryDTO dto) {
-        try {
-            TenantContext.setDistrictId(districtId);
-            BehaviorCategoryDTO saved = service.create(dto);
-            return ResponseEntity.created(URI.create("/api/behaviors/" + saved.id())).body(saved);
-        } finally {
-            TenantContext.clear();
-        }
+
+@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+public ResponseEntity<BehaviorCategoryDTO> create(
+        @RequestHeader("X-District-Id") Long districtId,
+        @Valid @RequestBody CreateBehaviorCategoryRequest req) {
+    try {
+        TenantContext.setDistrictId(districtId);
+        BehaviorCategoryDTO saved = service.create(districtId, req); // <-- pass districtId
+        return ResponseEntity
+                .created(URI.create("/api/behaviors/" + saved.id()))
+                .body(saved);
+    } finally {
+        TenantContext.clear();
     }
+}
+
+
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public List<BehaviorCategoryDTO> findAll(@RequestHeader("X-District-Id") Long districtId) {

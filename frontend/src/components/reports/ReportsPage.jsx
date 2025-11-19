@@ -305,7 +305,7 @@ export default function ReportsPage() {
                 <Input type="date" value={to} onChange={e=>setTo(e.target.value)} />
               </div>
 
-              {/* 🔹 Updated presets: 7, 14, 30, 45 */}
+              {/* Updated presets: 7, 14, 30, 45 */}
               <div className="sm:col-span-2 flex flex-wrap gap-2">
                 <Button type="button" variant="outline" onClick={()=>setPreset(7)}>Last 7d</Button>
                 <Button type="button" variant="outline" onClick={()=>setPreset(14)}>Last 14d</Button>

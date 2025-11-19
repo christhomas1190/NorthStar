@@ -4,6 +4,7 @@ server:
     default-teacher-password: "Teach!2025#"
     default-admin-password: "Admin!2025#"
 
+# Expose actuator endpoints
 management:
   endpoints:
     web:
@@ -22,7 +23,7 @@ spring:
     password:
   jpa:
     hibernate:
-      ddl-auto: update        # <--- changed from create-drop
+      ddl-auto: update        # <--- persists data across restarts
     show-sql: true
     properties:
       hibernate.format_sql: true
@@ -51,7 +52,7 @@ spring:
     password:
   jpa:
     hibernate:
-      ddl-auto: create-drop   # <--- better for tests
+      ddl-auto: update
     show-sql: false
   flyway:
     enabled: false
