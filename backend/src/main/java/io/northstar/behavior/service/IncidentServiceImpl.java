@@ -45,6 +45,21 @@ public class IncidentServiceImpl implements IncidentService {
         );
     }
 
+    private long countRecentIncidentsForStudent(Long studentId, int windowDays) {
+        List<Incident> all = incidents.findByStudentIdOrderByOccurredAtDesc(studentId);
+
+        OffsetDateTime cutoff = OffsetDateTime.now().minusDays(windowDays);
+
+        long count = 0;
+        for (Incident incident : all) {
+            if (incident.getOccurredAt().isBefore(cutoff)) {
+                break; // they're sorted desc, so we can stop
+            }
+            count++;
+        }
+        return count;
+    }
+
     @Override
     public IncidentDTO create(CreateIncidentRequest req) {
         Student s = students.findById(req.studentId())
@@ -54,7 +69,7 @@ public class IncidentServiceImpl implements IncidentService {
         inc.setStudent(s);
         inc.setStudentId(s.getId());
         inc.setDistrict(s.getDistrict());
-        inc.setSchool(s.getSchool()); // ✅ tie to the student's school
+        inc.setSchool(s.getSchool()); // tie to the student's school
         inc.setCategory(req.category());
         inc.setDescription(req.description());
         inc.setSeverity(req.severity());

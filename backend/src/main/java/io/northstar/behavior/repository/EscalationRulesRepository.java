@@ -8,4 +8,5 @@ import java.util.Optional;
 public interface EscalationRulesRepository extends JpaRepository<EscalationRules, Long> {
   Optional<EscalationRules> findByDistrict_DistrictIdAndSchool_SchoolId(Long districtId, Long schoolId);
   Optional<EscalationRules> findByDistrict_DistrictIdAndSchoolIsNull(Long districtId);
+
 }
