@@ -29,7 +29,7 @@ public class SchoolServiceImpl implements SchoolService {
     private static SchoolDTO toDto(School s) {
         return new SchoolDTO(
                 s.getSchoolId(),
-                s.getName(),
+                s.getSchoolName(),
                 s.getDistrict().getDistrictId()
         );
     }
@@ -40,7 +40,7 @@ public class SchoolServiceImpl implements SchoolService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "district missing"));
 
         School s = new School();
-        s.setName(req.name());
+        s.setSchoolName(req.name());
         s.setDistrict(d);
 
         School saved = schools.save(s);
@@ -52,7 +52,7 @@ public class SchoolServiceImpl implements SchoolService {
         District d = districts.findById(districtId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "district not found"));
         School s = new School();
-        s.setName(name);
+        s.setSchoolName(name);
         s.setDistrict(d);
         return toDto(schools.save(s));
     }

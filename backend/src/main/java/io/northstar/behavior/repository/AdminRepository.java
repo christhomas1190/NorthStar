@@ -9,6 +9,6 @@ import java.util.List;
 public interface AdminRepository extends JpaRepository<Admin, Long> {
     boolean existsByEmailAndSchool_SchoolId(String email, Long schoolId);
     boolean existsByUserNameAndSchool_SchoolId(String userName, Long schoolId);
+    List<Admin> findBySchool_SchoolId(Long schoolId);
 
-    List<Admin> findBySchoolId(Long schoolId);
 }

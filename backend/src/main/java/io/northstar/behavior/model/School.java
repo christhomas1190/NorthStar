@@ -16,7 +16,7 @@ public class School {
     private Long schoolId; // << was id
 
     @Column(nullable=false)
-    private String name;
+    private String schoolName;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "district_id", nullable = false)
@@ -25,10 +25,11 @@ public class School {
     public Long getSchoolId() { return schoolId; }
     public void setSchoolId(Long schoolId) { this.schoolId = schoolId; }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public String getSchoolName() { return schoolName; }
+    public void setSchoolName(String name) { this.schoolName = name; }
 
     public District getDistrict() { return district; }
     public void setDistrict(District district) { this.district = district; }
+
 
 }

@@ -96,7 +96,7 @@ public class NotificationServiceImpl implements NotificationService {
             return;
         }
 
-        List<Admin> schoolAdmins = admins.findBySchoolId(schoolId);
+        List<Admin> schoolAdmins = admins.findBySchool_SchoolId(schoolId);
         String message = buildMessage(rule, incident, student);
 
         for (Admin admin : schoolAdmins) {

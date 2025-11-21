@@ -2,6 +2,6 @@ package io.northstar.behavior.dto;
 
 public record SchoolDTO(
         Long schoolId,
-        String name,
+        String schoolName,
         Long districtId
 ) {}

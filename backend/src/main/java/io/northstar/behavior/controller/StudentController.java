@@ -22,7 +22,7 @@ public class StudentController {
         this.students = students;
     }
 
-    // ✅ Now takes CreateStudentRequest with schoolId
+    // Now takes CreateStudentRequest with schoolId
     @PostMapping
     public ResponseEntity<StudentDTO> create(@Valid @RequestBody CreateStudentRequest body) {
         StudentDTO saved = students.create(body);
