@@ -10,6 +10,13 @@ export default function TeacherPage() {
   const navigate = useNavigate();
   const { activeDistrictId, activeSchoolId } = useAuth();
 
+  // ---- student search state ----
+  const [q, setQ] = useState("");
+  const [studentResults, setStudentResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState("");
+
+  // ---- existing teacher management state ----
   const [teachers, setTeachers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -25,6 +32,60 @@ export default function TeacherPage() {
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
 
+  // ---------- Student search logic ----------
+  async function searchStudents(query) {
+    if (!activeDistrictId) {
+      setSearchError("Select a district first.");
+      setStudentResults([]);
+      return;
+    }
+
+    const trimmed = query.trim();
+    if (trimmed.length < 2) {
+      setStudentResults([]);
+      setSearchError("");
+      return;
+    }
+
+    setSearchLoading(true);
+    setSearchError("");
+    try {
+      const res = await fetch(
+        `/api/students?q=${encodeURIComponent(trimmed)}&size=10`,
+        {
+          headers: {
+            "X-District-Id": String(activeDistrictId),
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (!res.ok) {
+        throw new Error(`Failed to search students (${res.status})`);
+      }
+      const data = await res.json();
+      const list = Array.isArray(data) ? data : [];
+      setStudentResults(list);
+    } catch (e) {
+      setStudentResults([]);
+      setSearchError(String(e.message || e));
+    } finally {
+      setSearchLoading(false);
+    }
+  }
+
+  function onSearchChange(e) {
+    const value = e.target.value;
+    setQ(value);
+    searchStudents(value);
+  }
+
+  function onPickStudent(s) {
+    // navigate to the Student Detail page
+    // IMPORTANT: use the numeric DB id, not the studentId code like "S011"
+    navigate(`/admin/students/${s.id}`);
+  }
+
+  // ---------- Existing teacher management logic ----------
   async function load() {
     setLoading(true);
     setError("");
@@ -42,7 +103,9 @@ export default function TeacherPage() {
     }
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+  }, []);
 
   function startEdit(t) {
     setEditingId(t.id);
@@ -54,6 +117,7 @@ export default function TeacherPage() {
       schoolId: t.schoolId ?? activeSchoolId ?? "",
     });
   }
+
   function cancelEdit() {
     setEditingId(null);
     setEditForm({
@@ -64,6 +128,7 @@ export default function TeacherPage() {
       schoolId: "",
     });
   }
+
   function onEditChange(e) {
     const { name, value } = e.target;
     setEditForm((prev) => ({ ...prev, [name]: value }));
@@ -87,7 +152,8 @@ export default function TeacherPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error((await res.text()) || `Failed to save (${res.status})`);
+      if (!res.ok)
+        throw new Error((await res.text()) || `Failed to save (${res.status})`);
       await load();
       cancelEdit();
     } catch (e) {
@@ -102,7 +168,8 @@ export default function TeacherPage() {
     setError("");
     try {
       const res = await fetch(`/api/teachers/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error((await res.text()) || `Failed to delete (${res.status})`);
+      if (!res.ok)
+        throw new Error((await res.text()) || `Failed to delete (${res.status})`);
       await load();
     } catch (e) {
       setError(String(e.message || e));
@@ -112,13 +179,79 @@ export default function TeacherPage() {
   }
 
   return (
-    <Page title="Teachers" subtitle="Manage teacher accounts">
+    <Page
+      title="Teacher Tools"
+      subtitle="Search students and manage teacher accounts"
+    >
+      {/* --- Student search card at the top --- */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="text-base">Find a Student</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {searchError && (
+            <div className="mb-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-rose-700 text-sm">
+              {searchError}
+            </div>
+          )}
+
+          <div className="max-w-xl">
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Search by name or student ID
+            </label>
+            <Input
+              placeholder="Start typing a student name or ID…"
+              value={q}
+              onChange={onSearchChange}
+            />
+          </div>
+
+          <div className="mt-3 text-xs text-slate-500">
+            Type at least 2 characters. Click a student to open their detail
+            page.
+          </div>
+
+          <div className="mt-4 border rounded-lg max-w-xl max-h-64 overflow-auto">
+            {searchLoading && (
+              <div className="px-3 py-2 text-sm text-slate-500">Searching…</div>
+            )}
+            {!searchLoading && studentResults.length === 0 && q.trim().length >= 2 && (
+              <div className="px-3 py-2 text-sm text-slate-500">
+                No students found for “{q.trim()}”.
+              </div>
+            )}
+            {!searchLoading &&
+              studentResults.map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 border-b last:border-b-0"
+                  onClick={() => onPickStudent(s)}
+                >
+                  <div className="font-medium">
+                    {s.firstName} {s.lastName}
+                  </div>
+                  <div className="text-xs text-slate-500">
+                    Student ID: {s.studentId ?? "—"}
+                    {s.grade ? <> · Grade {s.grade}</> : null}
+                  </div>
+                </button>
+              ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* --- Existing teacher management card --- */}
       <Card>
         <CardHeader className="flex items-center justify-between">
           <CardTitle className="text-base">Teachers</CardTitle>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={load}>Refresh</Button>
-            <Button onClick={() => navigate("/admin/teachers/new")}>+ Add Teacher</Button>
+            <Button variant="outline" onClick={load}>
+              Refresh
+            </Button>
+            <Button onClick={() => navigate("/admin/teachers/new")}>
+              + Add Teacher
+            </Button>
           </div>
         </CardHeader>
 
@@ -200,13 +333,20 @@ export default function TeacherPage() {
                         </div>
                         <div className="text-sm text-muted-foreground">
                           {t.email}
-                          {t.username ? <> · <span className="font-mono">{t.username}</span></> : null}
+                          {t.username ? (
+                            <>
+                              {" "}
+                              · <span className="font-mono">{t.username}</span>
+                            </>
+                          ) : null}
                           {t.districtId ? <> · Dist #{t.districtId}</> : null}
                           {t.schoolId ? <> · School #{t.schoolId}</> : null}
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        <Button variant="outline" onClick={() => startEdit(t)}>Edit</Button>
+                        <Button variant="outline" onClick={() => startEdit(t)}>
+                          Edit
+                        </Button>
                         <Button
                           variant="destructive"
                           onClick={() => removeTeacher(t.id)}

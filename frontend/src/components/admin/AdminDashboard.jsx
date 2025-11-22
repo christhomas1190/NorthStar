@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Clock, Tag, BarChart3 } from "lucide-react";
 import KPICard from "@/components/common/KPICard";
 import { useAuth } from "@/state/auth.jsx";
+import { useNavigate } from "react-router-dom";
+
 
 // ---------- Date helpers (LOCAL calendar days, no UTC shift) ----------
 

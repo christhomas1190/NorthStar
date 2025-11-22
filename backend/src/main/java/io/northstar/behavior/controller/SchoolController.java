@@ -32,6 +32,7 @@ public class SchoolController {
     }
 
 
+
     @GetMapping("/{schoolId}")
     public SchoolDTO findOne(@PathVariable Long schoolId) {
         return schools.findById(schoolId);

@@ -337,11 +337,13 @@ export default function StudentDetailPage() {
     };
   }, [activeDistrictId, studentId]);
 
+  // All incidents for this student
   const studentIncidents = useMemo(() => {
     const idNum = Number(studentId);
     return allIncidents.filter((it) => it.studentId === idNum);
   }, [allIncidents, studentId]);
 
+  // Incidents in date range
   const incidentsInRange = useMemo(() => {
     const fromStr = from;
     const toStr = to;
@@ -352,6 +354,7 @@ export default function StudentDetailPage() {
     });
   }, [studentIncidents, from, to]);
 
+  // Chart points per day
   const chartPoints = useMemo(() => {
     const counts = new Map();
     for (const it of incidentsInRange) {
@@ -364,18 +367,63 @@ export default function StudentDetailPage() {
       .map(([date, count]) => ({ date, count }));
   }, [incidentsInRange]);
 
-  // Treat "disciplines" as major incidents for now
-  const disciplines = useMemo(
-    () =>
-      incidentsInRange.filter(
-        (it) => (it.severity || "").toLowerCase() === "major"
-      ),
-    [incidentsInRange]
-  );
+  // Disciplines / interventions: pull from student.interventions, filtered by date range
+  const disciplines = useMemo(() => {
+    if (!student || !Array.isArray(student.interventions)) return [];
+    const fromStr = from;
+    const toStr = to;
+    return student.interventions.filter((iv) => {
+      const day = String(iv.startDate || "").slice(0, 10);
+      if (!day) return false;
+      return day >= fromStr && day <= toStr;
+    });
+  }, [student, from, to]);
 
-  function handleDownloadPdf() {
-    // Simple version: open browser print dialog (user can "Save as PDF")
-    window.print();
+  async function handleDownloadPdf() {
+    if (!activeDistrictId || !studentId) {
+      setErr("Missing district or student id for PDF export.");
+      return;
+    }
+    try {
+      setErr("");
+      const params = new URLSearchParams();
+      if (from) params.append("from", from);
+      if (to) params.append("to", to);
+
+      // Expected backend endpoint:
+      // GET /api/students/{id}/report?from=&to=
+      const res = await fetch(
+        `/api/students/${studentId}/report?${params.toString()}`,
+        {
+          method: "GET",
+          headers: {
+            "X-District-Id": String(activeDistrictId),
+          },
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error(`Failed to download PDF (HTTP ${res.status})`);
+      }
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+
+      const fullName = student
+        ? `${student.firstName || ""}_${student.lastName || ""}`.trim() ||
+          `student_${studentId}`
+        : `student_${studentId}`;
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${fullName}_behavior_${from || "all"}_${to || "all"}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      setErr(String(e.message || e));
+    }
   }
 
   const fullName = student
@@ -410,8 +458,13 @@ export default function StudentDetailPage() {
         <CardHeader>
           <CardTitle className="text-base flex items-center justify-between">
             <span>Student Overview</span>
-            <span className="text-xs text-slate-500">
-              ID: {student?.id ?? studentId}
+            <span className="text-xs text-slate-500 space-x-2">
+              <span>Internal ID: {student?.id ?? studentId}</span>
+              {student?.studentId && (
+                <span className="border-l border-slate-300 pl-2">
+                  Student ID: {student.studentId}
+                </span>
+              )}
             </span>
           </CardTitle>
         </CardHeader>
@@ -438,7 +491,9 @@ export default function StudentDetailPage() {
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="text-base flex items-center justify-between">
-              <span>Incidents ({from} → {to})</span>
+              <span>
+                Incidents ({from} → {to})
+              </span>
               <div className="flex items-center gap-2 text-xs">
                 <div>
                   <label className="block text-slate-600 mb-0.5">
@@ -481,16 +536,15 @@ export default function StudentDetailPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Disciplines</CardTitle>
+            <CardTitle className="text-base">Disciplines / Interventions</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             <div className="text-xs text-slate-500 mb-2">
-              Showing major incidents as disciplines. You can refine this
-              to use a dedicated discipline endpoint later.
+              Showing interventions for this student in the selected date range.
             </div>
             {disciplines.length === 0 && (
               <div className="text-xs text-slate-500">
-                No disciplines in the selected range.
+                No disciplines/interventions in the selected range.
               </div>
             )}
             {disciplines.map((d) => (
@@ -499,16 +553,20 @@ export default function StudentDetailPage() {
                 className="border rounded-lg px-2 py-1 text-xs mb-1"
               >
                 <div className="flex justify-between">
-                  <span className="font-semibold">{d.category}</span>
+                  <span className="font-semibold">
+                    {d.tier ? `Tier ${d.tier}` : "Intervention"}
+                  </span>
                   <span>
-                    {new Date(d.occurredAt).toLocaleDateString()}
+                    {d.startDate
+                      ? new Date(d.startDate).toLocaleDateString()
+                      : "—"}
                   </span>
                 </div>
                 <div className="text-slate-500">
-                  {d.description || "—"}
+                  {d.strategy || d.description || "—"}
                 </div>
                 <div className="text-slate-400 mt-0.5">
-                  By {d.reportedBy || "—"}
+                  By {d.assignedBy || d.reportedBy || "—"}
                 </div>
               </div>
             ))}

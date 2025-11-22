@@ -18,6 +18,7 @@ import AdminTeacherCreate from "@/components/admin/AdminTeacherCreate.jsx";
 // Other sections
 import LoginPage from "@/components/auth/LoginPage.jsx";
 import ReportsPage from "@/components/reports/ReportsPage.jsx";
+import StudentDetailPage from "@/components/student/StudentDetailsPage.jsx";
 import TeacherDashboard from "@/components/teacher/TeacherDashboard.jsx";
 
 /** Redirect "/" to a sensible home after login; otherwise go to /login */
@@ -104,6 +105,18 @@ export default function App() {
           </Protected>
         }
       />
+
+      <Route
+        path="/admin/students/:studentId"
+        element={
+          <Protected roles={["Admin", "Teacher"]}>
+            <AppShell>
+              <StudentDetailPage />
+            </AppShell>
+          </Protected>
+        }
+      />
+
 
       {/* Reports — currently admin-only; widen roles if you like */}
       <Route
