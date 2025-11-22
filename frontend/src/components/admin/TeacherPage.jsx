@@ -80,9 +80,7 @@ export default function TeacherPage() {
   }
 
   function onPickStudent(s) {
-    // navigate to the Student Detail page
-    // IMPORTANT: use the numeric DB id, not the studentId code like "S011"
-    navigate(`/admin/students/${s.id}`);
+    navigate(`/admin/students/${s.id}`); // numeric DB id
   }
 
   // ---------- Existing teacher management logic ----------
@@ -183,10 +181,10 @@ export default function TeacherPage() {
       title="Teacher Tools"
       subtitle="Search students and manage teacher accounts"
     >
-      {/* --- Student search card at the top --- */}
-      <Card className="mb-6">
+      {/* --- Centered student search card --- */}
+      <Card className="mb-8 max-w-xl mx-auto mt-4">
         <CardHeader>
-          <CardTitle className="text-base">Find a Student</CardTitle>
+          <CardTitle className="text-base text-center">Find a Student</CardTitle>
         </CardHeader>
         <CardContent>
           {searchError && (
@@ -195,8 +193,8 @@ export default function TeacherPage() {
             </div>
           )}
 
-          <div className="max-w-xl">
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+          <div className="max-w-xl mx-auto">
+            <label className="block text-sm font-medium text-slate-700 mb-1 text-center">
               Search by name or student ID
             </label>
             <Input
@@ -206,12 +204,11 @@ export default function TeacherPage() {
             />
           </div>
 
-          <div className="mt-3 text-xs text-slate-500">
-            Type at least 2 characters. Click a student to open their detail
-            page.
+          <div className="mt-3 text-xs text-slate-500 text-center">
+            Type at least 2 characters. Click a student to open their detail page.
           </div>
 
-          <div className="mt-4 border rounded-lg max-w-xl max-h-64 overflow-auto">
+          <div className="mt-4 border rounded-lg max-h-64 overflow-auto">
             {searchLoading && (
               <div className="px-3 py-2 text-sm text-slate-500">Searching…</div>
             )}

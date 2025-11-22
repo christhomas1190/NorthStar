@@ -9,6 +9,7 @@ import { Clock, Tag, BarChart3 } from "lucide-react";
 import KPICard from "@/components/common/KPICard";
 import { useAuth } from "@/state/auth.jsx";
 import { useNavigate } from "react-router-dom";
+import StudentDetailPage from "@/components/student/StudentDetailsPage.jsx";
 
 
 // ---------- Date helpers (LOCAL calendar days, no UTC shift) ----------

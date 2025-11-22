@@ -285,13 +285,14 @@ function LineChartWithAxes({ points = [], width = 600, height = 220 }) {
 // ---------- Page ----------
 export default function StudentDetailPage() {
   const { studentId } = useParams();
-  const { activeDistrictId } = useAuth();
+const { activeDistrictId, user } = useAuth();
 
   const [from, setFrom] = useState(startOfCurrentYear());
   const [to, setTo] = useState(today());
 
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
+  const canDownloadPdf = user?.role === "Admin";
 
   const [student, setStudent] = useState(null);
   const [allIncidents, setAllIncidents] = useState([]);
@@ -432,18 +433,19 @@ export default function StudentDetailPage() {
 
   return (
     <Page
-      title={`Student Detail`}
-      subtitle={fullName}
-      actions={
-        <Button variant="outline" onClick={handleDownloadPdf}>
-          <FileDown size={16} className="mr-2" />
-          Download PDF
-        </Button>
-      }
-    >
+        title="Student Detail"
+        subtitle={fullName}
+        actions={
+          canDownloadPdf && (
+            <Button variant="outline" onClick={handleDownloadPdf}>
+              <FileDown size={16} className="mr-2" />
+              Download PDF
+            </Button>
+          )
+        }
+      >
       <PageTabs
         items={[
-          { label: "Admin Dashboard", to: "/admin" },
           { label: "Reports & Trends", to: "/reports" },
         ]}
       />
