@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import Page from "@/components/layout/Page";
 import PageTabs from "@/components/layout/PageTabs";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { FileDown, BarChart3 } from "lucide-react";
+import { FileDown, BarChart3, Plus } from "lucide-react";
 import { useAuth } from "@/state/auth.jsx";
 
 // ---------- Date helpers ----------
@@ -287,12 +287,17 @@ export default function StudentDetailPage() {
   const { studentId } = useParams();
 const { activeDistrictId, user } = useAuth();
 
+const nav = useNavigate();
+
+  const canDownloadPdf = user?.role === "Admin";
+  const canCreateIncident =
+    user?.role === "Admin" || user?.role === "Teacher";
+
   const [from, setFrom] = useState(startOfCurrentYear());
   const [to, setTo] = useState(today());
 
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
-  const canDownloadPdf = user?.role === "Admin";
 
   const [student, setStudent] = useState(null);
   const [allIncidents, setAllIncidents] = useState([]);
@@ -380,70 +385,81 @@ const { activeDistrictId, user } = useAuth();
     });
   }, [student, from, to]);
 
-  async function handleDownloadPdf() {
-    if (!activeDistrictId || !studentId) {
-      setErr("Missing district or student id for PDF export.");
-      return;
+    function handleCreateIncident() {
+      nav(`/admin/students/${studentId}/incidents/new`);
     }
-    try {
-      setErr("");
-      const params = new URLSearchParams();
-      if (from) params.append("from", from);
-      if (to) params.append("to", to);
 
-      // Expected backend endpoint:
-      // GET /api/students/{id}/report?from=&to=
-      const res = await fetch(
-        `/api/students/${studentId}/report?${params.toString()}`,
-        {
-          method: "GET",
-          headers: {
-            "X-District-Id": String(activeDistrictId),
-          },
+      async function handleDownloadPdf() {
+        if (!activeDistrictId || !studentId) {
+          setErr("Missing district or student id for PDF export.");
+          return;
         }
-      );
+        try {
+          setErr("");
+          const params = new URLSearchParams();
+          if (from) params.append("from", from);
+          if (to) params.append("to", to);
 
-      if (!res.ok) {
-        throw new Error(`Failed to download PDF (HTTP ${res.status})`);
+          const res = await fetch(
+            `/api/students/${studentId}/report?${params.toString()}`,
+            {
+              method: "GET",
+              headers: {
+                "X-District-Id": String(activeDistrictId),
+              },
+            }
+          );
+
+          if (!res.ok) {
+            throw new Error(`Failed to download PDF (HTTP ${res.status})`);
+          }
+
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+
+          const fullName = student
+            ? `${student.firstName || ""}_${student.lastName || ""}`.trim() ||
+              `student_${studentId}`
+            : `student_${studentId}`;
+
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `${fullName}_behavior_${from || "all"}_${to || "all"}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        } catch (e) {
+          setErr(String(e.message || e));
+        }
       }
 
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-
       const fullName = student
-        ? `${student.firstName || ""}_${student.lastName || ""}`.trim() ||
-          `student_${studentId}`
-        : `student_${studentId}`;
+        ? `${student.firstName || ""} ${student.lastName || ""}`.trim()
+        : `Student #${studentId}`;
 
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${fullName}_behavior_${from || "all"}_${to || "all"}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } catch (e) {
-      setErr(String(e.message || e));
-    }
-  }
+      return (
+        <Page
+          title="Student Detail"
+          subtitle={fullName}
+          actions={
+            <div className="flex gap-2">
+              {canCreateIncident && (
+                <Button onClick={handleCreateIncident}>
+                  <Plus size={16} className="mr-1" />
+                  Create Incident
+                </Button>
+              )}
 
-  const fullName = student
-    ? `${student.firstName || ""} ${student.lastName || ""}`.trim()
-    : `Student #${studentId}`;
-
-  return (
-    <Page
-        title="Student Detail"
-        subtitle={fullName}
-        actions={
-          canDownloadPdf && (
-            <Button variant="outline" onClick={handleDownloadPdf}>
-              <FileDown size={16} className="mr-2" />
-              Download PDF
-            </Button>
-          )
-        }
-      >
+              {canDownloadPdf && (
+                <Button variant="outline" onClick={handleDownloadPdf}>
+                  <FileDown size={16} className="mr-2" />
+                  Download PDF
+                </Button>
+              )}
+            </div>
+          }
+        >
       <PageTabs
         items={[
           { label: "Reports & Trends", to: "/reports" },

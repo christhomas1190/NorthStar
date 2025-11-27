@@ -20,6 +20,8 @@ import LoginPage from "@/components/auth/LoginPage.jsx";
 import ReportsPage from "@/components/reports/ReportsPage.jsx";
 import StudentDetailPage from "@/components/student/StudentDetailsPage.jsx";
 import TeacherDashboard from "@/components/teacher/TeacherDashboard.jsx";
+import CreateIncidentPage from "@/components/incidents/CreateIncidentPage.jsx";
+
 
 /** Redirect "/" to a sensible home after login; otherwise go to /login */
 function HomeRedirect() {
@@ -138,11 +140,23 @@ export default function App() {
         }
       />
 
+      <Route
+        path="/admin/students/:studentId/incidents/new"
+        element={
+          <Protected roles={["Admin", "Teacher"]}>
+            <AppShell>
+              <CreateIncidentPage />
+            </AppShell>
+          </Protected>
+        }
+      />
+
       {/* Unauthorized helper */}
       <Route
         path="/unauthorized"
         element={<AppShell><div className="p-6">Unauthorized</div></AppShell>}
       />
+
 
       {/* Catch-all */}
       <Route path="*" element={<Navigate to="/" replace />} />
