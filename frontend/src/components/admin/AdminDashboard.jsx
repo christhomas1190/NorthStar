@@ -314,6 +314,8 @@ function LineChartWithAxes({ points = [], width = 420, height = 220 }) {
 
 export default function AdminDashboard() {
   const { activeDistrictId, activeSchoolId } = useAuth();
+    const nav = useNavigate();
+
 
   // Default range: last 7 days (today + previous 6)
   const [from, setFrom] = useState(daysAgo(6));
@@ -508,6 +510,7 @@ export default function AdminDashboard() {
         items={[
           { label: "Admin Dashboard", to: "/admin" },
           { label: "Reports & Trends", to: "/reports" },
+          { label: "Discipline", to: "/admin/disciplines/new" },
         ]}
       />
 

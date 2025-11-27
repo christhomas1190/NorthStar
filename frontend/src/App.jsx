@@ -14,6 +14,8 @@ import SetEscalationRules from "@/components/admin/SetEscalationRules.jsx";
 import ManageIntervention from "@/components/admin/ManageIntervention.jsx";
 import TeachersPage from "@/components/admin/TeacherPage.jsx";
 import AdminTeacherCreate from "@/components/admin/AdminTeacherCreate.jsx";
+import CreateDisciplinePage from "@/components/disciplines/CreateDisciplinePage.jsx";
+
 
 // Other sections
 import LoginPage from "@/components/auth/LoginPage.jsx";
@@ -86,6 +88,16 @@ export default function App() {
         element={
           <Protected roles={["Admin"]}>
             <AppShell><ManageIntervention /></AppShell>
+          </Protected>
+        }
+      />
+      <Route
+        path="/admin/disciplines/new"
+        element={
+          <Protected roles={["Admin"]}>
+            <AppShell>
+              <CreateDisciplinePage />
+            </AppShell>
           </Protected>
         }
       />
