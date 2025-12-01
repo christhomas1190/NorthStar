@@ -102,7 +102,7 @@ export default function App() {
         }
       />
       <Route
-        path="/admin/students/:studentId/discipline/new"
+        path="/admin/students/:studentId/disciplines/new"
         element={
           <Protected roles={["Admin"]}>
             <AppShell>

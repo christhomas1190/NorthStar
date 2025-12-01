@@ -448,7 +448,7 @@ const nav = useNavigate();
                   <Button
                     variant="outline"
                     onClick={() =>
-                      nav(`/admin/students/${studentId}/discipline/new`)
+                      nav(`/admin/students/${studentId}/disciplines/new`)
                     }
                   >
                     <Plus size={16} className="mr-1" />

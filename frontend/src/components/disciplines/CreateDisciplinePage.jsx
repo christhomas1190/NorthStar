@@ -34,8 +34,9 @@ export default function CreateDisciplinePage() {
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
 
-  const missingContext = !activeDistrictId || !activeSchoolId;
   const isLockedStudent = !!routeStudentId;
+  const missingContext = !activeDistrictId || !activeSchoolId;
+
 
   // Load students for current district + school
     useEffect(() => {
@@ -55,7 +56,7 @@ export default function CreateDisciplinePage() {
         setLoadingStudents(true);
         setStudentsError("");
         try {
-          const res = await fetch(`/api/schools/${activeSchoolId}/students`, {
+          const res = await fetch(`/api/students`,  {
             headers: {
               "X-District-Id": String(activeDistrictId),
               "Content-Type": "application/json",
@@ -125,9 +126,8 @@ export default function CreateDisciplinePage() {
         throw new Error("Please select a student.");
       }
 
-      const res = await fetch(
-        `/api/students/${selectedStudentId}/interventions`,
-        {
+       const res = await fetch(`/api/students/${selectedStudentId}/interventions`, {
+
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -161,7 +161,6 @@ export default function CreateDisciplinePage() {
     nav("/admin");
   }
 
-  const missingContext = !activeDistrictId || !activeSchoolId;
   const lockedStudent = isLockedStudent
     ? students.find((s) => String(s.id) === String(routeStudentId))
     : null;
