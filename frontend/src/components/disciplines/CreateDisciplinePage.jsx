@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState, useMemo } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,7 +15,7 @@ import { useAuth } from "@/state/auth.jsx";
 export default function CreateDisciplinePage() {
   const nav = useNavigate();
   const { activeDistrictId, activeSchoolId } = useAuth();
-
+  const { studentId: routeStudentId } = useParams();
   const [students, setStudents] = useState([]);
   const [loadingStudents, setLoadingStudents] = useState(true);
   const [studentsError, setStudentsError] = useState("");
@@ -32,6 +32,10 @@ export default function CreateDisciplinePage() {
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const missingContext = !activeDistrictId || !activeSchoolId;
+  const isLockedStudent = !!routeStudentId;
 
   // Load students for current district + school
   useEffect(() => {
