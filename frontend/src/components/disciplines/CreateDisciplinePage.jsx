@@ -38,57 +38,61 @@ export default function CreateDisciplinePage() {
   const isLockedStudent = !!routeStudentId;
 
   // Load students for current district + school
-  useEffect(() => {
-    if (!activeDistrictId || !activeSchoolId) {
-      setLoadingStudents(false);
-      setStudentsError(
-        "Select a district and school before creating a discipline."
-      );
-      setStudents([]);
-      setSelectedStudentId("");
-      return;
-    }
-
-    let alive = true;
-
-    (async () => {
-      setLoadingStudents(true);
-      setStudentsError("");
-      try {
-        const res = await fetch(`/api/schools/${activeSchoolId}/students`, {
-          headers: {
-            "X-District-Id": String(activeDistrictId),
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!res.ok) {
-          throw new Error(`Failed to load students (HTTP ${res.status})`);
-        }
-
-        const data = await res.json();
-        if (!alive) return;
-
-        const list = Array.isArray(data) ? data : [];
-        setStudents(list);
-
-        if (list.length > 0) {
-          setSelectedStudentId(String(list[0].id));
-        } else {
-          setSelectedStudentId("");
-        }
-      } catch (err) {
-        if (!alive) return;
-        setStudentsError(String(err.message || err));
-      } finally {
-        if (alive) setLoadingStudents(false);
+    useEffect(() => {
+      if (missingContext) {
+        setLoadingStudents(false);
+        setStudentsError(
+          "Select a district and school before creating a discipline."
+        );
+        setStudents([]);
+        setSelectedStudentId(routeStudentId ? String(routeStudentId) : "");
+        return;
       }
-    })();
 
-    return () => {
-      alive = false;
-    };
-  }, [activeDistrictId, activeSchoolId]);
+      let alive = true;
+
+      (async () => {
+        setLoadingStudents(true);
+        setStudentsError("");
+        try {
+          const res = await fetch(`/api/schools/${activeSchoolId}/students`, {
+            headers: {
+              "X-District-Id": String(activeDistrictId),
+              "Content-Type": "application/json",
+            },
+          });
+
+          if (!res.ok) {
+            throw new Error(`Failed to load students (HTTP ${res.status})`);
+          }
+
+          const data = await res.json();
+          if (!alive) return;
+
+          const list = Array.isArray(data) ? data : [];
+          setStudents(list);
+
+          if (routeStudentId) {
+            // Coming from student page – lock to that student
+            setSelectedStudentId(String(routeStudentId));
+          } else if (list.length > 0) {
+            setSelectedStudentId(String(list[0].id));
+          } else {
+            setSelectedStudentId("");
+          }
+        } catch (err) {
+          if (!alive) return;
+          setStudentsError(String(err.message || err));
+        } finally {
+          if (alive) setLoadingStudents(false);
+        }
+      })();
+
+      return () => {
+        alive = false;
+      };
+    }, [activeDistrictId, activeSchoolId, routeStudentId, missingContext]);
+
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -97,6 +101,15 @@ export default function CreateDisciplinePage() {
       [name]: value,
     }));
   }
+  const filteredStudents = useMemo(() => {
+      const term = searchTerm.trim().toLowerCase();
+      if (!term) return students;
+      return students.filter((s) => {
+        const name = `${s.firstName || ""} ${s.lastName || ""}`.toLowerCase();
+        const idStr = String(s.id || "");
+        return name.includes(term) || idStr.includes(term);
+      });
+    }, [students, searchTerm]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -149,7 +162,9 @@ export default function CreateDisciplinePage() {
   }
 
   const missingContext = !activeDistrictId || !activeSchoolId;
-
+  const lockedStudent = isLockedStudent
+    ? students.find((s) => String(s.id) === String(routeStudentId))
+    : null;
   return (
     <div className="max-w-3xl mx-auto p-4">
       <Card>
@@ -178,29 +193,66 @@ export default function CreateDisciplinePage() {
                 </p>
               )}
 
-              {loadingStudents && !missingContext ? (
-                <p className="text-xs text-slate-500">Loading students…</p>
-              ) : !missingContext && students.length === 0 ? (
-                <p className="text-xs text-slate-500">
-                  No students found for this school.
-                </p>
-              ) : !missingContext ? (
-                <select
-                  className="w-full text-sm border rounded-md px-2 py-1.5"
-                  value={selectedStudentId}
-                  onChange={(e) => setSelectedStudentId(e.target.value)}
-                >
-                  <option value="" disabled>
-                    Select a student…
-                  </option>
-                  {students.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.firstName} {s.lastName} (ID: {s.id})
-                    </option>
-                  ))}
-                </select>
-              ) : null}
+              {isLockedStudent ? (
+                <div className="text-sm rounded-md border bg-slate-50 px-3 py-2">
+                  {lockedStudent ? (
+                    <>
+                      <div className="font-medium">
+                        {lockedStudent.firstName} {lockedStudent.lastName}
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        ID: {lockedStudent.id}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-xs text-slate-500">
+                      Student ID: {routeStudentId}
+                    </div>
+                  )}
+                  <p className="text-xs text-slate-500 mt-1">
+                    This discipline will be saved to this student.
+                  </p>
+                </div>
+              ) : (
+                !missingContext && (
+                  <div className="space-y-2">
+                    <Input
+                      placeholder="Search by name or ID…"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="mb-1"
+                    />
+                    {loadingStudents ? (
+                      <p className="text-xs text-slate-500">
+                        Loading students…
+                      </p>
+                    ) : filteredStudents.length === 0 ? (
+                      <p className="text-xs text-slate-500">
+                        No matching students.
+                      </p>
+                    ) : (
+                      <select
+                        className="w-full text-sm border rounded-md px-2 py-1.5"
+                        value={selectedStudentId}
+                        onChange={(e) =>
+                          setSelectedStudentId(e.target.value)
+                        }
+                      >
+                        <option value="" disabled>
+                          Select a student…
+                        </option>
+                        {filteredStudents.map((s) => (
+                          <option key={s.id} value={s.id}>
+                            {s.firstName} {s.lastName} (ID: {s.id})
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+                )
+              )}
             </div>
+
 
             {error && (
               <p className="text-xs text-red-600">

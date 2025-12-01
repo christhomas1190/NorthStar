@@ -388,7 +388,6 @@ const nav = useNavigate();
     function handleCreateIncident() {
       nav(`/admin/students/${studentId}/incidents/new`);
     }
-
       async function handleDownloadPdf() {
         if (!activeDistrictId || !studentId) {
           setErr("Missing district or student id for PDF export.");
