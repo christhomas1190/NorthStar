@@ -292,6 +292,7 @@ const nav = useNavigate();
   const canDownloadPdf = user?.role === "Admin";
   const canCreateIncident =
     user?.role === "Admin" || user?.role === "Teacher";
+  const canCreateDiscipline = user?.role === "Admin";
 
   const [from, setFrom] = useState(startOfCurrentYear());
   const [to, setTo] = useState(today());
@@ -438,27 +439,39 @@ const nav = useNavigate();
         : `Student #${studentId}`;
 
       return (
-        <Page
-          title="Student Detail"
-          subtitle={fullName}
-          actions={
-            <div className="flex gap-2">
-              {canCreateIncident && (
-                <Button onClick={handleCreateIncident}>
-                  <Plus size={16} className="mr-1" />
-                  Create Incident
-                </Button>
-              )}
+          <Page
+            title="Student Detail"
+            subtitle={fullName}
+            actions={
+              <div className="flex gap-2">
+                {canCreateDiscipline && (
+                  <Button
+                    variant="outline"
+                    onClick={() =>
+                      nav(`/admin/students/${studentId}/discipline/new`)
+                    }
+                  >
+                    <Plus size={16} className="mr-1" />
+                    Add Discipline
+                  </Button>
+                )}
 
-              {canDownloadPdf && (
-                <Button variant="outline" onClick={handleDownloadPdf}>
-                  <FileDown size={16} className="mr-2" />
-                  Download PDF
-                </Button>
-              )}
-            </div>
-          }
-        >
+                {canCreateIncident && (
+                  <Button onClick={handleCreateIncident}>
+                    <Plus size={16} className="mr-1" />
+                    Create Incident
+                  </Button>
+                )}
+
+                {canDownloadPdf && (
+                  <Button variant="outline" onClick={handleDownloadPdf}>
+                    <FileDown size={16} className="mr-2" />
+                    Download PDF
+                  </Button>
+                )}
+              </div>
+            }
+          >
       <PageTabs
         items={[
           { label: "Reports & Trends", to: "/reports" },

@@ -101,6 +101,16 @@ export default function App() {
           </Protected>
         }
       />
+      <Route
+        path="/admin/students/:studentId/discipline/new"
+        element={
+          <Protected roles={["Admin"]}>
+            <AppShell>
+              <CreateDisciplinePage />
+            </AppShell>
+          </Protected>
+        }
+      />
 
       {/* Teachers CRUD page is admin-only, but if you want counselors too, add them here */}
       <Route
