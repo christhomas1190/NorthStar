@@ -30,6 +30,7 @@ export default function CreateDisciplinePage() {
     endDate: "",
   });
 
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -218,35 +219,43 @@ export default function CreateDisciplinePage() {
                     <Input
                       placeholder="Search by name or ID…"
                       value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onChange={(e) => {
+                        setSearchTerm(e.target.value);
+                        setShowSuggestions(true);      // show list while typing
+                      }}
                       className="mb-1"
                     />
+
                     {loadingStudents ? (
-                      <p className="text-xs text-slate-500">
-                        Loading students…
-                      </p>
-                    ) : filteredStudents.length === 0 ? (
-                      <p className="text-xs text-slate-500">
-                        No matching students.
-                      </p>
-                    ) : (
-                      <select
-                        className="w-full text-sm border rounded-md px-2 py-1.5"
-                        value={selectedStudentId}
-                        onChange={(e) =>
-                          setSelectedStudentId(e.target.value)
-                        }
-                      >
-                        <option value="" disabled>
-                          Select a student…
-                        </option>
-                        {filteredStudents.map((s) => (
-                          <option key={s.id} value={s.id}>
-                            {s.firstName} {s.lastName} (ID: {s.id})
-                          </option>
-                        ))}
-                      </select>
-                    )}
+                      <p className="text-xs text-slate-500">Loading students…</p>
+                    ) : filteredStudents.length === 0 && searchTerm.trim() ? (
+                      <p className="text-xs text-slate-500">No matching students.</p>
+                    ) : null}
+
+                    {showSuggestions &&
+                      !loadingStudents &&
+                      filteredStudents.length > 0 &&
+                      searchTerm.trim() && (
+                        <div className="mt-1 max-h-40 overflow-y-auto border rounded-md bg-white shadow-sm text-sm">
+                          {filteredStudents.map((s) => (
+                            <button
+                              type="button"
+                              key={s.id}
+                              className="w-full text-left px-2 py-1.5 hover:bg-slate-100"
+                              onClick={() => {
+                                setSelectedStudentId(String(s.id));
+                                // Fill the input with the chosen name
+                                setSearchTerm(`${s.firstName} ${s.lastName} (ID: ${s.id})`);
+                                // Hide the suggestions list
+                                setShowSuggestions(false);
+                              }}
+                            >
+                              {s.firstName} {s.lastName} (ID: {s.id})
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
                   </div>
                 )
               )}

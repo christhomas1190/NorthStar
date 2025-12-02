@@ -28,7 +28,7 @@ public class InterventionServiceImpl implements InterventionService {
 
     private InterventionSummaryDTO toSummary(Intervention iv) {
         long id = (iv.getId() != null) ? iv.getId() : 0L;
-        Long did = (iv.getDistrict() != null) ? iv.getDistrict().getDistrictId() : null;
+        long did = (iv.getDistrict() != null) ? iv.getDistrict().getDistrictId() : null;
         return new InterventionSummaryDTO(
                 id,
                 iv.getTier(),
