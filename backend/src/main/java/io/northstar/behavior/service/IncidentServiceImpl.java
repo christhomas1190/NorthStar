@@ -1,3 +1,4 @@
+// src/main/java/io/northstar/behavior/service/IncidentServiceImpl.java
 package io.northstar.behavior.service;
 
 import io.northstar.behavior.dto.CreateIncidentRequest;
@@ -27,6 +28,8 @@ public class IncidentServiceImpl implements IncidentService {
         this.students = students;
     }
 
+    // ---------- Mapping helpers ----------
+
     private IncidentDTO toDto(Incident inc) {
         long id  = (inc.getId() != null) ? inc.getId() : 0L;
         long sid = (inc.getStudentId() != null) ? inc.getStudentId() : 0L;
@@ -47,18 +50,20 @@ public class IncidentServiceImpl implements IncidentService {
 
     private long countRecentIncidentsForStudent(Long studentId, int windowDays) {
         List<Incident> all = incidents.findByStudentIdOrderByOccurredAtDesc(studentId);
-
         OffsetDateTime cutoff = OffsetDateTime.now().minusDays(windowDays);
 
         long count = 0;
         for (Incident incident : all) {
             if (incident.getOccurredAt().isBefore(cutoff)) {
-                break; // they're sorted desc, so we can stop
+                // they're sorted desc, so once we're past the window we can stop
+                break;
             }
             count++;
         }
         return count;
     }
+
+    // ---------- Top-level create/find methods ----------
 
     @Override
     public IncidentDTO create(CreateIncidentRequest req) {
@@ -80,28 +85,34 @@ public class IncidentServiceImpl implements IncidentService {
         return toDto(incidents.save(inc));
     }
 
-    @Override @Transactional(readOnly = true)
+    @Override
+    @Transactional(readOnly = true)
     public List<IncidentDTO> findAll() {
         List<Incident> list = incidents.findAll();
         List<IncidentDTO> out = new ArrayList<>();
-        for (Incident i : list) out.add(toDto(i));
+        for (Incident i : list) {
+            out.add(toDto(i));
+        }
         return out;
     }
 
-    @Override @Transactional(readOnly = true)
+    @Override
+    @Transactional(readOnly = true)
     public IncidentDTO findById(Long id) {
         Incident i = incidents.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Incident " + id + " not found"));
         return toDto(i);
     }
 
-    @Override @Transactional(readOnly = true)
+    @Override
+    @Transactional(readOnly = true)
     public List<IncidentSummaryDTO> summaryForStudent(Long studentId) {
         List<Incident> list = incidents.findByStudentIdOrderByOccurredAtDesc(studentId);
         List<IncidentSummaryDTO> out = new ArrayList<>();
         for (Incident i : list) {
             long id = (i.getId() != null) ? i.getId() : 0L;
             Long did = (i.getDistrict() != null) ? i.getDistrict().getDistrictId() : null;
+
             out.add(new IncidentSummaryDTO(
                     id,
                     i.getCategory(),
@@ -114,17 +125,43 @@ public class IncidentServiceImpl implements IncidentService {
     }
 
     @Override
-    public void delete(Long id) { incidents.deleteById(id); }
+    public void delete(Long id) {
+        incidents.deleteById(id);
+    }
 
-    @Override @Transactional(readOnly = true)
-    public List<Incident> listForStudent(Long studentId) {
-        return incidents.findByStudentIdOrderByOccurredAtDesc(studentId);
+    // ---------- Student-scoped methods (district-aware) ----------
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<IncidentDTO> listForStudent(Long studentId, Long districtId) {
+        // Load the student and enforce district boundary
+        Student s = students.findById(studentId)
+                .orElseThrow(() -> new EntityNotFoundException("Student " + studentId + " not found"));
+
+        if (s.getDistrict() == null || !s.getDistrict().getDistrictId().equals(districtId)) {
+            throw new EntityNotFoundException(
+                    "Student " + studentId + " not found in district " + districtId
+            );
+        }
+
+        List<Incident> list = incidents.findByStudentIdOrderByOccurredAtDesc(studentId);
+        List<IncidentDTO> out = new ArrayList<>();
+        for (Incident i : list) {
+            out.add(toDto(i));
+        }
+        return out;
     }
 
     @Override
-    public IncidentDTO createForStudent(Long studentId, CreateIncidentRequest req) {
+    public IncidentDTO createForStudent(Long studentId, Long districtId, CreateIncidentRequest req) {
         Student s = students.findById(studentId)
                 .orElseThrow(() -> new EntityNotFoundException("Student " + studentId + " not found"));
+
+        if (s.getDistrict() == null || !s.getDistrict().getDistrictId().equals(districtId)) {
+            throw new EntityNotFoundException(
+                    "Student " + studentId + " not found in district " + districtId
+            );
+        }
 
         Incident inc = new Incident();
         inc.setStudent(s);

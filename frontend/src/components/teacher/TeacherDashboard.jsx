@@ -403,16 +403,34 @@ export default function TeacherDashboard() {
   }, [allIncidents, from, to, selectedStudent]);
 
   const chartPoints = useMemo(() => {
+    const fromDate = parseLocalDay(from);
+    const toDate = parseLocalDay(to);
+    if (!fromDate || !toDate) return [];
+
+    // 1) Count incidents per day in the range
     const counts = new Map();
     for (const it of incidentsInRange) {
-      const key = dayStringFromOccurredAt(it.occurredAt);
+      const key = dayStringFromOccurredAt(it.occurredAt); // "YYYY-MM-DD"
       if (!key) continue;
       counts.set(key, (counts.get(key) || 0) + 1);
     }
-    return Array.from(counts.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([date, count]) => ({ date, count }));
-  }, [incidentsInRange]);
+
+    // 2) Build one point per day from from → to, filling missing with 0
+    const points = [];
+    for (
+      let d = new Date(fromDate);
+      d <= toDate;
+      d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1)
+    ) {
+      const key = fmtDay(d); // "YYYY-MM-DD"
+      points.push({
+        date: key,
+        count: counts.get(key) || 0,
+      });
+    }
+
+    return points;
+  }, [incidentsInRange, from, to]);
 
   return (
     <Page

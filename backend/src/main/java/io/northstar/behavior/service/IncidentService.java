@@ -10,10 +10,11 @@ import java.util.List;
 
 public interface IncidentService {
     IncidentDTO create(CreateIncidentRequest req);
-    IncidentDTO createForStudent(Long studentId, CreateIncidentRequest req);
     List<IncidentDTO> findAll();
     IncidentDTO findById(Long id);
     List<IncidentSummaryDTO> summaryForStudent(Long studentId);
-    List<Incident> listForStudent(Long studentId);
+    List<IncidentDTO> listForStudent(Long studentId, Long districtId);
     void delete(Long id);
+
+    IncidentDTO createForStudent(Long studentId, Long districtId, CreateIncidentRequest req);
 }

@@ -20,33 +20,48 @@ export default function Header() {
   // 🔍 search + students state
   const [search, setSearch] = useState("");
   const [students, setStudents] = useState([]);
-  const [studentsLoadedDistrict, setStudentsLoadedDistrict] = useState(null);
 
-  // Load students for the active district (once per district change)
+  // Load students whenever the active district changes
   useEffect(() => {
     if (!activeDistrictId) {
       setStudents([]);
-      setStudentsLoadedDistrict(null);
       return;
     }
-    if (studentsLoadedDistrict === activeDistrictId) return;
 
     let alive = true;
+
     (async () => {
       try {
+        console.log("Loading students for district:", activeDistrictId);
+
         const res = await fetch("/api/students", {
+          method: "GET",
           headers: {
             "X-District-Id": String(activeDistrictId),
             "Content-Type": "application/json",
           },
         });
-        const data = res.ok ? await res.json() : [];
+
+        if (!res.ok) {
+          const text = await res.text();
+          console.error(
+            "Failed to load students for header search:",
+            res.status,
+            text
+          );
+          if (!alive) return;
+          setStudents([]);
+          return;
+        }
+
+        const data = await res.json();
+        console.log("Loaded students:", Array.isArray(data) ? data.length : 0);
+
         if (!alive) return;
         setStudents(Array.isArray(data) ? data : []);
-        setStudentsLoadedDistrict(activeDistrictId);
       } catch (e) {
         if (!alive) return;
-        console.error("Failed to load students for header search:", e);
+        console.error("Error loading students for header search:", e);
         setStudents([]);
       }
     })();
@@ -54,12 +69,13 @@ export default function Header() {
     return () => {
       alive = false;
     };
-  }, [activeDistrictId, studentsLoadedDistrict]);
+  }, [activeDistrictId]);
 
   // Build filtered suggestions as you type
   const suggestions = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return [];
+
     const out = [];
     for (let i = 0; i < students.length; i++) {
       const s = students[i];
@@ -77,6 +93,7 @@ export default function Header() {
 
   function goToStudent(student) {
     if (!student) return;
+    // make sure your Student details route uses :id, not :studentId
     nav(`/admin/students/${student.id}`);
     setSearch("");
   }
@@ -105,6 +122,7 @@ export default function Header() {
           </Badge>
         </div>
 
+        {/* Note: hidden on small screens; only visible md+ */}
         <div className="hidden md:flex items-center gap-3 relative">
           {/* Search + suggestions */}
           <div className="relative">
@@ -165,7 +183,9 @@ export default function Header() {
               type="number"
               value={activeDistrictId || ""}
               onChange={(e) =>
-                setActiveDistrictId(Number(e.target.value || 0))
+                setActiveDistrictId(
+                  e.target.value ? Number(e.target.value) : null
+                )
               }
               title="District ID"
               placeholder="Dist"
@@ -175,7 +195,9 @@ export default function Header() {
               type="number"
               value={activeSchoolId || ""}
               onChange={(e) =>
-                setActiveSchoolId(Number(e.target.value || 0))
+                setActiveSchoolId(
+                  e.target.value ? Number(e.target.value) : null
+                )
               }
               title="School ID"
               placeholder="School"

@@ -3,12 +3,19 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import { useAuth } from "@/state/auth.jsx";
 
 export default function CreateIncidentPage() {
   const { studentId } = useParams();
   const nav = useNavigate();
-
+  const { activeDistrictId, user } = useAuth();
   const [form, setForm] = useState({
     category: "",
     severity: "",
@@ -33,23 +40,42 @@ export default function CreateIncidentPage() {
     setSubmitting(true);
     setError("");
 
+    if (!activeDistrictId) {
+      setError("Please set an active district in the header first.");
+      setSubmitting(false);
+      return;
+    }
+
     try {
-      // 🔧 Adjust this if your backend path is different
+      const payload = {
+        category: form.category,
+        severity: form.severity,
+        location: form.location || null,
+        description: form.description,
+        // convert datetime-local to ISO string if provided
+        occurredAt: form.occurredAt
+          ? new Date(form.occurredAt).toISOString()
+          : null,
+          reportedBy: user?.name || user?.email || "Unknown",
+      };
+
       const res = await fetch(`/api/students/${studentId}/incidents`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "X-District-Id": String(activeDistrictId), // 🔑 REQUIRED
         },
-        body: JSON.stringify({
-          category: form.category,
-          severity: form.severity,
-          location: form.location,
-          description: form.description,
-          occurredAt: form.occurredAt || null, // e.g. "2025-11-27T10:30:00"
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        console.error(
+          "Failed to create incident:",
+          res.status,
+          res.statusText,
+          text
+        );
         throw new Error("Failed to create incident");
       }
 
@@ -57,14 +83,17 @@ export default function CreateIncidentPage() {
       nav(`/admin/students/${studentId}`);
     } catch (err) {
       console.error(err);
-      setError("Something went wrong saving the incident. Please try again.");
+      setError(
+        "Something went wrong saving the incident. Please check the district ID and try again."
+      );
     } finally {
       setSubmitting(false);
     }
   }
 
   function handleCancel() {
-    nav(`/schools/${schoolId}/students/${studentId}`);
+    // keep this consistent with your student details route
+    nav(`/admin/students/${studentId}`);
   }
 
   return (
@@ -76,11 +105,7 @@ export default function CreateIncidentPage() {
 
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
-            {error && (
-              <p className="text-sm text-red-600">
-                {error}
-              </p>
-            )}
+            {error && <p className="text-sm text-red-600">{error}</p>}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -111,9 +136,7 @@ export default function CreateIncidentPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">
-                Location
-              </label>
+              <label className="block text-sm font-medium mb-1">Location</label>
               <Input
                 name="location"
                 value={form.location}
@@ -147,7 +170,6 @@ export default function CreateIncidentPage() {
                 required
               />
             </div>
-
           </CardContent>
 
           <CardFooter className="flex justify-end gap-2">

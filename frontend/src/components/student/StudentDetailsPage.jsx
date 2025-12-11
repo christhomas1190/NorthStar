@@ -363,16 +363,33 @@ const nav = useNavigate();
 
   // Chart points per day
   const chartPoints = useMemo(() => {
+    const fromDate = parseLocalDay(from);
+    const toDate = parseLocalDay(to);
+    if (!fromDate || !toDate) return [];
+
+    // 1) Count incidents by day in the range
     const counts = new Map();
     for (const it of incidentsInRange) {
       const key = dayStringFromOccurredAt(it.occurredAt);
       if (!key) continue;
       counts.set(key, (counts.get(key) || 0) + 1);
     }
-    return Array.from(counts.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([date, count]) => ({ date, count }));
-  }, [incidentsInRange]);
+    //    using 0 if that day has no incidents
+    const points = [];
+    for (
+      let d = new Date(fromDate);
+      d <= toDate;
+      d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1)
+    ) {
+      const key = fmtDay(d); // "YYYY-MM-DD"
+      points.push({
+        date: key,
+        count: counts.get(key) || 0,
+      });
+    }
+
+    return points;
+  }, [incidentsInRange, from, to]);
 
   // Disciplines / interventions: pull from student.interventions, filtered by date range
   const disciplines = useMemo(() => {

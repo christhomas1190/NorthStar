@@ -58,12 +58,15 @@ public class AnalyticsServiceImpl implements AnalyticsService {
             if (i.getSeverity() != null) bySeverity.merge(i.getSeverity(), 1, Integer::sum);
         }
 
-        List<Map<String,Object>> byDayArr = new ArrayList<>();
-        for (Map.Entry<LocalDate,Integer> e1 : byDate.entrySet()) {
-            Map<String,Object> row = new LinkedHashMap<>();
-            row.put("date", e1.getKey().toString());
-            row.put("count", e1.getValue());
+        List<Map<String, Object>> byDayArr = new ArrayList<>();
+        LocalDate cursor = s;
+        while (!cursor.isAfter(e)) {
+            int count = byDate.getOrDefault(cursor, 0);
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("date", cursor.toString());
+            row.put("count", count);
             byDayArr.add(row);
+            cursor = cursor.plusDays(1);
         }
 
         List<Map<String,Object>> byCategoryArr = new ArrayList<>();
