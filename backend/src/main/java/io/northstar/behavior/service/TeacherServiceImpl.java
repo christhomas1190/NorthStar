@@ -1,14 +1,19 @@
 package io.northstar.behavior.service;
 
 import io.northstar.behavior.dto.TeacherDTO;
+import io.northstar.behavior.model.Admin;
 import io.northstar.behavior.model.School;
 import io.northstar.behavior.model.Teacher;
+import io.northstar.behavior.repository.AdminRepository;
 import io.northstar.behavior.repository.DistrictRepository;
-import io.northstar.behavior.repository.SchoolRepository;   // <-- add
+import io.northstar.behavior.repository.SchoolRepository;
 import io.northstar.behavior.repository.TeacherRepository;
+import io.northstar.behavior.dto.CreateTeacherRequest;
+
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -21,17 +26,21 @@ public class TeacherServiceImpl implements TeacherService {
 
     private final TeacherRepository repo;
     private final DistrictRepository districtRepository;
-    private final SchoolRepository schoolRepository;       // <-- add
+    private final SchoolRepository schoolRepository;
+    private final AdminRepository adminRepository;
 
     @Value("${app.default-teacher-password:Teach!2025#}")
     private String defaultTeacherPassword;
 
     public TeacherServiceImpl(TeacherRepository repo,
                               DistrictRepository districtRepository,
-                              SchoolRepository schoolRepository) {   // <-- add
+                              SchoolRepository schoolRepository,
+                              AdminRepository adminRepository
+                              ) {
         this.repo = repo;
         this.districtRepository = districtRepository;
-        this.schoolRepository = schoolRepository;                     // <-- add
+        this.schoolRepository = schoolRepository;
+        this.adminRepository=adminRepository;// <-- add
     }
 
     private TeacherDTO toDto(Teacher t){
@@ -44,7 +53,7 @@ public class TeacherServiceImpl implements TeacherService {
                 t.getEmail(),
                 t.getUsername(),
                 did,
-                sid                                               // <-- add
+                sid
         );
     }
 
@@ -79,6 +88,7 @@ public class TeacherServiceImpl implements TeacherService {
                 .hashpw(raw, org.springframework.security.crypto.bcrypt.BCrypt.gensalt());
     }
 
+
     @Override
     @Transactional
     public TeacherDTO create(TeacherDTO dto) {
@@ -90,27 +100,29 @@ public class TeacherServiceImpl implements TeacherService {
         if (dto.email() == null || dto.email().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "email is required");
         }
-        if (dto.districtId() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "districtId is required");
-        }
-        if (dto.schoolId() == null) {                                     // <-- require school
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "schoolId is required");
-        }
+
+        // 1) who is logged in?
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+
+        // 2) load admin and get tenant scope
+        Admin admin = (Admin) adminRepository.findByUserName(username)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "admin not found"));
+
+        Long districtId = admin.getDistrict().getDistrictId();
+        Long schoolId   = admin.getSchool().getSchoolId();
 
         String email = dto.email().trim().toLowerCase();
+
+        // (optional but recommended) scope uniqueness per district if you support multiple districts
         if (repo.existsByEmail(email)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "email already exists");
         }
 
-        // load refs
-        var district = districtRepository.getReferenceById(dto.districtId());
-        School school = schoolRepository.findById(dto.schoolId())
+        // 3) load refs using ADMIN district/school (NOT dto)
+        var district = districtRepository.getReferenceById(districtId);
+        School school = schoolRepository.findById(schoolId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "school not found"));
-
-        // (optional) district-school consistency check
-        if (school.getDistrict() == null || !district.getDistrictId().equals(school.getDistrict().getDistrictId())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "school not in given district");
-        }
 
         Teacher t = new Teacher();
         t.setFirstName(dto.firstName().trim());
@@ -119,10 +131,64 @@ public class TeacherServiceImpl implements TeacherService {
         t.setUsername(generateUsername(t.getFirstName(), t.getLastName()));
         t.setPasswordHash(bcrypt(defaultTeacherPassword));
         t.setDistrict(district);
-        t.setSchool(school);                                              // <-- set school
+        t.setSchool(school);
 
         return toDto(repo.save(t));
     }
+    @Override
+    @Transactional
+    public TeacherDTO createForCurrentAdmin(CreateTeacherRequest req) {
+        if (req == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "body is required");
+        }
+        if (req.firstName() == null || req.firstName().isBlank()
+                || req.lastName() == null || req.lastName().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "first/last name required");
+        }
+        if (req.email() == null || req.email().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "email is required");
+        }
+
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || auth.getName() == null || auth.getName().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "not authenticated");
+        }
+        String username = auth.getName();
+
+        Admin admin = adminRepository.findByUserName(username.trim())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "admin not found"));
+
+        if (admin.getDistrict() == null || admin.getDistrict().getDistrictId() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "admin has no district");
+        }
+        if (admin.getSchool() == null || admin.getSchool().getSchoolId() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "admin has no school");
+        }
+
+        Long districtId = admin.getDistrict().getDistrictId();
+        Long schoolId = admin.getSchool().getSchoolId();
+
+        String email = req.email().trim().toLowerCase();
+        if (repo.existsByEmail(email)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "email already exists");
+        }
+
+        var district = districtRepository.getReferenceById(districtId);
+        School school = schoolRepository.findById(schoolId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "school not found"));
+
+        Teacher t = new Teacher();
+        t.setFirstName(req.firstName().trim());
+        t.setLastName(req.lastName().trim());
+        t.setEmail(email);
+        t.setUsername(generateUsername(t.getFirstName(), t.getLastName()));
+        t.setPasswordHash(bcrypt(defaultTeacherPassword));
+        t.setDistrict(district);
+        t.setSchool(school);
+
+        return toDto(repo.save(t));
+    }
+
 
     @Override
     public List<TeacherDTO> findAll() {

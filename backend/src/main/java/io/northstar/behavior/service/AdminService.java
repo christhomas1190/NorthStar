@@ -1,7 +1,10 @@
 package io.northstar.behavior.service;
 
 import io.northstar.behavior.dto.AdminDTO;
+import io.northstar.behavior.model.Admin;
+
 import java.util.List;
+import java.util.Optional;
 
 public interface AdminService {
     AdminDTO create(AdminDTO dto);
@@ -9,4 +12,5 @@ public interface AdminService {
     AdminDTO findById(Long id);
     AdminDTO update(Long id, AdminDTO dto);
     void delete(Long id);
+    Optional<Admin> findByUserName(String userName);
 }

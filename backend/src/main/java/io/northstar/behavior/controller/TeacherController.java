@@ -1,5 +1,6 @@
 package io.northstar.behavior.controller;
 
+import io.northstar.behavior.dto.CreateTeacherRequest;
 import io.northstar.behavior.dto.TeacherDTO;
 import io.northstar.behavior.service.TeacherService;
 import org.springframework.http.HttpStatus;
@@ -20,8 +21,8 @@ public class TeacherController {
     // CREATE
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public TeacherDTO create(@RequestBody TeacherDTO dto) {
-        return service.create(dto);
+    public TeacherDTO create(@RequestBody CreateTeacherRequest req) {
+        return service.createForCurrentAdmin(req);
     }
 
     // READ ALL

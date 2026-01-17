@@ -1,5 +1,6 @@
-// src/main/java/io/northstar/behavior/service/AdminServiceImpl.java
 package io.northstar.behavior.service;
+import java.util.Optional;
+
 
 import io.northstar.behavior.dto.AdminDTO;
 import io.northstar.behavior.model.Admin;
@@ -138,6 +139,17 @@ public class AdminServiceImpl implements AdminService {
         }
 
         return toDto(a);
+    }
+    @Override
+    public Optional<Admin> findByUserName(String userName) {
+        if (userName == null || userName.isBlank()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "username is required"
+            );
+        }
+
+        return repo.findByUserName(userName.trim());
     }
 
     @Override

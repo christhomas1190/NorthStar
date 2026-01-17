@@ -1,5 +1,6 @@
 package io.northstar.behavior.service;
 
+import io.northstar.behavior.dto.CreateTeacherRequest;
 import io.northstar.behavior.dto.TeacherDTO;
 
 import java.util.List;
@@ -10,4 +11,6 @@ public interface TeacherService {
     void delete(Long id);
     TeacherDTO findById(Long id);
     List<TeacherDTO> findAll();
+    TeacherDTO createForCurrentAdmin(CreateTeacherRequest req);
+
 }

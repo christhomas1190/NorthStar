@@ -1,0 +1,78 @@
+server:
+  port: 8080
+  app:
+    default-teacher-password: "Teach"
+    default-admin-password: "Admin"
+
+# Expose actuator endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+# ===== Default: local dev on H2 (PERSISTENT FILE) =====
+spring:
+  datasource:
+    url: jdbc:h2:file:./data/northstar;AUTO_SERVER=TRUE;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update        # <--- persists data across restarts
+    show-sql: true
+    properties:
+      hibernate.format_sql: true
+      hibernate.jdbc.time_zone: UTC
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  flyway:
+    enabled: false
+
+# app-specific settings (NOT under spring.flyway)
+app:
+  default-teacher-password: "SetMeNow!2025"
+
+---
+# ===== Test profile (H2 in-memory) =====
+spring:
+  config:
+    activate:
+      on-profile: test
+  datasource:
+    url: jdbc:h2:mem:northstar_test;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+  flyway:
+    enabled: false
+
+---
+# ===== AWS profile (Postgres placeholder) =====
+spring:
+  config:
+    activate:
+      on-profile: aws
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://YOUR_RDS_HOST:5432/northstar}
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:password}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migrations
+    baseline-on-migrate: true

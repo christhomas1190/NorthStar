@@ -15,7 +15,7 @@ public class School {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long schoolId; // << was id
 
-    @Column(nullable=false)
+    @Column(name = "name", nullable = false)
     private String schoolName;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
