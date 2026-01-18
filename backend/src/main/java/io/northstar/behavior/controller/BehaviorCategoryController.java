@@ -14,7 +14,7 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/behaviors")
+@RequestMapping("/api/behavior-categories")
 public class BehaviorCategoryController {
 
     private final BehaviorCategoryService service;
@@ -24,15 +24,16 @@ public class BehaviorCategoryController {
     }
 
 
-@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-public ResponseEntity<BehaviorCategoryDTO> create(
-        @RequestHeader("X-District-Id") Long districtId,
-        @Valid @RequestBody CreateBehaviorCategoryRequest req) {
+    @PostMapping
+    public ResponseEntity<BehaviorCategoryDTO> create(
+            @RequestHeader("X-District-Id") Long districtId,
+            @Valid @RequestBody CreateBehaviorCategoryRequest req)
+    {
     try {
         TenantContext.setDistrictId(districtId);
         BehaviorCategoryDTO saved = service.create(districtId, req); // <-- pass districtId
         return ResponseEntity
-                .created(URI.create("/api/behaviors/" + saved.id()))
+                .created(URI.create("/api/behavior-categories/" + saved.id()))
                 .body(saved);
     } finally {
         TenantContext.clear();
@@ -67,7 +68,7 @@ public ResponseEntity<BehaviorCategoryDTO> create(
     public BehaviorCategoryDTO update(
             @RequestHeader("X-District-Id") Long districtId,
             @PathVariable Long id,
-            @RequestBody BehaviorCategoryDTO dto) {
+            @Valid @RequestBody BehaviorCategoryDTO dto) {
         try {
             TenantContext.setDistrictId(districtId);
             return service.update(id, dto);

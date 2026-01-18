@@ -7,7 +7,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
-@EnableMethodSecurity // keep if you'll use @PreAuthorize etc.
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Bean
