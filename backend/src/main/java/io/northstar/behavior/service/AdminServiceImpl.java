@@ -10,7 +10,9 @@ import io.northstar.behavior.repository.DistrictRepository;
 import io.northstar.behavior.repository.SchoolRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -151,6 +153,7 @@ public class AdminServiceImpl implements AdminService {
 
         return repo.findByUserName(userName.trim());
     }
+
 
     @Override
     public void delete(Long id) {

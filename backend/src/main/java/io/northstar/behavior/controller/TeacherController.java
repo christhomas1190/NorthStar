@@ -3,6 +3,7 @@ package io.northstar.behavior.controller;
 import io.northstar.behavior.dto.CreateTeacherRequest;
 import io.northstar.behavior.dto.TeacherDTO;
 import io.northstar.behavior.service.TeacherService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,7 +22,7 @@ public class TeacherController {
     // CREATE
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public TeacherDTO create(@RequestBody CreateTeacherRequest req) {
+    public TeacherDTO create(@RequestBody @Valid CreateTeacherRequest req) {
         return service.createForCurrentAdmin(req);
     }
 

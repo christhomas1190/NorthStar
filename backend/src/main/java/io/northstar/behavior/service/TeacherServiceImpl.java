@@ -51,7 +51,7 @@ public class TeacherServiceImpl implements TeacherService {
                 t.getFirstName(),
                 t.getLastName(),
                 t.getEmail(),
-                t.getUsername(),
+                t.getUserName(),
                 did,
                 sid
         );
@@ -71,15 +71,15 @@ public class TeacherServiceImpl implements TeacherService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid names");
         }
         String cand = f.substring(0,1) + l;
-        if (!repo.existsByUsername(cand)) return cand;
+        if (!repo.existsByUserName(cand)) return cand;
 
         if (f.length() >= 2) {
             String c2 = f.substring(0,2) + l;
-            if (!repo.existsByUsername(c2)) return c2;
+            if (!repo.existsByUserName(c2)) return c2;
             cand = c2;
         }
         int n = 1;
-        while (repo.existsByUsername(cand + n)) n++;
+        while (repo.existsByUserName(cand + n)) n++;
         return cand + n;
     }
 
@@ -103,10 +103,10 @@ public class TeacherServiceImpl implements TeacherService {
 
         // 1) who is logged in?
         var auth = SecurityContextHolder.getContext().getAuthentication();
-        String username = auth.getName();
+        String userName = auth.getName();
 
         // 2) load admin and get tenant scope
-        Admin admin = (Admin) adminRepository.findByUserName(username)
+        Admin admin = (Admin) adminRepository.findByUserName(userName)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "admin not found"));
 
         Long districtId = admin.getDistrict().getDistrictId();
@@ -128,7 +128,7 @@ public class TeacherServiceImpl implements TeacherService {
         t.setFirstName(dto.firstName().trim());
         t.setLastName(dto.lastName().trim());
         t.setEmail(email);
-        t.setUsername(generateUsername(t.getFirstName(), t.getLastName()));
+        t.setUserName(generateUsername(t.getFirstName(), t.getLastName()));
         t.setPasswordHash(bcrypt(defaultTeacherPassword));
         t.setDistrict(district);
         t.setSchool(school);
@@ -149,14 +149,13 @@ public class TeacherServiceImpl implements TeacherService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "email is required");
         }
 
-        var auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || auth.getName() == null || auth.getName().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "not authenticated");
-        }
-        String username = auth.getName();
-
-        Admin admin = adminRepository.findByUserName(username.trim())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "admin not found"));
+        Admin admin = adminRepository.findAll()
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "no admin exists in system"
+                ));
 
         if (admin.getDistrict() == null || admin.getDistrict().getDistrictId() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "admin has no district");
@@ -181,7 +180,7 @@ public class TeacherServiceImpl implements TeacherService {
         t.setFirstName(req.firstName().trim());
         t.setLastName(req.lastName().trim());
         t.setEmail(email);
-        t.setUsername(generateUsername(t.getFirstName(), t.getLastName()));
+        t.setUserName(generateUsername(t.getFirstName(), t.getLastName()));
         t.setPasswordHash(bcrypt(defaultTeacherPassword));
         t.setDistrict(district);
         t.setSchool(school);

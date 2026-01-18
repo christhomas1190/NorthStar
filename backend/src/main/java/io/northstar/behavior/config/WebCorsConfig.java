@@ -23,8 +23,15 @@ public class WebCorsConfig {
         ));
 
         cfg.setAllowedMethods(List.of("GET","POST","PUT","DELETE","PATCH","OPTIONS"));
-        cfg.setAllowedHeaders(List.of("Content-Type","Authorization","Accept","X-Requested-With"));
-        cfg.setAllowCredentials(true);
+        cfg.setAllowedHeaders(List.of(
+                "Content-Type",
+                "Authorization",
+                "Accept",
+                "X-Requested-With",
+                "X-District-Id",
+                "X-School-Id"
+        ));
+        cfg.setAllowCredentials(false);
         cfg.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

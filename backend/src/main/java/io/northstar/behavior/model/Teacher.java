@@ -1,6 +1,5 @@
 package io.northstar.behavior.model;
 
-
 import jakarta.persistence.*;
 
 @Entity
@@ -12,19 +11,24 @@ import jakarta.persistence.*;
         }
 )
 public class Teacher {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
     private String firstName;
+
     @Column(nullable = false)
     private String lastName;
+
     @Column(nullable = false)
     private String email;
 
-    @Column(nullable = false)
-    private String username;
+    // Java property: userName
+    // DB column: username (so your constraint works)
+    @Column(name = "username", nullable = false)
+    private String userName;
 
     @Column(nullable = false)
     private String passwordHash; // BCrypt hash of default password
@@ -33,12 +37,7 @@ public class Teacher {
     @JoinColumn(name="district_id", nullable=false)
     private District district;
 
-
-
-    @Column(name = "district_id", insertable = false, updatable = false)
-    private Long districtId;
-
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "school_id", nullable = false)
     private School school;
 
@@ -74,12 +73,13 @@ public class Teacher {
         this.email = email;
     }
 
-    public String getUsername() {
-        return username;
+    // IMPORTANT: property name is userName
+    public String getUserName() {
+        return userName;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
     public String getPasswordHash() {
@@ -104,14 +104,5 @@ public class Teacher {
 
     public void setSchool(School school) {
         this.school = school;
-    }
-
-
-    public Long getDistrictId() {
-        return districtId;
-    }
-
-    public void setDistrictId(Long districtId) {
-        this.districtId = districtId;
     }
 }

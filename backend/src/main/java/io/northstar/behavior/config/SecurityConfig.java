@@ -11,21 +11,16 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                .cors(cors -> {}) // <-- ADD THIS LINE
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> {}) // picks up CorsConfigurationSource from WebCorsConfig
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/h2-console/**",
-                                "/actuator/**",
-                                "/error",
-                                "/favicon.ico"
-                        ).permitAll()
-                        .anyRequest().permitAll()
-                )
-                .headers(h -> h.frameOptions(frame -> frame.sameOrigin())); // H2 console
+                .headers(h -> h.frameOptions(f -> f.disable()))
+                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+                .httpBasic(basic -> basic.disable())
+                .formLogin(form -> form.disable());
 
         return http.build();
     }
 }
+

@@ -53,11 +53,20 @@ export default function AdminTeacherCreate() {
         schoolId: Number(form.schoolId),
       };
 
-      const r = await fetch("/api/teachers", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+    const r = await fetch("http://localhost:8080/api/teachers", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-District-Id": String(form.districtId),
+        "X-School-Id": String(form.schoolId),
+      },
+      body: JSON.stringify({
+        firstName: form.firstName.trim(),
+        lastName: form.lastName.trim(),
+        email: form.email.trim(),
+      }),
+    });
+
       if (!r.ok) {
         const msg = await r.text();
         throw new Error(msg || `Failed with status ${r.status}`);
@@ -107,7 +116,7 @@ export default function AdminTeacherCreate() {
               <div className="mb-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-emerald-800 text-sm">
                 <div className="font-medium">Teacher created</div>
                 <div className="text-xs opacity-80">
-                  Username: <code>{created.username}</code> (password set to default)
+                  Username: <code>{created.userName}</code> (password set to default)
                 </div>
               </div>
             )}

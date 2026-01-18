@@ -1,4 +1,3 @@
-// src/main/java/io/northstar/behavior/repository/TeacherRepository.java
 package io.northstar.behavior.repository;
 
 import io.northstar.behavior.model.Teacher;
@@ -14,5 +13,5 @@ public interface TeacherRepository extends JpaRepository<Teacher, Long> {
     boolean existsByEmail(String email);
 
     // Used by TeacherServiceImpl
-    boolean existsByUsername(String username);
+    boolean existsByUserName(String userName);
 }
