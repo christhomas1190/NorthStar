@@ -267,18 +267,11 @@ export default function AdminDashboard() {
           </div>
         </DashboardOverviewCard>
 
-        <Card className="shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-base">
-              Quick Actions {loading ? <span className="text-xs text-slate-400">(loading)</span> : null}
-            </CardTitle>
-          </CardHeader>
+        <div className="xl:col-span-1 flex flex-col gap-6">
+          <QuickActionsCard />
+          <RecentActivity items={recentFeed} />
+        </div>
 
-          <CardContent>
-            <QuickActionsCard />
-            <RecentActivity items={recentFeed} />
-          </CardContent>
-        </Card>
       </div>
 
       <TierCardsRow />
