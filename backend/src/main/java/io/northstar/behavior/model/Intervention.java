@@ -36,6 +36,9 @@ public class Intervention {
     @Column(nullable = false)
     private String reportedBy;
 
+    @Column(nullable = false, length = 2000)
+    private String description;
+
     @Column(nullable = false)
     private LocalDate startDate;
 
@@ -124,5 +127,11 @@ public class Intervention {
         this.district = district;
     }
 
+    public String getDescription() {
+        return description;
+    }
 
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }

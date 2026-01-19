@@ -64,19 +64,37 @@ public class StudentServiceImpl implements StudentService {
         if (ivs != null) {
             for (int i = 0; i < ivs.size(); i++) {
                 Intervention iv = ivs.get(i);
-                Long did = (iv.getDistrict() != null) ? iv.getDistrict().getDistrictId() : null;
+
+                Long districtId = (iv.getDistrict() != null) ? iv.getDistrict().getDistrictId() : null;
+
+                Long studentId = null;
+                String studentName = null;
+
+                if (iv.getStudent() != null) {
+                    studentId = iv.getStudent().getId();
+                    String first = iv.getStudent().getFirstName();
+                    String last = iv.getStudent().getLastName();
+                    studentName = ((first != null) ? first : "") + ((last != null) ? " " + last : "");
+                    studentName = studentName.trim();
+                }
+
                 out.add(new InterventionSummaryDTO(
-                        iv.getId(),
+                        iv.getId() != null ? iv.getId() : 0L,
+                        studentId,
+                        studentName,
                         iv.getTier(),
                         iv.getStrategy(),
+                        iv.getDescription(),
                         iv.getStartDate(),
                         iv.getEndDate(),
-                        did
+                        districtId
                 ));
             }
         }
         return out;
     }
+
+
 
     private StudentDTO toDto(Student s) {
         long id = (s.getId() == null ? 0L : s.getId());
