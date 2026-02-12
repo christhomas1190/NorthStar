@@ -1,16 +1,29 @@
-import React, { useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import React, { useEffect, useMemo, useState } from "react";
+import { useParams, useSearchParams } from "react-router-dom";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import SearchableStudentSelect from "@/components/common/SearchableStudentSelect";
+import { useAuth } from "@/state/auth.jsx";
 
 export default function CreateDisciplinePage() {
-  const { studentId } = useParams();
-  const districtId = Number(localStorage.getItem("districtId")) || 1;
+  const { activeDistrictId } = useAuth();
+
+  const params = useParams();
+  const [sp, setSp] = useSearchParams();
+
+  // studentId can come from:
+  // 1) a param route (if you ever use /admin/disciplines/new/:studentId)
+  // 2) query string (?studentId=123)
+  const studentIdFromUrl = params.studentId ?? sp.get("studentId") ?? "";
+
+  const [students, setStudents] = useState([]);
+  const [selectedStudent, setSelectedStudent] = useState(null);
 
   const [saving, setSaving] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const [form, setForm] = useState({
     tier: "TIER_1",
@@ -26,14 +39,59 @@ export default function CreateDisciplinePage() {
     setForm((f) => ({ ...f, [name]: value }));
   }
 
+  // ✅ load students only if we need the picker
+  useEffect(() => {
+    if (!activeDistrictId) return;
+
+    // If studentId is already known, don't fetch the student list
+    if (studentIdFromUrl) return;
+
+    let alive = true;
+
+    (async () => {
+      try {
+        const res = await fetch("/api/students", {
+          headers: {
+            "X-District-Id": String(activeDistrictId),
+            "Content-Type": "application/json",
+          },
+        });
+
+        const json = res.ok ? await res.json() : [];
+        if (!alive) return;
+
+        setStudents(Array.isArray(json) ? json : []);
+      } catch (e) {
+        if (!alive) return;
+        setErrorMessage(String(e.message || e));
+      }
+    })();
+
+    return () => {
+      alive = false;
+    };
+  }, [activeDistrictId, studentIdFromUrl]);
+
+  // ✅ if they pick a student, put it into the URL so the "header behavior" stays consistent
+  function onPickStudent(s) {
+    setSelectedStudent(s);
+    setSp((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set("studentId", String(s.id));
+      return next;
+    });
+  }
+
+  const effectiveStudentId = studentIdFromUrl || (selectedStudent?.id ? String(selectedStudent.id) : "");
+
   const canSubmit = useMemo(() => {
-    if (!studentId) return false;
+    if (!effectiveStudentId) return false;
     if (!form.strategy.trim()) return false;
     if (!form.description.trim()) return false;
     if (!form.assignedBy.trim()) return false;
     if (!form.startDate) return false;
     return true;
-  }, [form, studentId]);
+  }, [form, effectiveStudentId]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -41,6 +99,7 @@ export default function CreateDisciplinePage() {
 
     setSaving(true);
     setSuccessMessage("");
+    setErrorMessage("");
 
     try {
       const payload = {
@@ -53,11 +112,11 @@ export default function CreateDisciplinePage() {
         createdAt: null,
       };
 
-      const res = await fetch(`/api/students/${studentId}/interventions`, {
+      const res = await fetch(`/api/students/${effectiveStudentId}/interventions`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-District-Id": districtId,
+          "X-District-Id": String(activeDistrictId),
         },
         body: JSON.stringify(payload),
       });
@@ -77,7 +136,7 @@ export default function CreateDisciplinePage() {
       }));
     } catch (err) {
       console.error(err);
-      alert(err?.message || "Failed to create discipline.");
+      setErrorMessage(err?.message || "Failed to create discipline.");
     } finally {
       setSaving(false);
     }
@@ -94,6 +153,25 @@ export default function CreateDisciplinePage() {
           {successMessage && (
             <div className="rounded-md border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-800">
               {successMessage}
+            </div>
+          )}
+
+          {errorMessage && (
+            <div className="rounded-md border border-rose-300 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+              {errorMessage}
+            </div>
+          )}
+
+          {/* ✅ SHOW ONLY when coming from AdminDashboard Discipline tab (no studentId in URL) */}
+          {!studentIdFromUrl && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Student</label>
+              <SearchableStudentSelect
+                students={students}
+                value={selectedStudent}
+                onChange={onPickStudent}
+                placeholder="Search student name…"
+              />
             </div>
           )}
 
@@ -160,12 +238,7 @@ export default function CreateDisciplinePage() {
 
               <div>
                 <label className="text-sm font-medium">End Date (optional)</label>
-                <Input
-                  type="date"
-                  name="endDate"
-                  value={form.endDate}
-                  onChange={onChange}
-                />
+                <Input type="date" name="endDate" value={form.endDate} onChange={onChange} />
               </div>
             </div>
 
@@ -173,6 +246,10 @@ export default function CreateDisciplinePage() {
               <Button type="submit" disabled={saving || !canSubmit}>
                 {saving ? "Saving…" : "Create"}
               </Button>
+
+              {!effectiveStudentId ? (
+                <span className="text-xs text-slate-500">Select a student to enable Create.</span>
+              ) : null}
             </div>
           </form>
         </CardContent>

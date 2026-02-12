@@ -218,8 +218,9 @@ export default function AdminDashboard() {
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <DashboardOverviewCard kpis={KPIS}>
-          <div className="mt-6 rounded-2xl border p-4">
-            <div className="flex items-end justify-between gap-3 flex-wrap">
+          <div className="w-full">
+            <div className="mx-auto w-full max-w-[860px]">
+              <div className="mt-6 rounded-2xl border p-4">
               <div>
                 <p className="text-sm text-slate-500">Incident Trend</p>
                 <p className="text-xs text-slate-400">
@@ -264,12 +265,17 @@ export default function AdminDashboard() {
             <div className="mt-3 w-full h-[240px]">
               <LineChartWithAxes points={computedByDay} width={720} height={240} />
             </div>
+           </div>
           </div>
-        </DashboardOverviewCard>
+         </DashboardOverviewCard>
 
-        <div className="xl:col-span-1 flex flex-col gap-6">
-          <QuickActionsCard />
-          <RecentActivity items={recentFeed} />
+        <div className="xl:col-span-1 flex flex-col gap-6 items-center">
+          <div className="w-full max-w-[420px]">
+            <QuickActionsCard />
+          </div>
+          <div className="w-full max-w-[420px]">
+            <RecentActivity items={recentFeed} />
+          </div>
         </div>
 
       </div>
