@@ -16,10 +16,8 @@ public class WebCorsConfig {
         CorsConfiguration cfg = new CorsConfiguration();
 
         cfg.setAllowedOriginPatterns(List.of(
-                "http://localhost:5173",
-                "http://127.0.0.1:5173",
-                "http://localhost:3000"
-//                "https://app.yourdomain.com"
+                "http://localhost:*",
+                "http://127.0.0.1:*"
         ));
 
         cfg.setAllowedMethods(List.of("GET","POST","PUT","DELETE","PATCH","OPTIONS"));
