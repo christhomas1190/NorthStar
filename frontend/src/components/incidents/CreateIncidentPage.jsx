@@ -11,6 +11,7 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { useAuth } from "@/state/auth.jsx";
+import { postJSON } from "@/lib/api.js";
 
 export default function CreateIncidentPage() {
   const { studentId } = useParams();
@@ -59,25 +60,7 @@ export default function CreateIncidentPage() {
           reportedBy: user?.name || user?.email || "Unknown",
       };
 
-      const res = await fetch(`/api/students/${studentId}/incidents`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-District-Id": String(activeDistrictId), // 🔑 REQUIRED
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        console.error(
-          "Failed to create incident:",
-          res.status,
-          res.statusText,
-          text
-        );
-        throw new Error("Failed to create incident");
-      }
+      await postJSON(`/api/students/${studentId}/incidents`, payload);
 
       // After success, go back to the student info page
       nav(`/admin/students/${studentId}`);

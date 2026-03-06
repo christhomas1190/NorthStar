@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import SearchableStudentSelect from "@/components/common/SearchableStudentSelect";
 import { useAuth } from "@/state/auth.jsx";
+import { getJSON, postJSON } from "@/lib/api.js";
 
 export default function CreateDisciplinePage() {
   const { activeDistrictId } = useAuth();
@@ -50,14 +51,7 @@ export default function CreateDisciplinePage() {
 
     (async () => {
       try {
-        const res = await fetch("/api/students", {
-          headers: {
-            "X-District-Id": String(activeDistrictId),
-            "Content-Type": "application/json",
-          },
-        });
-
-        const json = res.ok ? await res.json() : [];
+        const json = await getJSON("/api/students").catch(() => []);
         if (!alive) return;
 
         setStudents(Array.isArray(json) ? json : []);
@@ -112,19 +106,7 @@ export default function CreateDisciplinePage() {
         createdAt: null,
       };
 
-      const res = await fetch(`/api/students/${effectiveStudentId}/interventions`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-District-Id": String(activeDistrictId),
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        const msg = await res.text();
-        throw new Error(`Failed to create discipline (HTTP ${res.status}): ${msg}`);
-      }
+      await postJSON(`/api/students/${effectiveStudentId}/interventions`, payload);
 
       setSuccessMessage("Intervention created successfully.");
 

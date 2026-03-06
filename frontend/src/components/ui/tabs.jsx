@@ -23,7 +23,8 @@ export function TabsList({ className = "", children, ...props }) {
   return (
     <div
       role="tablist"
-      className={`inline-grid gap-0 rounded-xl border bg-white p-1 text-sm ${className}`}
+      className={`inline-grid gap-0 rounded-xl bg-white p-1 text-sm ${className}`}
+      style={{ border: "1.5px solid #e2e0d8" }}
       {...props}
     >
       {children}
@@ -44,7 +45,7 @@ export function TabsTrigger({ value, className = "", children, ...props }) {
       aria-controls={`${ctx.idBase}-${value}-panel`}
       onClick={() => ctx.setValue(value)}
       className={`px-3 py-2 transition-colors rounded-lg
-        ${selected ? "bg-slate-900 text-white" : "text-slate-700 hover:bg-slate-100"}
+        ${selected ? "bg-[#2d5be3] text-white" : "text-[#5c5849] hover:bg-[#f5f4f0] hover:text-[#2d5be3]"}
         ${className}`}
       {...props}
     >

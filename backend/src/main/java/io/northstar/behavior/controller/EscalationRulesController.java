@@ -2,19 +2,33 @@
 package io.northstar.behavior.controller;
 
 import io.northstar.behavior.dto.EscalationRulesDTO;
+import io.northstar.behavior.dto.StudentEscalationStatusDTO;
+import io.northstar.behavior.service.EscalationEvaluationService;
 import io.northstar.behavior.service.EscalationRulesService;
 import io.northstar.behavior.tenant.TenantContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 public class EscalationRulesController {
 
   private final EscalationRulesService service;
+  private final EscalationEvaluationService evaluationService;
 
-  public EscalationRulesController(EscalationRulesService service) {
+  public EscalationRulesController(EscalationRulesService service,
+                                    EscalationEvaluationService evaluationService) {
     this.service = service;
+    this.evaluationService = evaluationService;
+  }
+
+  // ==== ALERTS endpoint ====
+
+  @GetMapping("/api/escalation-rules/alerts")
+  public List<StudentEscalationStatusDTO> alerts(@RequestParam("schoolId") Long schoolId) {
+    return evaluationService.evaluateStudents(schoolId);
   }
 
   // ==== A) CURRENT ROUTE (no path params), expects X-District-Id header + ?schoolId= ====

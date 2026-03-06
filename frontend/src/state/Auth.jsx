@@ -6,8 +6,13 @@ const AuthCtx = React.createContext(null);
 export function AuthProvider({ children }) {
   const [token, setToken] = React.useState(() => localStorage.getItem("ns_token") || "");
   const [user, setUser] = React.useState(() => {
-    const raw = localStorage.getItem("ns_user");
-    return raw ? JSON.parse(raw) : null;
+    try {
+      const raw = localStorage.getItem("ns_user");
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      localStorage.removeItem("ns_user");
+      return null;
+    }
   });
 
   // NEW: persist active district/school (used for X-District-Id and bodies)
@@ -26,26 +31,35 @@ export function AuthProvider({ children }) {
   }, [activeSchoolId]);
 
   async function login({ username, password, roleOverride }) {
-    // Try real backend if present
+    // Try real backend with Basic Auth
+    const basicToken = "Basic " + btoa(username + ":" + password);
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+      const res = await fetch("/api/auth/me", {
+        headers: { Authorization: basicToken },
       });
       if (res.ok) {
-        const data = await res.json(); // {token, user:{id,name,role,districtId,schoolId?}}
-        localStorage.setItem("ns_token", data.token);
-        localStorage.setItem("ns_user", JSON.stringify(data.user));
-        setToken(data.token);
-        setUser(data.user);
-        if (data.user?.districtId) setActiveDistrictId(data.user.districtId);
-        if (data.user?.schoolId) setActiveSchoolId(data.user.schoolId);
+        const data = await res.json();
+        const realUser = {
+          id: data.username,
+          name: data.name,
+          role: data.role,
+          districtId: data.districtId,
+          schoolId: data.schoolId,
+        };
+        localStorage.setItem("ns_token", basicToken);
+        localStorage.setItem("ns_user", JSON.stringify(realUser));
+        setToken(basicToken);
+        setUser(realUser);
+        if (data.districtId) setActiveDistrictId(data.districtId);
+        if (data.schoolId) setActiveSchoolId(data.schoolId);
         return { ok: true };
       }
-    } catch (_) {}
+      if (res.status === 401) return { ok: false, error: "Invalid credentials" };
+    } catch (_) {
+      // Backend not running — fall through to mock
+    }
 
-    // Mock: accept anything; choose role; default to district 1 / school 1
+    // Mock fallback (backend offline)
     const role =
       roleOverride ||
       (username?.toLowerCase().startsWith("admin") ? "Admin" :
@@ -57,14 +71,13 @@ export function AuthProvider({ children }) {
       districtId: 1,
       schoolId: 1,
     };
-    const fakeToken = "mock_" + Math.random().toString(36).slice(2);
-    localStorage.setItem("ns_token", fakeToken);
+    localStorage.setItem("ns_token", basicToken);
     localStorage.setItem("ns_user", JSON.stringify(fakeUser));
-    setToken(fakeToken);
+    setToken(basicToken);
     setUser(fakeUser);
     setActiveDistrictId(fakeUser.districtId);
     setActiveSchoolId(fakeUser.schoolId);
-    return { ok: true, mock: true };
+    return { ok: true };
   }
 
   function logout() {

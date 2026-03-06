@@ -5,13 +5,13 @@ export default function KPICard({ label, value, hint, onClick }) {
       type={onClick ? "button" : undefined}
       onClick={onClick}
       className={[
-        "w-full text-left rounded-3xl border border-slate-200 bg-white p-5 shadow-sm",
-        onClick ? "transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-slate-300" : "",
+        "w-full text-left rounded-xl bg-white p-5",
+        onClick ? "transition-shadow hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2d5be3]" : "",
       ].join(" ")}
     >
-      <div className="text-slate-500 text-sm">{label}</div>
-      <div className="mt-1 text-3xl font-semibold tracking-tight">{value}</div>
-      {hint ? <div className="mt-1 text-slate-400 text-sm">{hint}</div> : null}
+      <div className="text-sm" style={{ color: "var(--ns-text2)" }}>{label}</div>
+      <div className="mt-1 text-3xl font-semibold tracking-tight" style={{ fontFamily: "'Lora', serif", color: "var(--ns-text)" }}>{value}</div>
+      {hint ? <div className="mt-1 text-sm" style={{ color: "var(--ns-muted)" }}>{hint}</div> : null}
     </Comp>
   );
 }

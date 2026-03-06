@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/state/auth.jsx";
+import { postJSON } from "@/lib/api.js";
 
 export default function AdminTeacherCreate() {
   const navigate = useNavigate();
@@ -53,25 +54,7 @@ export default function AdminTeacherCreate() {
         schoolId: Number(form.schoolId),
       };
 
-    const r = await fetch("http://localhost:8080/api/teachers", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-District-Id": String(form.districtId),
-        "X-School-Id": String(form.schoolId),
-      },
-      body: JSON.stringify({
-        firstName: form.firstName.trim(),
-        lastName: form.lastName.trim(),
-        email: form.email.trim(),
-      }),
-    });
-
-      if (!r.ok) {
-        const msg = await r.text();
-        throw new Error(msg || `Failed with status ${r.status}`);
-      }
-      const data = await r.json();
+      const data = await postJSON("/api/teachers", payload);
       setCreated(data);
 
       if (addAnother) {

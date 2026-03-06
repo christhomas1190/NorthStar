@@ -1,5 +1,6 @@
 package io.northstar.behavior.controller;
 
+import io.northstar.behavior.dto.AdminDTO;
 import io.northstar.behavior.dto.CreateTeacherRequest;
 import io.northstar.behavior.dto.TeacherDTO;
 import io.northstar.behavior.service.TeacherService;
@@ -49,5 +50,11 @@ public class TeacherController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
         service.delete(id);
+    }
+
+    // PROMOTE to admin
+    @PostMapping("/{id}/promote-to-admin")
+    public AdminDTO promoteToAdmin(@PathVariable Long id) {
+        return service.promoteToAdmin(id);
     }
 }

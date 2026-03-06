@@ -3,18 +3,20 @@ import { Clock } from "lucide-react";
 
 export default function RecentActivity({ items }) {
   return (
-    <div className="mt-5 w-full max-w-[420px] mx-auto rounded-2xl border p-4 text-xs text-slate-600">
-
+    <div
+      className="mt-5 w-full max-w-[420px] mx-auto rounded-xl p-4 text-xs"
+      style={{ border: "1.5px solid var(--ns-border)", background: "var(--ns-white)", color: "var(--ns-text2)" }}
+    >
       {/* Header Row */}
       <div className="flex items-center gap-2 mb-3">
-        <Clock size={16} />
-        <p className="font-semibold text-sm">Recent Activity</p>
+        <Clock size={16} style={{ color: "var(--ns-accent)" }} />
+        <p className="font-semibold text-sm" style={{ fontFamily: "'Lora', serif", color: "var(--ns-text)" }}>Recent Activity</p>
       </div>
 
       {/* Activity Box */}
-      <div className="max-h-48 overflow-auto rounded-xl bg-slate-50 p-3 border text-[12px]">
+      <div className="max-h-48 overflow-auto rounded-lg p-3 text-[12px]" style={{ background: "var(--ns-bg)", border: "1px solid var(--ns-border)" }}>
         {items.length === 0 && (
-          <div className="py-3 text-center text-slate-500">
+          <div className="py-3 text-center" style={{ color: "var(--ns-muted)" }}>
             No recent incidents in range.
           </div>
         )}
@@ -22,9 +24,10 @@ export default function RecentActivity({ items }) {
         {items.map((it) => (
           <div
             key={it.id}
-            className="py-2 border-b last:border-b-0"
+            className="py-2 last:border-b-0"
+            style={{ borderBottom: "1px solid var(--ns-border)" }}
           >
-            <div className="text-slate-500">
+            <div style={{ color: "var(--ns-muted)" }}>
               [{it.when}]
             </div>
 
@@ -32,13 +35,13 @@ export default function RecentActivity({ items }) {
               <span className="font-medium">{it.by}</span>{" "}
               recorded{" "}
               <span className="font-semibold">{it.category}</span>{" "}
-              <span className="text-slate-500">
+              <span style={{ color: "var(--ns-text2)" }}>
                 ({it.severity})
               </span>
             </div>
 
-            <div className="text-slate-400">
-              Student #{it.studentId}
+            <div style={{ color: "var(--ns-muted)" }}>
+              {it.studentName}
             </div>
           </div>
         ))}

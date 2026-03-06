@@ -1,14 +1,17 @@
 package io.northstar.behavior.service;
 
+import io.northstar.behavior.dto.AdminDTO;
+import io.northstar.behavior.dto.CreateTeacherRequest;
+import io.northstar.behavior.dto.TeacherCautionStatsDTO;
 import io.northstar.behavior.dto.TeacherDTO;
 import io.northstar.behavior.model.Admin;
 import io.northstar.behavior.model.School;
 import io.northstar.behavior.model.Teacher;
 import io.northstar.behavior.repository.AdminRepository;
 import io.northstar.behavior.repository.DistrictRepository;
+import io.northstar.behavior.repository.IncidentRepository;
 import io.northstar.behavior.repository.SchoolRepository;
 import io.northstar.behavior.repository.TeacherRepository;
-import io.northstar.behavior.dto.CreateTeacherRequest;
 
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,19 +31,24 @@ public class TeacherServiceImpl implements TeacherService {
     private final DistrictRepository districtRepository;
     private final SchoolRepository schoolRepository;
     private final AdminRepository adminRepository;
+    private final IncidentRepository incidentRepository;
 
     @Value("${app.default-teacher-password:Teach!2025#}")
     private String defaultTeacherPassword;
 
+    @Value("${app.default-admin-password:Admin!2025#}")
+    private String defaultAdminPassword;
+
     public TeacherServiceImpl(TeacherRepository repo,
                               DistrictRepository districtRepository,
                               SchoolRepository schoolRepository,
-                              AdminRepository adminRepository
-                              ) {
+                              AdminRepository adminRepository,
+                              IncidentRepository incidentRepository) {
         this.repo = repo;
         this.districtRepository = districtRepository;
         this.schoolRepository = schoolRepository;
-        this.adminRepository=adminRepository;// <-- add
+        this.adminRepository = adminRepository;
+        this.incidentRepository = incidentRepository;
     }
 
     private TeacherDTO toDto(Teacher t){
@@ -235,5 +243,90 @@ public class TeacherServiceImpl implements TeacherService {
     public void delete(Long id) {
         if (!repo.existsById(id)) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "teacher not found");
         repo.deleteById(id);
+    }
+
+    @Override
+    @Transactional
+    public AdminDTO promoteToAdmin(Long teacherId) {
+        Teacher t = repo.findById(teacherId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "teacher not found"));
+
+        // Get logged-in admin's scope
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        Admin requestingAdmin = adminRepository.findByUserName(auth.getName())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "admin not found"));
+
+        var district = requestingAdmin.getDistrict();
+        var school = requestingAdmin.getSchool();
+
+        // Generate unique admin username (check admin table)
+        String base = normalize(t.getFirstName()).substring(0, 1) + normalize(t.getLastName());
+        String username = base;
+        int n = 1;
+        while (adminRepository.existsByUserNameAndSchool_SchoolId(username, school.getSchoolId())) {
+            username = base + n++;
+        }
+
+        Admin a = new Admin();
+        a.setFirstName(t.getFirstName());
+        a.setLastName(t.getLastName());
+        a.setEmail(t.getEmail());
+        a.setUserName(username);
+        a.setPasswordHash(bcrypt(defaultAdminPassword));
+        a.setPermissionTag("ADMIN");
+        a.setDistrict(district);
+        a.setSchool(school);
+
+        Admin saved = adminRepository.save(a);
+        repo.deleteById(teacherId);
+
+        return new AdminDTO(
+                saved.getId(),
+                saved.getFirstName(),
+                saved.getLastName(),
+                saved.getEmail(),
+                saved.getUserName(),
+                saved.getPermissionTag(),
+                district.getDistrictId(),
+                school.getSchoolId()
+        );
+    }
+
+    @Override
+    public TeacherCautionStatsDTO cautionStats(Long teacherId) {
+        Teacher t = repo.findById(teacherId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "teacher not found"));
+
+        String reportedBy = t.getUserName();
+        long total = incidentRepository.countByReportedBy(reportedBy);
+
+        // Most common category
+        List<Object[]> cats = incidentRepository.topCategoriesForTeacher(reportedBy);
+        String topCategory = cats.isEmpty() ? null : (String) cats.get(0)[0];
+        long topCategoryCount = cats.isEmpty() ? 0L : ((Number) cats.get(0)[1]).longValue();
+
+        // Most cautioned student
+        List<Object[]> students = incidentRepository.topStudentsForTeacher(reportedBy);
+        Long topStudentId = null;
+        String topStudentName = null;
+        long topStudentCount = 0L;
+        if (!students.isEmpty()) {
+            Object[] row = students.get(0);
+            topStudentId = ((Number) row[0]).longValue();
+            topStudentName = row[1] + " " + row[2];
+            topStudentCount = ((Number) row[3]).longValue();
+        }
+
+        return new TeacherCautionStatsDTO(
+                t.getId(),
+                t.getFirstName() + " " + t.getLastName(),
+                t.getUserName(),
+                total,
+                topCategory,
+                topCategoryCount,
+                topStudentId,
+                topStudentName,
+                topStudentCount
+        );
     }
 }

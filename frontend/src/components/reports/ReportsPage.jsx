@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 import { FileDown, Filter, BarChart3, CalendarRange, Search } from "lucide-react";
 import { useAuth } from "@/state/auth.jsx";
+import { getJSON } from "@/lib/api.js";
 
 // ---------- Date helpers (LOCAL calendar days, no UTC shift) ----------
 
@@ -325,35 +326,11 @@ export default function ReportsPage() {
       setLoading(true);
       setErr("");
       try {
-        const [analyticsRes, incidentsRes, studentsRes] = await Promise.all([
-          fetch(
-            `/api/schools/${encodeURIComponent(
-              activeSchoolId
-            )}/analytics/incidents/summary?startDate=${from}&endDate=${to}`,
-            {
-              headers: {
-                "X-District-Id": String(activeDistrictId),
-                "Content-Type": "application/json",
-              },
-            }
-          ),
-          fetch("/api/incidents", {
-            headers: {
-              "X-District-Id": String(activeDistrictId),
-              "Content-Type": "application/json",
-            },
-          }),
-          fetch("/api/students", {
-            headers: {
-              "X-District-Id": String(activeDistrictId),
-              "Content-Type": "application/json",
-            },
-          }),
+        const [analyticsJson, incidentsJson, studentsJson] = await Promise.all([
+          getJSON(`/api/schools/${encodeURIComponent(activeSchoolId)}/analytics/incidents/summary?startDate=${from}&endDate=${to}`).catch(() => null),
+          getJSON("/api/incidents").catch(() => []),
+          getJSON("/api/students").catch(() => []),
         ]);
-
-        const analyticsJson = analyticsRes.ok ? await analyticsRes.json() : null;
-        const incidentsJson = incidentsRes.ok ? await incidentsRes.json() : [];
-        const studentsJson = studentsRes.ok ? await studentsRes.json() : [];
 
         if (!alive) return;
 
@@ -420,18 +397,30 @@ export default function ReportsPage() {
     });
   }, [incidents, from, to, studentIdFilter]);
 
-  // Trend data computed from incidentsInRange (local calendar days)
+  // Trend data computed from incidentsInRange (local calendar days), zeros filled
   const computedByDay = useMemo(() => {
+    const fromDate = parseLocalDay(from);
+    const toDate = parseLocalDay(to);
+    if (!fromDate || !toDate) return [];
+
     const counts = new Map();
     for (const it of incidentsInRange) {
-      const key = dayStringFromOccurredAt(it.occurredAt); // "YYYY-MM-DD"
+      const key = dayStringFromOccurredAt(it.occurredAt);
       if (!key) continue;
       counts.set(key, (counts.get(key) || 0) + 1);
     }
-    return Array.from(counts.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([date, count]) => ({ date, count }));
-  }, [incidentsInRange]);
+
+    const points = [];
+    for (
+      let d = new Date(fromDate);
+      d <= toDate;
+      d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1)
+    ) {
+      const key = fmtDay(d);
+      points.push({ date: key, count: counts.get(key) || 0 });
+    }
+    return points;
+  }, [incidentsInRange, from, to]);
 
   // Severity counts in current range
   const severityCounts = useMemo(() => {

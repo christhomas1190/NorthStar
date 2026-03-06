@@ -1,5 +1,6 @@
 package io.northstar.behavior.service;
 
+import io.northstar.behavior.dto.AdminDTO;
 import io.northstar.behavior.dto.CreateTeacherRequest;
 import io.northstar.behavior.dto.TeacherCautionStatsDTO;
 import io.northstar.behavior.dto.TeacherDTO;
@@ -14,5 +15,5 @@ public interface TeacherService {
     List<TeacherDTO> findAll();
     TeacherDTO createForCurrentAdmin(CreateTeacherRequest req);
     TeacherCautionStatsDTO cautionStats(Long teacherId);
-
+    AdminDTO promoteToAdmin(Long teacherId);
 }

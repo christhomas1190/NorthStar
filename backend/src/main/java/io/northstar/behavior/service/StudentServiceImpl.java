@@ -85,6 +85,7 @@ public class StudentServiceImpl implements StudentService {
                         iv.getTier(),
                         iv.getStrategy(),
                         iv.getDescription(),
+                        iv.getAssignedBy(),
                         iv.getStartDate(),
                         iv.getEndDate(),
                         districtId

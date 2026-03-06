@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { BarChart3, X } from "lucide-react";
 import { useAuth } from "@/state/auth.jsx";
+import { getJSON } from "@/lib/api.js";
 
 /* ---------- Date helpers ---------- */
 function fmtDay(d) {
@@ -303,14 +304,7 @@ export default function TeacherDashboard() {
       setLoading(true);
       setErr("");
       try {
-        const res = await fetch("/api/incidents", {
-          headers: {
-            "X-District-Id": String(activeDistrictId),
-            "Content-Type": "application/json",
-          },
-        });
-        if (!res.ok) throw new Error(`Failed to load incidents (${res.status})`);
-        const json = await res.json();
+        const json = await getJSON("/api/incidents");
         if (!alive) return;
         setAllIncidents(Array.isArray(json) ? json : []);
       } catch (e) {
@@ -335,17 +329,7 @@ export default function TeacherDashboard() {
 
     setSearchLoading(true);
     try {
-      const res = await fetch(
-        `/api/students?size=50`, // backend can ignore q; we'll filter here
-        {
-          headers: {
-            "X-District-Id": String(activeDistrictId),
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      if (!res.ok) throw new Error(`Search failed (${res.status})`);
-      const data = await res.json();
+      const data = await getJSON("/api/students?size=50");
       const list = Array.isArray(data) ? data : [];
 
       const needle = q.toLowerCase();

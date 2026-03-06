@@ -10,6 +10,7 @@ import java.util.List;
 
 public interface IncidentRepository extends JpaRepository<Incident, Long> {
     List<Incident> findByStudentIdOrderByOccurredAtDesc(Long studentId);
+    List<Incident> findBySchool_SchoolIdAndOccurredAtAfterOrderByOccurredAtDesc(Long schoolId, OffsetDateTime after);
 
     List<Incident> findBySchoolAndOccurredAtBetween(
             School school,

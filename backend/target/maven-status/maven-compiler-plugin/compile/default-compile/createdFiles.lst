@@ -2,6 +2,7 @@ io/northstar/behavior/dto/CreateTeacherRequest.class
 io/northstar/behavior/service/DistrictService.class
 io/northstar/behavior/repository/DistrictRepository.class
 io/northstar/behavior/controller/EscalationRulesController.class
+io/northstar/behavior/service/EscalationEvaluationServiceImpl.class
 io/northstar/behavior/model/Admin.class
 io/northstar/behavior/service/InterventionService.class
 io/northstar/behavior/service/NotificationService.class
@@ -21,6 +22,8 @@ io/northstar/behavior/model/Incident.class
 io/northstar/behavior/service/TeacherServiceImpl.class
 io/northstar/behavior/dto/AdminNotificationDTO.class
 io/northstar/behavior/service/EscalationRulesServiceImpl.class
+io/northstar/behavior/config/DataInitializer.class
+io/northstar/behavior/service/EscalationEvaluationService.class
 io/northstar/behavior/service/BehaviorCategoryServiceImpl.class
 io/northstar/behavior/controller/SchoolController.class
 io/northstar/behavior/service/AdminServiceImpl.class
@@ -35,6 +38,7 @@ io/northstar/behavior/service/DistrictServiceImpl.class
 io/northstar/behavior/service/StudentServiceImpl.class
 io/northstar/behavior/service/AnalyticsService.class
 io/northstar/behavior/repository/TeacherRepository.class
+io/northstar/behavior/dto/StudentEscalationStatusDTO.class
 io/northstar/behavior/repository/AdminRepository.class
 io/northstar/behavior/config/ApiErrorAdvice.class
 io/northstar/behavior/dto/SchoolDTO.class
@@ -60,9 +64,12 @@ io/northstar/behavior/tenant/TenantContext.class
 io/northstar/behavior/dto/IncidentDTO.class
 io/northstar/behavior/controller/BehaviorCategoryController.class
 io/northstar/behavior/repository/InterventionRepository.class
+io/northstar/behavior/controller/AuthController.class
 io/northstar/behavior/service/IncidentServiceImpl.class
 io/northstar/behavior/model/AdminNotification.class
 io/northstar/behavior/controller/TeacherController.class
+io/northstar/behavior/service/AppUserDetailsService.class
+io/northstar/behavior/dto/TeacherCautionStatsDTO.class
 io/northstar/behavior/controller/AdminController.class
 io/northstar/behavior/service/InterventionServiceImpl.class
 io/northstar/behavior/repository/SchoolRepository.class

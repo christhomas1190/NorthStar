@@ -1,5 +1,5 @@
-let getToken = () => "";
-let getDistrictId = () => undefined;
+let getToken = () => localStorage.getItem("ns_token") || "";
+let getDistrictId = () => Number(localStorage.getItem("ns_active_district")) || undefined;
 
 export function attachAuthBridge(fnToken, fnDistrictId) {
   getToken = fnToken || (() => "");
@@ -23,7 +23,7 @@ function commonHeaders(extra = {}) {
   const d = getDistrictId?.();
   return {
     "Content-Type": "application/json",
-    ...(t ? { Authorization: `Bearer ${t}` } : {}),
+    ...(t ? { Authorization: t } : {}),
     ...(d ? { "X-District-Id": String(d) } : {}),
     ...extra,
   };

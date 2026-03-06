@@ -90,13 +90,6 @@
     </dependency>
     -->
 
-    <!-- Lombok (optional) -->
-    <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
-      <optional>true</optional>
-    </dependency>
-
     <!-- Testing (JUnit 5, Mockito, Spring Test) -->
     <dependency>
       <groupId>org.springframework.boot</groupId>

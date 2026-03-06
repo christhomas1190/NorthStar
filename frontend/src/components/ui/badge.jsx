@@ -1,13 +1,13 @@
 import React from "react";
 
-const base = "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium";
+const base = "inline-flex items-center border px-2.5 py-0.5 text-xs font-semibold rounded-[4px]";
 const variants = {
-  default: "border-transparent bg-slate-900 text-white",
-  secondary: "border-transparent bg-slate-100 text-slate-900",
-  outline: "border-slate-300 text-slate-700",
-  success: "border-transparent bg-emerald-100 text-emerald-800",
-  warning: "border-transparent bg-amber-100 text-amber-800",
-  danger: "border-transparent bg-rose-100 text-rose-800",
+  default: "border-transparent bg-[#2d5be3] text-white",
+  secondary: "border-transparent bg-[#f5f4f0] text-[#5c5849]",
+  outline: "border-[#e2e0d8] text-[#5c5849]",
+  success: "border-transparent bg-[#e8f5ee] text-[#2d8c5b]",
+  warning: "border-transparent bg-[#fdf3e3] text-[#c97a20]",
+  danger: "border-transparent bg-[#fbeaea] text-[#c0392b]",
 };
 
 function Badge({ variant = "default", className = "", children, ...props }) {

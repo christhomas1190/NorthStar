@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { getJSON, postJSON, putJSON, delJSON } from "@/lib/api.js";
 
 export default function DefineBehaviorCategories() {
   const [items, setItems] = useState([]);
@@ -20,23 +21,11 @@ export default function DefineBehaviorCategories() {
   });
 
   const BASE_URL = "/api/behavior-categories";
-  const districtId = Number(localStorage.getItem("districtId")) || 1;
 
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(BASE_URL, {
-          headers: {
-            "X-District-Id": districtId,
-          },
-        });
-
-        if (!res.ok) {
-          const msg = await res.text();
-          throw new Error(`Load failed (${res.status}): ${msg}`);
-        }
-
-        const data = await res.json();
+        const data = await getJSON(BASE_URL);
         setItems(Array.isArray(data) ? data : []);
       } catch (e) {
         console.error(e);
@@ -45,7 +34,7 @@ export default function DefineBehaviorCategories() {
         setLoading(false);
       }
     })();
-  }, [districtId]);
+  }, []);
 
   function resetForm() {
     setEditId(null);
@@ -72,9 +61,6 @@ export default function DefineBehaviorCategories() {
     setSaving(true);
 
     try {
-      const method = editId ? "PUT" : "POST";
-      const url = editId ? `${BASE_URL}/${editId}` : BASE_URL;
-
       const payload = {
         name: form.name.trim(),
         severity: form.severity,
@@ -83,21 +69,9 @@ export default function DefineBehaviorCategories() {
         schoolId: Number(form.schoolId),
       };
 
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          "X-District-Id": districtId,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        const msg = await res.text();
-        throw new Error(`Save failed (${res.status}): ${msg}`);
-      }
-
-      const saved = await res.json();
+      const saved = editId
+        ? await putJSON(`${BASE_URL}/${editId}`, payload)
+        : await postJSON(BASE_URL, payload);
 
       setItems((prev) => {
         if (editId) return prev.map((it) => (it.id === editId ? saved : it));
@@ -129,17 +103,7 @@ export default function DefineBehaviorCategories() {
     if (!confirm("Delete this behavior category?")) return;
 
     try {
-      const res = await fetch(`${BASE_URL}/${id}`, {
-        method: "DELETE",
-        headers: {
-          "X-District-Id": districtId,
-        },
-      });
-
-      if (!res.ok) {
-        const msg = await res.text();
-        throw new Error(`Delete failed (${res.status}): ${msg}`);
-      }
+      await delJSON(`${BASE_URL}/${id}`);
 
       setItems((prev) => prev.filter((it) => it.id !== id));
     } catch (e) {

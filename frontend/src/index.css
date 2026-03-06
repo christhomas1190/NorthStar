@@ -1,1 +1,27 @@
 @import "tailwindcss";
+
+:root {
+  --ns-bg: #f5f4f0;
+  --ns-white: #ffffff;
+  --ns-surface: #fafaf8;
+  --ns-border: #e2e0d8;
+  --ns-border2: #ccc8bc;
+  --ns-text: #1a1916;
+  --ns-text2: #5c5849;
+  --ns-muted: #9c9788;
+  --ns-accent: #2d5be3;
+  --ns-accent-light: #eef1fc;
+  --ns-amber: #c97a20;
+  --ns-amber-light: #fdf3e3;
+  --ns-red: #c0392b;
+  --ns-red-light: #fbeaea;
+  --ns-green: #2d8c5b;
+  --ns-green-light: #e8f5ee;
+}
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--ns-bg);
+  color: var(--ns-text);
+  font-size: 14px;
+}

@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface InterventionRepository extends JpaRepository<Intervention, Long> {
     List<Intervention> findByStudent_IdOrderByStartDateDesc(Long studentId);
+    List<Intervention> findByDistrict_DistrictIdOrderByStartDateDesc(Long districtId);
 }

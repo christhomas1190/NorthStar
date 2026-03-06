@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { FileDown, BarChart3, Plus } from "lucide-react";
 import { useAuth } from "@/state/auth.jsx";
+import { getJSON } from "@/lib/api.js";
 
 // ---------- Date helpers ----------
 function fmtDay(d) {
@@ -310,23 +311,10 @@ const nav = useNavigate();
       setLoading(true);
       setErr("");
       try {
-        const [studentRes, incidentsRes] = await Promise.all([
-          fetch(`/api/students/${studentId}`, {
-            headers: {
-              "X-District-Id": String(activeDistrictId),
-              "Content-Type": "application/json",
-            },
-          }),
-          fetch("/api/incidents", {
-            headers: {
-              "X-District-Id": String(activeDistrictId),
-              "Content-Type": "application/json",
-            },
-          }),
+        const [sJson, iJson] = await Promise.all([
+          getJSON(`/api/students/${studentId}`).catch(() => null),
+          getJSON("/api/incidents").catch(() => []),
         ]);
-
-        const sJson = studentRes.ok ? await studentRes.json() : null;
-        const iJson = incidentsRes.ok ? await incidentsRes.json() : [];
 
         if (!alive) return;
 
@@ -423,6 +411,7 @@ const nav = useNavigate();
               method: "GET",
               headers: {
                 "X-District-Id": String(activeDistrictId),
+                "Authorization": localStorage.getItem("ns_token") || "",
               },
             }
           );

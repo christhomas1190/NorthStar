@@ -46,8 +46,8 @@ export function SelectTrigger({ className = "", children, ...props }) {
       role="combobox"
       aria-expanded={ctx.open}
       onClick={() => ctx.setOpen(!ctx.open)}
-      className={`h-10 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm shadow-sm
-                  text-left hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-300 ${className}`}
+      className={`h-9 w-full rounded-lg px-3 text-sm text-left focus:outline-none focus:ring-2 focus:ring-[#2d5be3] ${className}`}
+      style={{ border: "1.5px solid #ccc8bc", background: "#f5f4f0", color: "#1a1916", fontFamily: "'Outfit', sans-serif" }}
       {...props}
     >
       <div className="flex items-center justify-between">{children}<svg aria-hidden="true" viewBox="0 0 20 20" className="h-4 w-4 ml-2"><path d="M5 7l5 6 5-6" fill="currentColor"/></svg></div>
@@ -69,7 +69,8 @@ export function SelectContent({ className = "", children, ...props }) {
   return (
     <div
       role="listbox"
-      className={`absolute z-50 mt-2 w-full rounded-xl border bg-white shadow-lg p-1 ${className}`}
+      className={`absolute z-50 mt-2 w-full rounded-xl bg-white p-1 ${className}`}
+      style={{ border: "1.5px solid #e2e0d8", boxShadow: "0 4px 16px rgba(0,0,0,0.08)" }}
       {...props}
     >
       {children}
@@ -94,7 +95,7 @@ export function SelectItem({ value, className = "", children, ...props }) {
       aria-selected={selected}
       onClick={() => { ctx.setValue(value); ctx.setOpen(false); }}
       className={`cursor-pointer select-none rounded-lg px-3 py-2 text-sm
-                  hover:bg-slate-100 ${selected ? "bg-slate-100" : ""} ${className}`}
+                  hover:bg-[#f5f4f0] ${selected ? "bg-[#eef1fc] text-[#2d5be3]" : ""} ${className}`}
       {...props}
     >
       {children}
