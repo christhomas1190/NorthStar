@@ -15,6 +15,7 @@ import ManageIntervention from "@/components/admin/ManageIntervention.jsx";
 import TeachersPage from "@/components/admin/TeacherPage.jsx";
 import AdminTeacherCreate from "@/components/admin/AdminTeacherCreate.jsx";
 import CreateDisciplinePage from "@/components/disciplines/CreateDisciplinePage.jsx";
+import DisciplineRequiredPage from "@/components/disciplines/DisciplineRequiredPage.jsx";
 
 
 // Other sections
@@ -107,6 +108,16 @@ export default function App() {
           <Protected roles={["Admin"]}>
             <AppShell>
               <CreateDisciplinePage />
+            </AppShell>
+          </Protected>
+        }
+      />
+      <Route
+        path="/admin/disciplines/required"
+        element={
+          <Protected roles={["Admin"]}>
+            <AppShell>
+              <DisciplineRequiredPage />
             </AppShell>
           </Protected>
         }

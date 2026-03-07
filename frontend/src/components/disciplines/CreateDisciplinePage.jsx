@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams, useLocation } from "react-router-dom";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,6 +13,8 @@ export default function CreateDisciplinePage() {
 
   const params = useParams();
   const [sp, setSp] = useSearchParams();
+  const location = useLocation();
+  const prefill = location.state?.prefill ?? {};
 
   // studentId can come from:
   // 1) a param route (if you ever use /admin/disciplines/new/:studentId)
@@ -27,9 +29,9 @@ export default function CreateDisciplinePage() {
   const [errorMessage, setErrorMessage] = useState("");
 
   const [form, setForm] = useState({
-    tier: "TIER_1",
-    strategy: "",
-    description: "",
+    tier: prefill.tier ?? "TIER_1",
+    strategy: prefill.strategy ?? "",
+    description: prefill.description ?? "",
     assignedBy: "",
     startDate: new Date().toISOString().slice(0, 10),
     endDate: "",
@@ -144,8 +146,13 @@ export default function CreateDisciplinePage() {
             </div>
           )}
 
-          {/* ✅ SHOW ONLY when coming from AdminDashboard Discipline tab (no studentId in URL) */}
-          {!studentIdFromUrl && (
+          {/* Student selector or autofilled name */}
+          {studentIdFromUrl && prefill.studentName ? (
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Student</label>
+              <Input value={prefill.studentName} readOnly disabled />
+            </div>
+          ) : !studentIdFromUrl && (
             <div className="space-y-2">
               <label className="text-sm font-medium">Student</label>
               <SearchableStudentSelect
@@ -173,7 +180,7 @@ export default function CreateDisciplinePage() {
             </div>
 
             <div>
-              <label className="text-sm font-medium">Strategy</label>
+              <label className="text-sm font-medium">Disciplinary Action</label>
               <Input
                 name="strategy"
                 value={form.strategy}

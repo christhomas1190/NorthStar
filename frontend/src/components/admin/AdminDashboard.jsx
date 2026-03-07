@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { BarChart3, AlertTriangle } from "lucide-react";
+import { BarChart3 } from "lucide-react";
 
 import { useAuth } from "@/state/auth.jsx";
 import { getJSON } from "@/lib/api.js";
@@ -189,6 +189,7 @@ export default function AdminDashboard() {
           { label: "Admin Dashboard", to: "/admin" },
           { label: "Reports & Trends", to: "/reports" },
           { label: "Discipline", to: "/admin/disciplines/new" },
+          { label: "Discipline Required", to: "/admin/disciplines/required", badge: alerts.length },
         ]}
       />
 
@@ -263,45 +264,6 @@ export default function AdminDashboard() {
       </div>
 
       <TierCardsRow />
-
-      {alerts.length > 0 && (
-        <div
-          className="mt-6 rounded-xl p-4"
-          style={{ border: "1.5px solid var(--ns-border)", background: "var(--ns-white)" }}
-        >
-          <div className="flex items-center gap-2 mb-3">
-            <AlertTriangle size={16} style={{ color: "#d97706" }} />
-            <p className="font-semibold text-sm" style={{ fontFamily: "'Lora', serif", color: "var(--ns-text)" }}>
-              Escalation Alerts
-            </p>
-          </div>
-          <div className="space-y-2">
-            {alerts.map((a) => (
-              <div
-                key={a.studentId}
-                className="flex items-center justify-between rounded-lg px-3 py-2 text-sm"
-                style={{ border: "1px solid var(--ns-border)", background: "var(--ns-bg)" }}
-              >
-                <span className="font-medium" style={{ color: "var(--ns-text)" }}>{a.studentName}</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs" style={{ color: "var(--ns-text2)" }}>
-                    {a.effectiveCautionCount} incidents
-                  </span>
-                  <span
-                    className="rounded-[4px] px-2 py-0.5 text-xs font-semibold"
-                    style={{
-                      background: a.status === "ESCALATED" ? "#fee2e2" : "#fef3c7",
-                      color: a.status === "ESCALATED" ? "#b91c1c" : "#92400e",
-                    }}
-                  >
-                    {a.status}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </Page>
   );
 }

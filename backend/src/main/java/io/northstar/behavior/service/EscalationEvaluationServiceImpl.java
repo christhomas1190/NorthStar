@@ -6,6 +6,7 @@ import io.northstar.behavior.model.Incident;
 import io.northstar.behavior.model.Student;
 import io.northstar.behavior.repository.EscalationRulesRepository;
 import io.northstar.behavior.repository.IncidentRepository;
+import io.northstar.behavior.repository.InterventionRepository;
 import io.northstar.behavior.repository.SchoolRepository;
 import io.northstar.behavior.repository.StudentRepository;
 import org.springframework.http.HttpStatus;
@@ -28,15 +29,18 @@ public class EscalationEvaluationServiceImpl implements EscalationEvaluationServ
     private final IncidentRepository incidentRepo;
     private final EscalationRulesRepository rulesRepo;
     private final SchoolRepository schoolRepo;
+    private final InterventionRepository interventionRepo;
 
     public EscalationEvaluationServiceImpl(StudentRepository studentRepo,
                                            IncidentRepository incidentRepo,
                                            EscalationRulesRepository rulesRepo,
-                                           SchoolRepository schoolRepo) {
+                                           SchoolRepository schoolRepo,
+                                           InterventionRepository interventionRepo) {
         this.studentRepo = studentRepo;
         this.incidentRepo = incidentRepo;
         this.rulesRepo = rulesRepo;
         this.schoolRepo = schoolRepo;
+        this.interventionRepo = interventionRepo;
     }
 
     @Override
@@ -98,6 +102,11 @@ public class EscalationEvaluationServiceImpl implements EscalationEvaluationServ
                 status = "CAUTION";
             } else {
                 continue; // below threshold
+            }
+
+            // If a discipline/intervention was already issued after the most recent incident, skip
+            if (interventionRepo.existsByStudent_IdAndCreatedAtAfter(s.getId(), lastIncident)) {
+                continue;
             }
 
             alerts.add(new StudentEscalationStatusDTO(
