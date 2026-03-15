@@ -27,9 +27,9 @@ export default function UserRoleManagement() {
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-sm text-slate-600">
-              View, create, edit, and deactivate users on the dedicated Users page.
+              View, create, promote, and remove teachers and admins.
             </p>
-            <Button className={btn} variant="outline" onClick={() => navigate("/admin/users")}>
+            <Button className={btn} variant="outline" onClick={() => navigate("/admin/teachers")}>
               Open Users ▸
             </Button>
           </CardContent>
@@ -41,10 +41,10 @@ export default function UserRoleManagement() {
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-sm text-slate-600">
-              Define roles and fine-tune permissions on the Roles page.
+              Configure escalation rules, tier thresholds, and behavior policies.
             </p>
-            <Button className={btn} variant="outline" onClick={() => navigate("/admin/roles")}>
-              Open Roles ▸
+            <Button className={btn} variant="outline" onClick={() => navigate("/admin/escalation-rules")}>
+              Open Rules ▸
             </Button>
           </CardContent>
         </Card>

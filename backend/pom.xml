@@ -90,6 +90,13 @@
     </dependency>
     -->
 
+    <!-- PDF generation -->
+    <dependency>
+      <groupId>org.apache.pdfbox</groupId>
+      <artifactId>pdfbox</artifactId>
+      <version>3.0.2</version>
+    </dependency>
+
     <!-- Testing (JUnit 5, Mockito, Spring Test) -->
     <dependency>
       <groupId>org.springframework.boot</groupId>

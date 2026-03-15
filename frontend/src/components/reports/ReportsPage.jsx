@@ -317,6 +317,7 @@ export default function ReportsPage() {
   });
   const [incidents, setIncidents] = useState([]);
   const [students, setStudents] = useState([]);
+  const [disciplines, setDisciplines] = useState([]);
 
   useEffect(() => {
     if (!activeDistrictId || !activeSchoolId) return;
@@ -326,10 +327,11 @@ export default function ReportsPage() {
       setLoading(true);
       setErr("");
       try {
-        const [analyticsJson, incidentsJson, studentsJson] = await Promise.all([
+        const [analyticsJson, incidentsJson, studentsJson, disciplinesJson] = await Promise.all([
           getJSON(`/api/schools/${encodeURIComponent(activeSchoolId)}/analytics/incidents/summary?startDate=${from}&endDate=${to}`).catch(() => null),
           getJSON("/api/incidents").catch(() => []),
           getJSON("/api/students").catch(() => []),
+          getJSON("/api/interventions").catch(() => []),
         ]);
 
         if (!alive) return;
@@ -347,6 +349,7 @@ export default function ReportsPage() {
 
         setIncidents(Array.isArray(incidentsJson) ? incidentsJson : []);
         setStudents(Array.isArray(studentsJson) ? studentsJson : []);
+        setDisciplines(Array.isArray(disciplinesJson) ? disciplinesJson : []);
       } catch (e) {
         if (!alive) return;
         setErr(String(e.message || e));
@@ -475,6 +478,18 @@ export default function ReportsPage() {
       })
       .sort((a, b) => new Date(b.dateISO) - new Date(a.dateISO));
   }, [incidentsInRange, studentNameById, q]);
+
+  // Disciplines in selected date range
+  const disciplinesInRange = useMemo(() => {
+    if (!disciplines.length) return [];
+    return disciplines.filter((d) => {
+      const day = d.startDate ? String(d.startDate).slice(0, 10) : null;
+      if (!day) return false;
+      if (day < from || day > to) return false;
+      if (studentIdFilter && d.studentId !== studentIdFilter) return false;
+      return true;
+    });
+  }, [disciplines, from, to, studentIdFilter]);
 
   function exportCSV() {
     const header = ["id", "student", "category", "severity", "description", "date", "by"].join(",");
@@ -637,7 +652,7 @@ export default function ReportsPage() {
                 height={220}
               />
             </div>
-            <div className="mt-3 grid grid-cols-3 gap-3 text-xs">
+            <div className="mt-3 grid grid-cols-4 gap-3 text-xs">
               <div>
                 <div className="text-slate-500">Incidents</div>
                 <div className="font-semibold text-sm">
@@ -651,6 +666,10 @@ export default function ReportsPage() {
               <div>
                 <div className="text-slate-500">Major</div>
                 <div className="font-semibold text-sm">{major}</div>
+              </div>
+              <div>
+                <div className="text-slate-500">Disciplines</div>
+                <div className="font-semibold text-sm">{disciplinesInRange.length}</div>
               </div>
             </div>
           </CardContent>
@@ -707,6 +726,55 @@ export default function ReportsPage() {
                         colSpan={7}
                         className="py-6 text-slate-500 text-center"
                       >
+                        Loading…
+                      </TD>
+                    </TR>
+                  )}
+                </TBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Disciplines table */}
+        <Card className="lg:col-span-3">
+          <CardHeader>
+            <CardTitle className="text-base">Disciplines / Interventions</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="h-[400px] overflow-y-auto">
+              <Table>
+                <THead>
+                  <TR className="text-left text-slate-600 border-b sticky top-0 bg-white">
+                    <TH className="py-3">Student</TH>
+                    <TH className="py-3">Tier</TH>
+                    <TH className="py-3">Strategy</TH>
+                    <TH className="py-3">Assigned By</TH>
+                    <TH className="py-3">Start Date</TH>
+                    <TH className="py-3">End Date</TH>
+                  </TR>
+                </THead>
+                <TBody>
+                  {disciplinesInRange.map((d) => (
+                    <TR key={d.id} className="border-b last:border-0">
+                      <TD>{d.studentName || studentNameById.get(d.studentId) || `#${d.studentId}`}</TD>
+                      <TD><Badge variant="outline">{d.tier || "—"}</Badge></TD>
+                      <TD>{d.strategy || "—"}</TD>
+                      <TD>{d.assignedBy || "—"}</TD>
+                      <TD>{d.startDate ? String(d.startDate).slice(0, 10) : "—"}</TD>
+                      <TD>{d.endDate ? String(d.endDate).slice(0, 10) : "Ongoing"}</TD>
+                    </TR>
+                  ))}
+                  {!loading && disciplinesInRange.length === 0 && (
+                    <TR>
+                      <TD colSpan={6} className="py-6 text-slate-500 text-center">
+                        No disciplines for the selected filters.
+                      </TD>
+                    </TR>
+                  )}
+                  {loading && (
+                    <TR>
+                      <TD colSpan={6} className="py-6 text-slate-500 text-center">
                         Loading…
                       </TD>
                     </TR>

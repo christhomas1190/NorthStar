@@ -17,7 +17,7 @@ const EMPTY_ADMIN_FORM = {
 
 export default function TeacherPage() {
   const navigate = useNavigate();
-  const { activeDistrictId, activeSchoolId } = useAuth();
+  const { activeDistrictId, activeSchoolId, user } = useAuth();
 
   const [teachers, setTeachers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -40,6 +40,11 @@ export default function TeacherPage() {
   const [adminSaving, setAdminSaving] = useState(false);
   const [adminFeedback, setAdminFeedback] = useState(null);
 
+  // Admin list
+  const [admins, setAdmins] = useState([]);
+  const [adminsLoading, setAdminsLoading] = useState(false);
+  const [deletingAdminId, setDeletingAdminId] = useState(null);
+
   async function load() {
     setLoading(true);
     setError("");
@@ -55,7 +60,19 @@ export default function TeacherPage() {
     }
   }
 
-  useEffect(() => { load(); }, []);
+  async function loadAdmins() {
+    setAdminsLoading(true);
+    try {
+      const data = await getJSON("/api/admin");
+      setAdmins(Array.isArray(data) ? data : []);
+    } catch (_) {
+      // silently ignore
+    } finally {
+      setAdminsLoading(false);
+    }
+  }
+
+  useEffect(() => { load(); loadAdmins(); }, []);
 
   function startEdit(t) {
     setEditingId(t.id);
@@ -143,6 +160,7 @@ export default function TeacherPage() {
       await postJSON("/api/admin", payload);
       setAdminForm(EMPTY_ADMIN_FORM);
       setAdminFeedback({ type: "ok", msg: `Admin account created. Default password: Admin!2025#` });
+      await loadAdmins();
     } catch (e) {
       setAdminFeedback({ type: "err", msg: String(e.message || e) });
     } finally {
@@ -234,7 +252,7 @@ export default function TeacherPage() {
       </Card>
 
       {/* Create Admin Account */}
-      <Card>
+      <Card className="mb-6">
         <CardHeader>
           <CardTitle className="text-base">Create Admin Account</CardTitle>
         </CardHeader>
@@ -258,6 +276,58 @@ export default function TeacherPage() {
               {adminSaving ? "Creating…" : "Create Admin"}
             </Button>
           </form>
+        </CardContent>
+      </Card>
+
+      {/* Admin list */}
+      <Card>
+        <CardHeader className="flex items-center justify-between">
+          <CardTitle className="text-base">Admins</CardTitle>
+          <Button variant="outline" onClick={loadAdmins}>Refresh</Button>
+        </CardHeader>
+        <CardContent>
+          {adminsLoading ? (
+            <div className="text-sm text-slate-500">Loading…</div>
+          ) : admins.length === 0 ? (
+            <div className="text-sm text-slate-500">No admins found.</div>
+          ) : (
+            <div className="divide-y">
+              {admins.map((a) => {
+                const isSelf = user && a.userName === user.id;
+                return (
+                  <div key={a.id} className="py-3 flex items-center justify-between">
+                    <div>
+                      <div className="font-medium">{a.firstName} {a.lastName}</div>
+                      <div className="text-sm text-muted-foreground">
+                        <span className="font-mono">{a.userName}</span>
+                        {a.email ? <> · {a.email}</> : null}
+                        {a.permissionTag ? <> · {a.permissionTag}</> : null}
+                      </div>
+                    </div>
+                    <Button
+                      variant="destructive"
+                      disabled={isSelf || deletingAdminId === a.id}
+                      title={isSelf ? "Cannot delete your own account" : "Delete admin"}
+                      onClick={async () => {
+                        if (!window.confirm(`Delete admin "${a.userName}"?`)) return;
+                        setDeletingAdminId(a.id);
+                        try {
+                          await delJSON(`/api/admin/${a.id}`);
+                          await loadAdmins();
+                        } catch (e) {
+                          setError(String(e.message || e));
+                        } finally {
+                          setDeletingAdminId(null);
+                        }
+                      }}
+                    >
+                      {deletingAdminId === a.id ? "Deleting…" : isSelf ? "You" : "Delete"}
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </CardContent>
       </Card>
     </Page>
