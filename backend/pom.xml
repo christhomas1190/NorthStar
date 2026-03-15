@@ -90,11 +90,11 @@
     </dependency>
     -->
 
-    <!-- Lombok (optional) -->
+    <!-- PDF generation -->
     <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
-      <optional>true</optional>
+      <groupId>org.apache.pdfbox</groupId>
+      <artifactId>pdfbox</artifactId>
+      <version>3.0.2</version>
     </dependency>
 
     <!-- Testing (JUnit 5, Mockito, Spring Test) -->

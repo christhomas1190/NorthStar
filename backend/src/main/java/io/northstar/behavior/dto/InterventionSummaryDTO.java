@@ -9,6 +9,7 @@ public record InterventionSummaryDTO(
         String tier,
         String strategy,
         String description,
+        String assignedBy,
         LocalDate startDate,
         LocalDate endDate,
         Long districtId

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/state/auth.jsx";
+import { getJSON, postJSON } from "@/lib/api.js";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -45,18 +46,8 @@ export default function SetEscalationRules() {
     let alive = true;
     (async () => {
       try {
-        const res = await fetch(
-          `/api/escalation-rules?schoolId=${encodeURIComponent(activeSchoolId)}`,
-          {
-            headers: {
-              "X-District-Id": String(activeDistrictId),
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        if (res.ok) {
-          const data = await res.json();
-          if (!alive) return;
+        const data = await getJSON(`/api/escalation-rules?schoolId=${encodeURIComponent(activeSchoolId)}`).catch(() => null);
+        if (data && alive) {
           setRules((r) => ({ ...r, ...data }));
           setInitial((r) => ({ ...r, ...data }));
         }
@@ -109,19 +100,7 @@ export default function SetEscalationRules() {
     if (!activeDistrictId || !activeSchoolId) return alert("Select a District & School first.");
     setSaving(true);
     try {
-      const res = await fetch(
-        `/api/escalation-rules?schoolId=${encodeURIComponent(activeSchoolId)}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-District-Id": String(activeDistrictId),
-          },
-          body: JSON.stringify(rules),
-        }
-      );
-      if (!res.ok) throw new Error("Save failed");
-      const saved = await res.json();
+      const saved = await postJSON(`/api/escalation-rules?schoolId=${encodeURIComponent(activeSchoolId)}`, rules);
       setRules((r) => ({ ...r, ...saved }));
       setInitial((r) => ({ ...r, ...saved }));
       alert("Rules saved.");

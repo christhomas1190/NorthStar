@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import Page from "@/components/layout/Page";
 import PageTabs from "@/components/layout/PageTabs";
 import { useAuth } from "@/state/auth.jsx";
+import { postJSON } from "@/lib/api.js";
 
 const NAME_FORMATS = [
   { id: "FIRST_LAST", label: "First Last (e.g., Ada Lovelace)" },
@@ -91,19 +92,7 @@ export default function ImportStudents() {
   const { activeDistrictId, activeSchoolId } = useAuth();
 
   async function postStudent(body) {
-    const res = await fetch("/api/students", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-District-Id": String(activeDistrictId),
-      },
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) {
-      const txt = await res.text().catch(() => "");
-      throw new Error(txt || `HTTP ${res.status}`);
-    }
-    return res.json();
+    return postJSON("/api/students", body);
   }
 
   const [single, setSingle] = useState({

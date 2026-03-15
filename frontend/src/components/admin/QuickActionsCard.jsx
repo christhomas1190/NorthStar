@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 
 export default function QuickActionsCard() {
   const btnCls =
-    "justify-between rounded-2xl border border-slate-300 bg-white hover:bg-slate-50";
+    "justify-between rounded-lg w-full text-left";
 
   return (
-    <Card className="shadow-sm">
+    <Card>
       <CardHeader>
         <CardTitle className="text-base">Quick Actions</CardTitle>
       </CardHeader>

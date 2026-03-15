@@ -10,6 +10,7 @@ import java.util.Optional;
 
 public interface StudentRepository extends JpaRepository<Student, Long> {
     List<Student> findByDistrict_DistrictId(Long districtId);
+    List<Student> findBySchool_SchoolId(Long schoolId);
     Optional<Student> findByIdAndDistrict_DistrictId(Long id, Long districtId);
     boolean existsByStudentIdAndDistrict_DistrictId(String studentId, Long districtId);
 

@@ -1,22 +1,22 @@
 import React from "react";
 
 const base =
-  "inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-medium " +
-  "transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 " +
+  "inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium " +
+  "transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2d5be3] " +
   "disabled:opacity-50 disabled:pointer-events-none";
 
 const variants = {
-  default: "bg-slate-900 text-white hover:bg-slate-800",
-  outline: "border border-slate-300 text-slate-900 hover:bg-slate-50",
-  secondary: "bg-slate-100 text-slate-900 hover:bg-slate-200",
-  ghost: "text-slate-900 hover:bg-slate-100",
-  destructive: "bg-rose-600 text-white hover:bg-rose-500",
+  default: "bg-[#2d5be3] text-white hover:bg-[#2449c9]",
+  outline: "border border-[#ccc8bc] text-[#5c5849] hover:border-[#2d5be3] hover:text-[#2d5be3] bg-transparent",
+  secondary: "bg-[#f5f4f0] border border-[#e2e0d8] text-[#5c5849] hover:bg-[#e2e0d8]",
+  ghost: "text-[#5c5849] hover:bg-[#f5f4f0] border border-transparent",
+  destructive: "bg-[#c0392b] text-white hover:bg-[#a93226]",
 };
 
 const sizes = {
-  sm: "h-8 px-3 text-xs rounded-lg",
-  md: "h-10 px-4 text-sm",
-  lg: "h-12 px-5 text-base rounded-2xl",
+  sm: "h-8 px-3 text-xs rounded-md",
+  md: "h-9 px-4 text-sm",
+  lg: "h-11 px-5 text-base rounded-xl",
 };
 
 const Spinner = () => (

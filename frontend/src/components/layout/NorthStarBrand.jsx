@@ -4,30 +4,56 @@ import { useNavigate } from "react-router-dom";
 export default function NorthStarBrand({ isAdmin = false }) {
   const nav = useNavigate();
 
-  // Same visual layout for everyone
   const content = (
     <>
-      <div className="h-9 w-9 rounded-2xl bg-slate-900 text-white grid place-content-center font-bold">
-        NS
+      <div
+        style={{
+          width: 34,
+          height: 34,
+          background: "var(--ns-accent)",
+          borderRadius: 10,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "white",
+          fontSize: 18,
+          flexShrink: 0,
+        }}
+      >
+        ★
       </div>
-      <h1 className="text-xl md:text-2xl font-semibold tracking-tight">
+      <span
+        style={{
+          fontFamily: "'Lora', serif",
+          fontSize: 20,
+          fontWeight: 700,
+          letterSpacing: "-0.5px",
+          color: "var(--ns-text)",
+        }}
+      >
         NorthStar
-      </h1>
+      </span>
     </>
   );
 
-  // Only admin gets a clickable brand -> /admin
   if (!isAdmin) {
-    return <div className="flex items-center gap-3">{content}</div>;
+    return <div style={{ display: "flex", alignItems: "center", gap: 10 }}>{content}</div>;
   }
 
   return (
     <button
       type="button"
       onClick={() => nav("/admin")}
-      className="flex items-center gap-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-300 hover:opacity-90"
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        background: "none",
+        border: "none",
+        cursor: "pointer",
+        padding: 0,
+      }}
       aria-label="Go to Admin Dashboard"
-      title="Back to Admin Dashboard"
     >
       {content}
     </button>

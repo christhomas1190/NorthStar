@@ -4,11 +4,15 @@ import io.northstar.behavior.dto.CreateInterventionRequest;
 import io.northstar.behavior.dto.InterventionSummaryDTO;
 import io.northstar.behavior.model.Intervention;
 import io.northstar.behavior.model.Student;
+import io.northstar.behavior.repository.AdminRepository;
 import io.northstar.behavior.repository.InterventionRepository;
 import io.northstar.behavior.repository.StudentRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -20,10 +24,14 @@ public class InterventionServiceImpl implements InterventionService {
 
     private final InterventionRepository interventions;
     private final StudentRepository students;
+    private final AdminRepository admins;
 
-    public InterventionServiceImpl(InterventionRepository interventions, StudentRepository students) {
+    public InterventionServiceImpl(InterventionRepository interventions,
+                                   StudentRepository students,
+                                   AdminRepository admins) {
         this.interventions = interventions;
         this.students = students;
+        this.admins = admins;
     }
 
     private InterventionSummaryDTO toSummary(Intervention iv) {
@@ -48,6 +56,7 @@ public class InterventionServiceImpl implements InterventionService {
                 iv.getTier(),
                 iv.getStrategy(),
                 iv.getDescription(),
+                iv.getAssignedBy(),
                 iv.getStartDate(),
                 iv.getEndDate(),
                 districtId
@@ -85,6 +94,20 @@ public class InterventionServiceImpl implements InterventionService {
         List<Intervention> list = interventions.findByStudent_IdOrderByStartDateDesc(studentId);
         List<InterventionSummaryDTO> out = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) out.add(toSummary(list.get(i)));
+        return out;
+    }
+
+    // Lists all interventions for the current admin's district
+    @Override
+    @Transactional(readOnly = true)
+    public List<InterventionSummaryDTO> listAll() {
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        var admin = admins.findByUserName(userName)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "admin not found"));
+        Long districtId = admin.getDistrict().getDistrictId();
+        List<Intervention> list = interventions.findByDistrict_DistrictIdOrderByStartDateDesc(districtId);
+        List<InterventionSummaryDTO> out = new ArrayList<>();
+        for (Intervention iv : list) out.add(toSummary(iv));
         return out;
     }
 

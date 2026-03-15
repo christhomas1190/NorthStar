@@ -9,5 +9,6 @@ public interface InterventionService {
     InterventionSummaryDTO create(Long studentId, CreateInterventionRequest req);
     InterventionSummaryDTO update(Long id, CreateInterventionRequest req);
     List<InterventionSummaryDTO> listForStudent(Long studentId);
+    List<InterventionSummaryDTO> listAll();
     void delete(Long id);
 }

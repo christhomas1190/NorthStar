@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { BarChart3 } from "lucide-react";
 
 import { useAuth } from "@/state/auth.jsx";
+import { getJSON } from "@/lib/api.js";
 
 import {
   daysAgo,
@@ -42,6 +43,7 @@ export default function AdminDashboard() {
 
   const [incidents, setIncidents] = useState([]);
   const [students, setStudents] = useState([]);
+  const [alerts, setAlerts] = useState([]);
 
   useEffect(() => {
     if (!activeDistrictId || !activeSchoolId) return;
@@ -53,35 +55,12 @@ export default function AdminDashboard() {
       setErr("");
 
       try {
-        const [analyticsRes, incidentsRes, studentsRes] = await Promise.all([
-          fetch(
-            `/api/schools/${encodeURIComponent(
-              activeSchoolId
-            )}/analytics/incidents/summary?startDate=${from}&endDate=${to}`,
-            {
-              headers: {
-                "X-District-Id": String(activeDistrictId),
-                "Content-Type": "application/json",
-              },
-            }
-          ),
-          fetch("/api/incidents", {
-            headers: {
-              "X-District-Id": String(activeDistrictId),
-              "Content-Type": "application/json",
-            },
-          }),
-          fetch("/api/students", {
-            headers: {
-              "X-District-Id": String(activeDistrictId),
-              "Content-Type": "application/json",
-            },
-          }),
+        const [analyticsJson, incidentsJson, studentsJson, alertsJson] = await Promise.all([
+          getJSON(`/api/schools/${encodeURIComponent(activeSchoolId)}/analytics/incidents/summary?startDate=${from}&endDate=${to}`).catch(() => null),
+          getJSON("/api/incidents").catch(() => []),
+          getJSON("/api/students").catch(() => []),
+          getJSON(`/api/escalation-rules/alerts?schoolId=${activeSchoolId}`).catch(() => []),
         ]);
-
-        const analyticsJson = analyticsRes.ok ? await analyticsRes.json() : null;
-        const incidentsJson = incidentsRes.ok ? await incidentsRes.json() : [];
-        const studentsJson = studentsRes.ok ? await studentsRes.json() : [];
 
         if (!alive) return;
 
@@ -98,6 +77,7 @@ export default function AdminDashboard() {
 
         setIncidents(Array.isArray(incidentsJson) ? incidentsJson : []);
         setStudents(Array.isArray(studentsJson) ? studentsJson : []);
+        setAlerts(Array.isArray(alertsJson) ? alertsJson : []);
       } catch (e) {
         if (!alive) return;
         setErr(String(e.message || e));
@@ -174,11 +154,13 @@ export default function AdminDashboard() {
       ?.count ?? severityCounts.major;
 
   const recentFeed = useMemo(() => {
+    const studentMap = new Map(students.map((s) => [s.id, `${s.firstName} ${s.lastName}`]));
     return (incidents || [])
       .filter((it) => !!it.occurredAt)
       .map((it) => ({
         id: it.id,
         studentId: it.studentId,
+        studentName: studentMap.get(it.studentId) ?? "Unknown",
         category: it.category,
         severity: it.severity,
         when: new Date(it.occurredAt).toLocaleString(),
@@ -186,7 +168,7 @@ export default function AdminDashboard() {
       }))
       .sort((a, b) => new Date(b.when) - new Date(a.when))
       .slice(0, 12);
-  }, [incidents]);
+  }, [incidents, students]);
 
   const KPIS = [
     { label: "Active Students", value: students.length, hint: "Current tenant" },
@@ -207,6 +189,7 @@ export default function AdminDashboard() {
           { label: "Admin Dashboard", to: "/admin" },
           { label: "Reports & Trends", to: "/reports" },
           { label: "Discipline", to: "/admin/disciplines/new" },
+          { label: "Discipline Required", to: "/admin/disciplines/required", badge: alerts.length },
         ]}
       />
 

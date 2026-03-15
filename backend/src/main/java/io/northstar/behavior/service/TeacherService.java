@@ -1,6 +1,8 @@
 package io.northstar.behavior.service;
 
+import io.northstar.behavior.dto.AdminDTO;
 import io.northstar.behavior.dto.CreateTeacherRequest;
+import io.northstar.behavior.dto.TeacherCautionStatsDTO;
 import io.northstar.behavior.dto.TeacherDTO;
 
 import java.util.List;
@@ -12,5 +14,6 @@ public interface TeacherService {
     TeacherDTO findById(Long id);
     List<TeacherDTO> findAll();
     TeacherDTO createForCurrentAdmin(CreateTeacherRequest req);
-
+    TeacherCautionStatsDTO cautionStats(Long teacherId);
+    AdminDTO promoteToAdmin(Long teacherId);
 }

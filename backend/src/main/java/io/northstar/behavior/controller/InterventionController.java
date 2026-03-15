@@ -33,6 +33,12 @@ public class InterventionController {
         return service.listForStudent(studentId);
     }
 
+    // Retrieves all interventions across all students (admin view)
+    @GetMapping("/api/interventions")
+    public List<InterventionSummaryDTO> listAll() {
+        return service.listAll();
+    }
+
     // Deletes an intervention by id
     @DeleteMapping("/api/interventions/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {

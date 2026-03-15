@@ -4,6 +4,7 @@ import io.northstar.behavior.dto.CreateIncidentRequest;
 import io.northstar.behavior.dto.IncidentDTO;
 import io.northstar.behavior.dto.IncidentSummaryDTO;
 import io.northstar.behavior.service.IncidentService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,8 +21,9 @@ public class IncidentController {
     }
 
     @PostMapping
-    public ResponseEntity<IncidentDTO> create(@RequestBody CreateIncidentRequest req) {
-        return ResponseEntity.ok(service.create(req));
+    @ResponseStatus(HttpStatus.CREATED)
+    public IncidentDTO create(@RequestBody CreateIncidentRequest req) {
+        return service.create(req);
     }
 
     @GetMapping

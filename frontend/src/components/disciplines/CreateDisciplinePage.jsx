@@ -1,17 +1,20 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams, useLocation } from "react-router-dom";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import SearchableStudentSelect from "@/components/common/SearchableStudentSelect";
 import { useAuth } from "@/state/auth.jsx";
+import { getJSON, postJSON } from "@/lib/api.js";
 
 export default function CreateDisciplinePage() {
   const { activeDistrictId } = useAuth();
 
   const params = useParams();
   const [sp, setSp] = useSearchParams();
+  const location = useLocation();
+  const prefill = location.state?.prefill ?? {};
 
   // studentId can come from:
   // 1) a param route (if you ever use /admin/disciplines/new/:studentId)
@@ -26,9 +29,9 @@ export default function CreateDisciplinePage() {
   const [errorMessage, setErrorMessage] = useState("");
 
   const [form, setForm] = useState({
-    tier: "TIER_1",
-    strategy: "",
-    description: "",
+    tier: prefill.tier ?? "TIER_1",
+    strategy: prefill.strategy ?? "",
+    description: prefill.description ?? "",
     assignedBy: "",
     startDate: new Date().toISOString().slice(0, 10),
     endDate: "",
@@ -50,14 +53,7 @@ export default function CreateDisciplinePage() {
 
     (async () => {
       try {
-        const res = await fetch("/api/students", {
-          headers: {
-            "X-District-Id": String(activeDistrictId),
-            "Content-Type": "application/json",
-          },
-        });
-
-        const json = res.ok ? await res.json() : [];
+        const json = await getJSON("/api/students").catch(() => []);
         if (!alive) return;
 
         setStudents(Array.isArray(json) ? json : []);
@@ -112,19 +108,7 @@ export default function CreateDisciplinePage() {
         createdAt: null,
       };
 
-      const res = await fetch(`/api/students/${effectiveStudentId}/interventions`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-District-Id": String(activeDistrictId),
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        const msg = await res.text();
-        throw new Error(`Failed to create discipline (HTTP ${res.status}): ${msg}`);
-      }
+      await postJSON(`/api/students/${effectiveStudentId}/interventions`, payload);
 
       setSuccessMessage("Intervention created successfully.");
 
@@ -162,8 +146,13 @@ export default function CreateDisciplinePage() {
             </div>
           )}
 
-          {/* ✅ SHOW ONLY when coming from AdminDashboard Discipline tab (no studentId in URL) */}
-          {!studentIdFromUrl && (
+          {/* Student selector or autofilled name */}
+          {studentIdFromUrl && prefill.studentName ? (
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Student</label>
+              <Input value={prefill.studentName} readOnly disabled />
+            </div>
+          ) : !studentIdFromUrl && (
             <div className="space-y-2">
               <label className="text-sm font-medium">Student</label>
               <SearchableStudentSelect
@@ -191,7 +180,7 @@ export default function CreateDisciplinePage() {
             </div>
 
             <div>
-              <label className="text-sm font-medium">Strategy</label>
+              <label className="text-sm font-medium">Disciplinary Action</label>
               <Input
                 name="strategy"
                 value={form.strategy}

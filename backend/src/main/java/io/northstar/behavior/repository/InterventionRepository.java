@@ -4,9 +4,12 @@ import io.northstar.behavior.model.Intervention;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Repository
 public interface InterventionRepository extends JpaRepository<Intervention, Long> {
     List<Intervention> findByStudent_IdOrderByStartDateDesc(Long studentId);
+    List<Intervention> findByDistrict_DistrictIdOrderByStartDateDesc(Long districtId);
+    boolean existsByStudent_IdAndCreatedAtAfter(Long studentId, OffsetDateTime after);
 }

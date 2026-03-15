@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { FileDown, BarChart3, Plus } from "lucide-react";
 import { useAuth } from "@/state/auth.jsx";
+import { getJSON } from "@/lib/api.js";
 
 // ---------- Date helpers ----------
 function fmtDay(d) {
@@ -302,6 +303,7 @@ const nav = useNavigate();
 
   const [student, setStudent] = useState(null);
   const [allIncidents, setAllIncidents] = useState([]);
+  const [interventions, setInterventions] = useState([]);
 
   useEffect(() => {
     if (!activeDistrictId || !studentId) return;
@@ -310,28 +312,17 @@ const nav = useNavigate();
       setLoading(true);
       setErr("");
       try {
-        const [studentRes, incidentsRes] = await Promise.all([
-          fetch(`/api/students/${studentId}`, {
-            headers: {
-              "X-District-Id": String(activeDistrictId),
-              "Content-Type": "application/json",
-            },
-          }),
-          fetch("/api/incidents", {
-            headers: {
-              "X-District-Id": String(activeDistrictId),
-              "Content-Type": "application/json",
-            },
-          }),
+        const [sJson, iJson, ivJson] = await Promise.all([
+          getJSON(`/api/students/${studentId}`).catch(() => null),
+          getJSON("/api/incidents").catch(() => []),
+          getJSON(`/api/students/${studentId}/interventions`).catch(() => []),
         ]);
-
-        const sJson = studentRes.ok ? await studentRes.json() : null;
-        const iJson = incidentsRes.ok ? await incidentsRes.json() : [];
 
         if (!alive) return;
 
         setStudent(sJson);
         setAllIncidents(Array.isArray(iJson) ? iJson : []);
+        setInterventions(Array.isArray(ivJson) ? ivJson : []);
       } catch (e) {
         if (!alive) return;
         setErr(String(e.message || e));
@@ -391,17 +382,8 @@ const nav = useNavigate();
     return points;
   }, [incidentsInRange, from, to]);
 
-  // Disciplines / interventions: pull from student.interventions, filtered by date range
-  const disciplines = useMemo(() => {
-    if (!student || !Array.isArray(student.interventions)) return [];
-    const fromStr = from;
-    const toStr = to;
-    return student.interventions.filter((iv) => {
-      const day = String(iv.startDate || "").slice(0, 10);
-      if (!day) return false;
-      return day >= fromStr && day <= toStr;
-    });
-  }, [student, from, to]);
+  // Show all disciplines for this student (not filtered by date range)
+  const disciplines = interventions;
 
     function handleCreateIncident() {
       nav(`/admin/students/${studentId}/incidents/new`);
@@ -423,6 +405,7 @@ const nav = useNavigate();
               method: "GET",
               headers: {
                 "X-District-Id": String(activeDistrictId),
+                "Authorization": localStorage.getItem("ns_token") || "",
               },
             }
           );
@@ -601,7 +584,7 @@ const nav = useNavigate();
               >
                 <div className="flex justify-between">
                   <span className="font-semibold">
-                    {d.tier ? `Tier ${d.tier}` : "Intervention"}
+                    {d.tier ? d.tier.replace("_", " ").replace("TIER", "Tier") : "Intervention"}
                   </span>
                   <span>
                     {d.startDate

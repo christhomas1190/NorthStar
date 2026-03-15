@@ -8,11 +8,12 @@ export const Textarea = React.forwardRef(function Textarea(
     <textarea
       ref={ref}
       className={
-        "w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm " +
-        "placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300 " +
+        "w-full rounded-lg px-4 py-3 text-sm " +
+        "placeholder-[#9c9788] focus:outline-none focus:ring-2 focus:ring-[#2d5be3] " +
         "disabled:cursor-not-allowed disabled:opacity-50 " +
         className
       }
+      style={{ border: "1.5px solid #ccc8bc", background: "#f5f4f0", color: "#1a1916", fontFamily: "'Outfit', sans-serif" }}
       {...props}
     />
   );
