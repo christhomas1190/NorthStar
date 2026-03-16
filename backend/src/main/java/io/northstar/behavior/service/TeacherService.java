@@ -15,5 +15,6 @@ public interface TeacherService {
     List<TeacherDTO> findAll();
     TeacherDTO createForCurrentAdmin(CreateTeacherRequest req);
     TeacherCautionStatsDTO cautionStats(Long teacherId);
+    List<TeacherCautionStatsDTO> findAllStats();
     AdminDTO promoteToAdmin(Long teacherId);
 }

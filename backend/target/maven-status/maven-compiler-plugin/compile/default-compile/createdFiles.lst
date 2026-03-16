@@ -14,12 +14,14 @@ io/northstar/behavior/repository/StudentRepository.class
 io/northstar/behavior/repository/IncidentRepository.class
 io/northstar/behavior/service/NotificationServiceImpl.class
 io/northstar/behavior/dto/InterventionSummaryDTO.class
+io/northstar/behavior/controller/TierChangeEventController.class
 io/northstar/behavior/model/Intervention.class
 io/northstar/behavior/dto/CreateInterventionRequest.class
 io/northstar/behavior/controller/InterventionController.class
 io/northstar/behavior/NorthStarApplication.class
 io/northstar/behavior/model/Incident.class
 io/northstar/behavior/service/TeacherServiceImpl.class
+io/northstar/behavior/dto/TierChangeEventDTO.class
 io/northstar/behavior/dto/AdminNotificationDTO.class
 io/northstar/behavior/service/EscalationRulesServiceImpl.class
 io/northstar/behavior/config/DataInitializer.class
@@ -46,6 +48,7 @@ io/northstar/behavior/controller/AdminNotificationController.class
 io/northstar/behavior/controller/StudentController.class
 io/northstar/behavior/dto/DistrictDTO.class
 io/northstar/behavior/model/Student.class
+io/northstar/behavior/model/TierChangeEvent.class
 io/northstar/behavior/service/AdminService.class
 io/northstar/behavior/service/SchoolServiceImpl.class
 io/northstar/behavior/service/SchoolService.class
@@ -59,6 +62,7 @@ io/northstar/behavior/config/SecurityConfig.class
 io/northstar/behavior/controller/AnalyticsController.class
 io/northstar/behavior/dto/CreateStudentRequest.class
 io/northstar/behavior/dto/BulkStudentsRequest.class
+io/northstar/behavior/repository/TierChangeEventRepository.class
 io/northstar/behavior/dto/IncidentSummaryDTO.class
 io/northstar/behavior/tenant/TenantContext.class
 io/northstar/behavior/dto/IncidentDTO.class

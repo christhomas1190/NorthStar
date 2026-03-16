@@ -1,5 +1,6 @@
 import React from "react";
 import { Clock } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function RecentActivity({ items }) {
   return (
@@ -8,9 +9,18 @@ export default function RecentActivity({ items }) {
       style={{ border: "1.5px solid var(--ns-border)", background: "var(--ns-white)", color: "var(--ns-text2)" }}
     >
       {/* Header Row */}
-      <div className="flex items-center gap-2 mb-3">
-        <Clock size={16} style={{ color: "var(--ns-accent)" }} />
-        <p className="font-semibold text-sm" style={{ fontFamily: "'Lora', serif", color: "var(--ns-text)" }}>Recent Activity</p>
+      <div className="flex items-center justify-between gap-2 mb-3">
+        <div className="flex items-center gap-2">
+          <Clock size={16} style={{ color: "var(--ns-accent)" }} />
+          <p className="font-semibold text-sm" style={{ fontFamily: "'Lora', serif", color: "var(--ns-text)" }}>Recent Activity</p>
+        </div>
+        <Link
+          to="/admin/activity"
+          className="text-xs hover:underline"
+          style={{ color: "var(--ns-accent)" }}
+        >
+          View all →
+        </Link>
       </div>
 
       {/* Activity Box */}

@@ -293,6 +293,19 @@ public class TeacherServiceImpl implements TeacherService {
     }
 
     @Override
+    @Transactional
+    public List<TeacherCautionStatsDTO> findAllStats() {
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        Admin admin = adminRepository.findByUserName(userName)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "admin not found"));
+        Long districtId = admin.getDistrict().getDistrictId();
+        List<Teacher> all = repo.findByDistrict_DistrictId(districtId);
+        List<TeacherCautionStatsDTO> out = new ArrayList<>();
+        for (Teacher t : all) out.add(cautionStats(t.getId()));
+        return out;
+    }
+
+    @Override
     public TeacherCautionStatsDTO cautionStats(Long teacherId) {
         Teacher t = repo.findById(teacherId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "teacher not found"));

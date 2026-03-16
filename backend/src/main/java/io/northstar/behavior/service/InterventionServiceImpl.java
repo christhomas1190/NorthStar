@@ -4,9 +4,11 @@ import io.northstar.behavior.dto.CreateInterventionRequest;
 import io.northstar.behavior.dto.InterventionSummaryDTO;
 import io.northstar.behavior.model.Intervention;
 import io.northstar.behavior.model.Student;
+import io.northstar.behavior.model.TierChangeEvent;
 import io.northstar.behavior.repository.AdminRepository;
 import io.northstar.behavior.repository.InterventionRepository;
 import io.northstar.behavior.repository.StudentRepository;
+import io.northstar.behavior.repository.TierChangeEventRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,13 +27,16 @@ public class InterventionServiceImpl implements InterventionService {
     private final InterventionRepository interventions;
     private final StudentRepository students;
     private final AdminRepository admins;
+    private final TierChangeEventRepository tierChangeEvents;
 
     public InterventionServiceImpl(InterventionRepository interventions,
                                    StudentRepository students,
-                                   AdminRepository admins) {
+                                   AdminRepository admins,
+                                   TierChangeEventRepository tierChangeEvents) {
         this.interventions = interventions;
         this.students = students;
         this.admins = admins;
+        this.tierChangeEvents = tierChangeEvents;
     }
 
     private InterventionSummaryDTO toSummary(Intervention iv) {
@@ -84,7 +89,28 @@ public class InterventionServiceImpl implements InterventionService {
         iv.setEndDate(req.endDate());
         iv.setCreatedAt(req.createdAt() != null ? req.createdAt() : OffsetDateTime.now());
 
-        return toSummary(interventions.save(iv));
+        Intervention saved = interventions.save(iv);
+
+        // Auto-create tier change event
+        List<Intervention> history = interventions.findByStudent_IdOrderByStartDateDesc(studentId);
+        // history[0] is the one just saved; history[1] is the previous (if any)
+        String fromTier = null;
+        if (history.size() >= 2) {
+            fromTier = history.get(1).getTier();
+        }
+        boolean shouldRecord = (fromTier == null) || (!req.tier().equals(fromTier));
+        if (shouldRecord) {
+            TierChangeEvent evt = new TierChangeEvent();
+            evt.setStudent(s);
+            evt.setDistrict(s.getDistrict());
+            evt.setFromTier(fromTier);
+            evt.setToTier(req.tier());
+            evt.setChangedAt(saved.getCreatedAt());
+            evt.setChangedBy(req.assignedBy());
+            tierChangeEvents.save(evt);
+        }
+
+        return toSummary(saved);
     }
 
     // Retrieves interventions for a student, newest first

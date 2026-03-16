@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Page from "@/components/layout/Page";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { BarChart3, X } from "lucide-react";
@@ -282,12 +284,14 @@ function LineChartWithAxes({ points = [], width = 900, height = 260 }) {
 
 /* ---------- Teacher dashboard page ---------- */
 export default function TeacherDashboard() {
-  const { activeDistrictId } = useAuth();
+  const { activeDistrictId, user } = useAuth();
+  const navigate = useNavigate();
 
   const [from, setFrom] = useState(startOfCurrentYear());
   const [to, setTo] = useState(today());
 
   const [allIncidents, setAllIncidents] = useState([]);
+  const [allStudents, setAllStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
@@ -304,9 +308,13 @@ export default function TeacherDashboard() {
       setLoading(true);
       setErr("");
       try {
-        const json = await getJSON("/api/incidents");
+        const [iJson, sJson] = await Promise.all([
+          getJSON("/api/incidents"),
+          getJSON("/api/students").catch(() => []),
+        ]);
         if (!alive) return;
-        setAllIncidents(Array.isArray(json) ? json : []);
+        setAllIncidents(Array.isArray(iJson) ? iJson : []);
+        setAllStudents(Array.isArray(sJson) ? sJson : []);
       } catch (e) {
         if (!alive) return;
         setErr(String(e.message || e));
@@ -416,11 +424,62 @@ export default function TeacherDashboard() {
     return points;
   }, [incidentsInRange, from, to]);
 
+  const studentMap = useMemo(() => {
+    const m = new Map();
+    for (const s of allStudents) m.set(s.id, s);
+    return m;
+  }, [allStudents]);
+
+  const myIncidentsInRange = useMemo(
+    () => incidentsInRange.filter((it) => it.reportedBy === user?.id),
+    [incidentsInRange, user]
+  );
+
+  const uniqueStudentsInRange = useMemo(
+    () => new Set(incidentsInRange.map((it) => it.studentId)).size,
+    [incidentsInRange]
+  );
+
+  const myRecentIncidents = useMemo(() => {
+    return [...allIncidents]
+      .filter((it) => it.reportedBy === user?.id)
+      .sort((a, b) => new Date(b.occurredAt) - new Date(a.occurredAt))
+      .slice(0, 30);
+  }, [allIncidents, user]);
+
+  function resolveStudentName(studentId) {
+    const s = studentMap.get(studentId);
+    if (!s) return `#${studentId}`;
+    return `${s.firstName || ""} ${s.lastName || ""}`.trim() || `#${studentId}`;
+  }
+
   return (
     <Page
       title="Teacher Dashboard"
       subtitle="View incident trends by date and student"
     >
+      {/* KPI row */}
+      <div className="grid grid-cols-3 gap-4 mb-6">
+        <Card>
+          <CardContent className="pt-4 pb-3">
+            <div className="text-xs text-slate-500 mb-1">My Incidents (range)</div>
+            <div className="text-2xl font-semibold text-slate-800">{myIncidentsInRange.length}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-4 pb-3">
+            <div className="text-xs text-slate-500 mb-1">All Incidents (range)</div>
+            <div className="text-2xl font-semibold text-slate-800">{incidentsInRange.length}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-4 pb-3">
+            <div className="text-xs text-slate-500 mb-1">Students w/ Incidents</div>
+            <div className="text-2xl font-semibold text-slate-800">{uniqueStudentsInRange}</div>
+          </CardContent>
+        </Card>
+      </div>
+
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="text-base flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
@@ -487,6 +546,27 @@ export default function TeacherDashboard() {
               Leave blank to see all incidents. Type at least 2 characters to search.
             </div>
 
+            {/* Student action buttons */}
+            {selectedStudent && (
+              <div className="mt-2 flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-8 text-xs"
+                  onClick={() => navigate(`/admin/students/${selectedStudent.id}`)}
+                >
+                  View Profile
+                </Button>
+                <Button
+                  size="sm"
+                  className="h-8 text-xs"
+                  onClick={() => navigate(`/admin/students/${selectedStudent.id}/incidents/new`)}
+                >
+                  Create Incident
+                </Button>
+              </div>
+            )}
+
             {/* Dropdown results */}
             {searchLoading && (
               <div className="mt-2 text-xs text-slate-500">Searching…</div>
@@ -541,6 +621,45 @@ export default function TeacherDashboard() {
               Live
             </Badge>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* My Recent Incidents */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">My Recent Incidents</CardTitle>
+        </CardHeader>
+        <CardContent className="overflow-x-auto">
+          {myRecentIncidents.length === 0 ? (
+            <div className="py-4 text-center text-sm text-slate-500">
+              You haven&apos;t reported any incidents yet.
+            </div>
+          ) : (
+            <table className="w-full text-sm">
+              <thead className="border-b text-slate-600">
+                <tr>
+                  <th className="text-left py-2 pr-4">Date</th>
+                  <th className="text-left py-2 pr-4">Student</th>
+                  <th className="text-left py-2 pr-4">Category</th>
+                  <th className="text-left py-2">Severity</th>
+                </tr>
+              </thead>
+              <tbody>
+                {myRecentIncidents.map((it) => (
+                  <tr key={it.id} className="border-b last:border-0 hover:bg-slate-50">
+                    <td className="py-2 pr-4 text-xs">
+                      {it.occurredAt ? new Date(it.occurredAt).toLocaleDateString() : "—"}
+                    </td>
+                    <td className="py-2 pr-4">{resolveStudentName(it.studentId)}</td>
+                    <td className="py-2 pr-4">{it.category || "—"}</td>
+                    <td className="py-2">
+                      <Badge variant="outline">{it.severity || "—"}</Badge>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </CardContent>
       </Card>
     </Page>
