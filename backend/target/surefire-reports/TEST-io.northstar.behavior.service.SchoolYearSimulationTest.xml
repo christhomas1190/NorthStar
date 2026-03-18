@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="io.northstar.behavior.service.TeacherServiceTest" time="0.399" tests="14" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="io.northstar.behavior.service.SchoolYearSimulationTest" time="0.011" tests="13" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="23"/>
     <property name="sun.jnu.encoding" value="UTF-8"/>
@@ -64,18 +64,17 @@
     <property name="socksNonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
     <property name="java.class.version" value="67.0"/>
   </properties>
-  <testcase name="update_ok" classname="io.northstar.behavior.service.TeacherServiceTest" time="0.012"/>
-  <testcase name="findAll_returnsList" classname="io.northstar.behavior.service.TeacherServiceTest" time="0.0"/>
-  <testcase name="create_usernameCollision_numericSuffix" classname="io.northstar.behavior.service.TeacherServiceTest" time="0.091"/>
-  <testcase name="update_emailConflict_throws409" classname="io.northstar.behavior.service.TeacherServiceTest" time="0.0"/>
-  <testcase name="delete_notFound_throws404" classname="io.northstar.behavior.service.TeacherServiceTest" time="0.001"/>
-  <testcase name="delete_ok" classname="io.northstar.behavior.service.TeacherServiceTest" time="0.0"/>
-  <testcase name="findById_notFound_throws404" classname="io.northstar.behavior.service.TeacherServiceTest" time="0.0"/>
-  <testcase name="create_generatesUsername_firstInitialLast" classname="io.northstar.behavior.service.TeacherServiceTest" time="0.075"/>
-  <testcase name="update_notFound_throws404" classname="io.northstar.behavior.service.TeacherServiceTest" time="0.0"/>
-  <testcase name="create_emailConflict_throws409" classname="io.northstar.behavior.service.TeacherServiceTest" time="0.001"/>
-  <testcase name="create_passwordIsBcryptHashed" classname="io.northstar.behavior.service.TeacherServiceTest" time="0.071"/>
-  <testcase name="findById_ok" classname="io.northstar.behavior.service.TeacherServiceTest" time="0.001"/>
-  <testcase name="create_usernameCollision_usesTwoInitials" classname="io.northstar.behavior.service.TeacherServiceTest" time="0.072"/>
-  <testcase name="create_normalizesDiacritics" classname="io.northstar.behavior.service.TeacherServiceTest" time="0.071"/>
+  <testcase name="scenario_slowBurner_decayedBelowThreshold" classname="io.northstar.behavior.service.SchoolYearSimulationTest" time="0.001"/>
+  <testcase name="scenario_interventionCoversLatestIncident_skipped" classname="io.northstar.behavior.service.SchoolYearSimulationTest" time="0.001"/>
+  <testcase name="scenario_multipleInterventions_currentlyBelow" classname="io.northstar.behavior.service.SchoolYearSimulationTest" time="0.001"/>
+  <testcase name="scenario_decayBoundary_stillAtThreshold" classname="io.northstar.behavior.service.SchoolYearSimulationTest" time="0.0"/>
+  <testcase name="scenario_persistentWeeklyPattern_caution" classname="io.northstar.behavior.service.SchoolYearSimulationTest" time="0.001"/>
+  <testcase name="scenario_multiTeacherReporting_countsAsOne" classname="io.northstar.behavior.service.SchoolYearSimulationTest" time="0.001"/>
+  <testcase name="scenario_septemberTroublemaker_cleanNow" classname="io.northstar.behavior.service.SchoolYearSimulationTest" time="0.0"/>
+  <testcase name="scenario_fullClassroom_onlyUnaddressedFlagged" classname="io.northstar.behavior.service.SchoolYearSimulationTest" time="0.002"/>
+  <testcase name="scenario_postIntervention_cleanSince" classname="io.northstar.behavior.service.SchoolYearSimulationTest" time="0.001"/>
+  <testcase name="scenario_newIncidentsAfterIntervention_reflagged" classname="io.northstar.behavior.service.SchoolYearSimulationTest" time="0.001"/>
+  <testcase name="scenario_modelStudent_neverFlagged" classname="io.northstar.behavior.service.SchoolYearSimulationTest" time="0.0"/>
+  <testcase name="scenario_disciplinedFeb_newIncidentsMarch_reflagged" classname="io.northstar.behavior.service.SchoolYearSimulationTest" time="0.001"/>
+  <testcase name="scenario_springFlareUp_escalated" classname="io.northstar.behavior.service.SchoolYearSimulationTest" time="0.001"/>
 </testsuite>

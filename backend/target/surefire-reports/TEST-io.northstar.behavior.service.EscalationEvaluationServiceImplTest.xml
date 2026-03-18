@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="io.northstar.behavior.service.TeacherServiceTest" time="0.399" tests="14" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="io.northstar.behavior.service.EscalationEvaluationServiceImplTest" time="0.033" tests="12" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="23"/>
     <property name="sun.jnu.encoding" value="UTF-8"/>
@@ -64,18 +64,16 @@
     <property name="socksNonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
     <property name="java.class.version" value="67.0"/>
   </properties>
-  <testcase name="update_ok" classname="io.northstar.behavior.service.TeacherServiceTest" time="0.012"/>
-  <testcase name="findAll_returnsList" classname="io.northstar.behavior.service.TeacherServiceTest" time="0.0"/>
-  <testcase name="create_usernameCollision_numericSuffix" classname="io.northstar.behavior.service.TeacherServiceTest" time="0.091"/>
-  <testcase name="update_emailConflict_throws409" classname="io.northstar.behavior.service.TeacherServiceTest" time="0.0"/>
-  <testcase name="delete_notFound_throws404" classname="io.northstar.behavior.service.TeacherServiceTest" time="0.001"/>
-  <testcase name="delete_ok" classname="io.northstar.behavior.service.TeacherServiceTest" time="0.0"/>
-  <testcase name="findById_notFound_throws404" classname="io.northstar.behavior.service.TeacherServiceTest" time="0.0"/>
-  <testcase name="create_generatesUsername_firstInitialLast" classname="io.northstar.behavior.service.TeacherServiceTest" time="0.075"/>
-  <testcase name="update_notFound_throws404" classname="io.northstar.behavior.service.TeacherServiceTest" time="0.0"/>
-  <testcase name="create_emailConflict_throws409" classname="io.northstar.behavior.service.TeacherServiceTest" time="0.001"/>
-  <testcase name="create_passwordIsBcryptHashed" classname="io.northstar.behavior.service.TeacherServiceTest" time="0.071"/>
-  <testcase name="findById_ok" classname="io.northstar.behavior.service.TeacherServiceTest" time="0.001"/>
-  <testcase name="create_usernameCollision_usesTwoInitials" classname="io.northstar.behavior.service.TeacherServiceTest" time="0.072"/>
-  <testcase name="create_normalizesDiacritics" classname="io.northstar.behavior.service.TeacherServiceTest" time="0.071"/>
+  <testcase name="noRules_returnsEmpty" classname="io.northstar.behavior.service.EscalationEvaluationServiceImplTest" time="0.019"/>
+  <testcase name="atCautionThreshold_flaggedAsCAUTION" classname="io.northstar.behavior.service.EscalationEvaluationServiceImplTest" time="0.001"/>
+  <testcase name="schoolYearSimulation_onlyUndisciplinedFlagged" classname="io.northstar.behavior.service.EscalationEvaluationServiceImplTest" time="0.003"/>
+  <testcase name="belowThreshold_notFlagged" classname="io.northstar.behavior.service.EscalationEvaluationServiceImplTest" time="0.001"/>
+  <testcase name="weekendDaysNotCountedInDecay" classname="io.northstar.behavior.service.EscalationEvaluationServiceImplTest" time="0.001"/>
+  <testcase name="incidentToday_noDecay" classname="io.northstar.behavior.service.EscalationEvaluationServiceImplTest" time="0.001"/>
+  <testcase name="atEscalatedThreshold_flaggedAsESCALATED" classname="io.northstar.behavior.service.EscalationEvaluationServiceImplTest" time="0.001"/>
+  <testcase name="alreadyDisciplined_skipped" classname="io.northstar.behavior.service.EscalationEvaluationServiceImplTest" time="0.001"/>
+  <testcase name="noIncidentsInWindow_noAlerts" classname="io.northstar.behavior.service.EscalationEvaluationServiceImplTest" time="0.001"/>
+  <testcase name="multipleStudents_correctStatuses" classname="io.northstar.behavior.service.EscalationEvaluationServiceImplTest" time="0.001"/>
+  <testcase name="partialDecay_stillFlagged" classname="io.northstar.behavior.service.EscalationEvaluationServiceImplTest" time="0.001"/>
+  <testcase name="fullDecay_dropsBelow_notFlagged" classname="io.northstar.behavior.service.EscalationEvaluationServiceImplTest" time="0.001"/>
 </testsuite>

@@ -113,13 +113,13 @@ describe("TeacherDashboard", () => {
     expect(myBox).toBeTruthy();
   });
 
-  it("renders student search input", async () => {
+  it("does NOT show a student search input (removed to prevent teacher bias)", async () => {
     renderDashboard();
     await waitFor(() => expect(api.getJSON).toHaveBeenCalled());
-    expect(screen.getByPlaceholderText(/type a student name/i)).toBeInTheDocument();
+    expect(screen.queryByPlaceholderText(/type a student name/i)).not.toBeInTheDocument();
   });
 
-  it("does NOT show action buttons when no student is selected", async () => {
+  it("does NOT show View Profile or Create Incident buttons (student identity hidden)", async () => {
     renderDashboard();
     await waitFor(() => expect(api.getJSON).toHaveBeenCalled());
 
@@ -127,32 +127,20 @@ describe("TeacherDashboard", () => {
     expect(screen.queryByRole("button", { name: /create incident/i })).not.toBeInTheDocument();
   });
 
-  it("shows View Profile and Create Incident buttons after selecting a student", async () => {
+  it("My Recent Incidents table does NOT include a Student column", async () => {
     api.getJSON.mockImplementation((url) => {
-      if (url === "/api/incidents") return Promise.resolve([]);
-      if (url.includes("/api/students")) return Promise.resolve(STUDENTS);
-      return Promise.resolve(STUDENTS);
+      if (url === "/api/incidents") return Promise.resolve(INCIDENTS);
+      return Promise.resolve([]);
     });
 
     renderDashboard();
-    await waitFor(() => expect(api.getJSON).toHaveBeenCalled());
+    await waitFor(() => screen.getByText(/my recent incidents/i));
 
-    const searchInput = screen.getByPlaceholderText(/type a student name/i);
-    await userEvent.type(searchInput, "Ada");
-
-    // Wait for the dropdown item to appear (div with font-medium containing "Ada Lovelace")
-    await waitFor(() => screen.getByText("Ada Lovelace"), { timeout: 2000 });
-
-    // The student option is a button — click it to select
-    const adaOption = screen.getByText("Ada Lovelace").closest("button");
-
-    if (adaOption) {
-      await userEvent.click(adaOption);
-      await waitFor(() =>
-        expect(screen.getByRole("button", { name: /view profile/i })).toBeInTheDocument()
-      );
-      expect(screen.getByRole("button", { name: /create incident/i })).toBeInTheDocument();
-    }
+    expect(screen.queryByRole("columnheader", { name: /student/i })).not.toBeInTheDocument();
+    // Date, Category, Severity columns should still be present
+    expect(screen.getByRole("columnheader", { name: /date/i })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: /category/i })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: /severity/i })).toBeInTheDocument();
   });
 
   it("renders My Recent Incidents section", async () => {

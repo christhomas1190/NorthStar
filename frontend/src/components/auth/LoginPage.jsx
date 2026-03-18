@@ -4,25 +4,14 @@ import Page from "@/components/layout/Page";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/state/auth.jsx";
-
-const STATIC_USERS = {
-  admin: { password: "Admin!2025#", role: "Admin" },
-  teacher: { password: "Teach!2025#", role: "Teacher" },
-};
 
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const { state } = useLocation();
 
-  const [form, setForm] = React.useState({
-    username: "",
-    password: "",
-    districtId: "1",
-    schoolId: "1",
-  });
+  const [form, setForm] = React.useState({ username: "", password: "" });
   const [err, setErr] = React.useState("");
   const [saving, setSaving] = React.useState(false);
 
@@ -37,30 +26,18 @@ export default function LoginPage() {
     setSaving(true);
 
     try {
-      const u = (form.username || "").trim().toLowerCase();
-      const pw = form.password || "";
-      const record = STATIC_USERS[u];
+      const res = await login({
+        username: (form.username || "").trim(),
+        password: form.password || "",
+      });
 
-      if (!record || record.password !== pw) {
+      if (!res?.ok) {
         setErr("Invalid username or password.");
         return;
       }
 
-      // Use existing auth.login (mock path) so it sets user + tenant context everywhere
-      const res = await login({
-        username: u,
-        password: pw,
-        districtId: form.districtId,
-        schoolId: form.schoolId,
-        roleOverride: record.role, // Admin or Teacher
-      });
-
-      if (!res?.ok) {
-        setErr("Login failed.");
-        return;
-      }
-
-      const defaultDest = record.role === "Teacher" ? "/teacher" : "/admin";
+      const role = res.role || "Admin";
+      const defaultDest = role === "Teacher" ? "/teacher" : "/admin";
       navigate(state?.from?.pathname || defaultDest, { replace: true });
     } catch (e2) {
       setErr(String(e2.message || e2));
@@ -74,10 +51,7 @@ export default function LoginPage() {
       <div className="mx-auto max-w-sm mt-12">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>Sign in</span>
-              <Badge variant="secondary">Static credentials</Badge>
-            </CardTitle>
+            <CardTitle>Sign in</CardTitle>
           </CardHeader>
           <CardContent>
             {err && (
@@ -86,39 +60,16 @@ export default function LoginPage() {
             <form onSubmit={submit} className="space-y-3">
               <div>
                 <label className="text-sm">Username</label>
-                <Input name="username" autoFocus value={form.username} onChange={onChange} placeholder="admin or teacher" />
+                <Input name="username" autoFocus value={form.username} onChange={onChange} placeholder="Username" />
               </div>
-
               <div>
                 <label className="text-sm">Password</label>
-                <Input name="password" type="password" value={form.password} onChange={onChange} placeholder="Admin!2025# / Teach!2025#" />
+                <Input name="password" type="password" value={form.password} onChange={onChange} placeholder="Password" />
               </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-sm">District ID</label>
-                  <Input name="districtId" type="number" value={form.districtId} onChange={onChange} required />
-                </div>
-                <div>
-                  <label className="text-sm">School ID</label>
-                  <Input name="schoolId" type="number" value={form.schoolId} onChange={onChange} required />
-                </div>
-              </div>
-
               <Button type="submit" className="w-full" disabled={saving}>
                 {saving ? "Signing in…" : "Sign in"}
               </Button>
-
-              <p className="text-xs text-slate-500 mt-1">
-                This page checks credentials locally and binds your session to the District/School IDs you enter.
-              </p>
             </form>
-
-            <div className="mt-4 text-xs text-slate-500">
-              <div className="font-medium">Demo credentials</div>
-              <div>admin / Admin!2025# &nbsp;→&nbsp; Admin area</div>
-              <div>teacher / Teach!2025# &nbsp;→&nbsp; Teacher area</div>
-            </div>
           </CardContent>
         </Card>
       </div>

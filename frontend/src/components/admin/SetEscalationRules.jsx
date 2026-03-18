@@ -22,7 +22,7 @@ const DEFAULTS = Object.freeze({
   requireAdminApproval: false,
   notifyRoles: "Admin,Counselor",
   decayCount: 1,
-  decayDays: 7,
+  decayDays: 4,
 });
 
 const clampInt = (n, min = 0, fallback = 0) => {

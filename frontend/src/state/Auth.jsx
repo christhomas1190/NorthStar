@@ -52,7 +52,7 @@ export function AuthProvider({ children }) {
         setUser(realUser);
         if (data.districtId) setActiveDistrictId(data.districtId);
         if (data.schoolId) setActiveSchoolId(data.schoolId);
-        return { ok: true };
+        return { ok: true, role: data.role };
       }
       if (res.status === 401) return { ok: false, error: "Invalid credentials" };
     } catch (_) {

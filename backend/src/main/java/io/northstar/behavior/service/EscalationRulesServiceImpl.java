@@ -37,7 +37,7 @@ public class EscalationRulesServiceImpl implements EscalationRulesService {
             "Escalate to Tier 2", 10,
             1, 3, 2,
             true, false, "Admin,Counselor",
-            1, 7,
+            1, 4,
             districtId, schoolId,
             null, null
     );
