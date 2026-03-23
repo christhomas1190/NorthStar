@@ -101,6 +101,7 @@ public class AdminServiceImpl implements AdminService {
         a.setDistrict(district);
         a.setSchool(school); // NOT NULL column
         a.setPasswordHash(bcrypt(defaultAdminPassword)); // NOT NULL column
+        a.setMustChangePassword(true);
 
         return toDto(repo.save(a));
     }

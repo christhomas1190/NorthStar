@@ -1,5 +1,5 @@
 import React from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import Page from "@/components/layout/Page";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,8 @@ export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const { state } = useLocation();
+  const [searchParams] = useSearchParams();
+  const didReset = searchParams.get("reset") === "1";
 
   const [form, setForm] = React.useState({ username: "", password: "" });
   const [err, setErr] = React.useState("");
@@ -54,6 +56,11 @@ export default function LoginPage() {
             <CardTitle>Sign in</CardTitle>
           </CardHeader>
           <CardContent>
+            {didReset && (
+              <div className="mb-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-emerald-800 text-sm">
+                Password reset successfully. You can now sign in with your new password.
+              </div>
+            )}
             {err && (
               <div className="mb-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-rose-700 text-sm">{err}</div>
             )}
@@ -69,6 +76,11 @@ export default function LoginPage() {
               <Button type="submit" className="w-full" disabled={saving}>
                 {saving ? "Signing in…" : "Sign in"}
               </Button>
+              <div className="text-center">
+                <Link to="/forgot-password" className="text-xs text-[var(--ns-text-muted,#6b7280)] hover:underline">
+                  Forgot password?
+                </Link>
+              </div>
             </form>
           </CardContent>
         </Card>

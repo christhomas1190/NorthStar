@@ -1,3 +1,4 @@
+io/northstar/behavior/dto/ChangePasswordRequest.class
 io/northstar/behavior/dto/CreateTeacherRequest.class
 io/northstar/behavior/service/DistrictService.class
 io/northstar/behavior/repository/DistrictRepository.class

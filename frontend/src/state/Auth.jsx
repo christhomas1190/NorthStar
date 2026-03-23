@@ -45,6 +45,7 @@ export function AuthProvider({ children }) {
           role: data.role,
           districtId: data.districtId,
           schoolId: data.schoolId,
+          mustChangePassword: data.mustChangePassword === true,
         };
         localStorage.setItem("ns_token", basicToken);
         localStorage.setItem("ns_user", JSON.stringify(realUser));
@@ -70,6 +71,7 @@ export function AuthProvider({ children }) {
       role,
       districtId: 1,
       schoolId: 1,
+      mustChangePassword: false,
     };
     localStorage.setItem("ns_token", basicToken);
     localStorage.setItem("ns_user", JSON.stringify(fakeUser));
@@ -86,10 +88,25 @@ export function AuthProvider({ children }) {
     setToken(""); setUser(null);
   }
 
+  function updateToken(newToken) {
+    localStorage.setItem("ns_token", newToken);
+    setToken(newToken);
+  }
+
+  function clearMustChangePassword() {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const updated = { ...prev, mustChangePassword: false };
+      localStorage.setItem("ns_user", JSON.stringify(updated));
+      return updated;
+    });
+  }
+
   const value = React.useMemo(() => ({
     token, user, login, logout,
     activeDistrictId, setActiveDistrictId,
     activeSchoolId, setActiveSchoolId,
+    updateToken, clearMustChangePassword,
   }), [token, user, activeDistrictId, activeSchoolId]);
 
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
@@ -105,6 +122,7 @@ export function Protected({ roles, children }) {
   const { user } = useAuth();
   const location = useLocation();
   if (!user) return <Navigate to="/login" replace state={{ from: location }} />;
+  if (user.mustChangePassword) return <Navigate to="/change-password" replace />;
   if (roles && !roles.includes(user.role)) return <Navigate to="/unauthorized" replace />;
   return children;
 }

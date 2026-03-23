@@ -27,6 +27,9 @@ import ViewerStudentPage from "@/components/viewer/ViewerStudentPage.jsx";
 
 // Other sections
 import LoginPage from "@/components/auth/LoginPage.jsx";
+import ChangePasswordPage from "@/components/auth/ChangePasswordPage.jsx";
+import ForgotPasswordPage from "@/components/auth/ForgotPasswordPage.jsx";
+import ResetPasswordPage from "@/components/auth/ResetPasswordPage.jsx";
 import ReportsPage from "@/components/reports/ReportsPage.jsx";
 import StudentDetailPage from "@/components/student/StudentDetailsPage.jsx";
 import TeacherDashboard from "@/components/teacher/TeacherDashboard.jsx";
@@ -50,6 +53,9 @@ export default function App() {
 
       {/* Login stays OUTSIDE AppShell (no header before auth) */}
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/change-password" element={<ChangePasswordPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
 
       {/* Admin area (Admin-only) */}
       <Route

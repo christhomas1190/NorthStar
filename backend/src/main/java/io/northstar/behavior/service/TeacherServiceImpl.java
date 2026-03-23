@@ -138,6 +138,7 @@ public class TeacherServiceImpl implements TeacherService {
         t.setEmail(email);
         t.setUserName(generateUsername(t.getFirstName(), t.getLastName()));
         t.setPasswordHash(bcrypt(defaultTeacherPassword));
+        t.setMustChangePassword(true);
         t.setDistrict(district);
         t.setSchool(school);
 
@@ -190,6 +191,7 @@ public class TeacherServiceImpl implements TeacherService {
         t.setEmail(email);
         t.setUserName(generateUsername(t.getFirstName(), t.getLastName()));
         t.setPasswordHash(bcrypt(defaultTeacherPassword));
+        t.setMustChangePassword(true);
         t.setDistrict(district);
         t.setSchool(school);
 
@@ -273,6 +275,7 @@ public class TeacherServiceImpl implements TeacherService {
         a.setEmail(t.getEmail());
         a.setUserName(username);
         a.setPasswordHash(bcrypt(defaultAdminPassword));
+        a.setMustChangePassword(true);
         a.setPermissionTag("ADMIN");
         a.setDistrict(district);
         a.setSchool(school);
