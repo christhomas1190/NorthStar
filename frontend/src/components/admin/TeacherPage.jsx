@@ -176,6 +176,7 @@ export default function TeacherPage() {
           <CardTitle className="text-base">Teachers</CardTitle>
           <div className="flex gap-2">
             <Button variant="outline" onClick={load}>Refresh</Button>
+            <Button variant="outline" onClick={() => navigate("/admin/teacher-stats")}>Stats</Button>
             <Button onClick={() => navigate("/admin/teachers/new")}>+ Add Teacher</Button>
           </div>
         </CardHeader>
@@ -225,6 +226,7 @@ export default function TeacherPage() {
                         </div>
                       </div>
                       <div className="flex gap-2">
+                        <Button variant="outline" onClick={() => navigate(`/admin/teachers/${t.id}`)}>View</Button>
                         <Button variant="outline" onClick={() => startEdit(t)}>Edit</Button>
                         <Button
                           variant="outline"

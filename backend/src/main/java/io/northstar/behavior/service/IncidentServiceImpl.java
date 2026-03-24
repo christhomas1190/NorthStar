@@ -6,11 +6,15 @@ import io.northstar.behavior.dto.IncidentDTO;
 import io.northstar.behavior.dto.IncidentSummaryDTO;
 import io.northstar.behavior.model.Incident;
 import io.northstar.behavior.model.Student;
+import io.northstar.behavior.model.Teacher;
 import io.northstar.behavior.repository.IncidentRepository;
 import io.northstar.behavior.repository.StudentRepository;
+import io.northstar.behavior.repository.TeacherRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -22,10 +26,13 @@ public class IncidentServiceImpl implements IncidentService {
 
     private final IncidentRepository incidents;
     private final StudentRepository students;
+    private final TeacherRepository teachers;
 
-    public IncidentServiceImpl(IncidentRepository incidents, StudentRepository students) {
+    public IncidentServiceImpl(IncidentRepository incidents, StudentRepository students,
+                               TeacherRepository teachers) {
         this.incidents = incidents;
         this.students = students;
+        this.teachers = teachers;
     }
 
     // ---------- Mapping helpers ----------
@@ -176,5 +183,16 @@ public class IncidentServiceImpl implements IncidentService {
         inc.setCreatedAt(OffsetDateTime.now());
 
         return toDto(incidents.save(inc));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<IncidentDTO> listByReportedBy(Long teacherId) {
+        Teacher t = teachers.findById(teacherId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "teacher not found"));
+        List<Incident> list = incidents.findByReportedByOrderByOccurredAtDesc(t.getUserName());
+        List<IncidentDTO> out = new ArrayList<>();
+        for (Incident i : list) out.add(toDto(i));
+        return out;
     }
 }

@@ -25,6 +25,9 @@ public class Admin {
     @Column(nullable=false) private String passwordHash;
     @Column(nullable=false) private String permissionTag;
 
+    @Column(name = "must_change_password", nullable = false, columnDefinition = "boolean default false")
+    private boolean mustChangePassword = false;
+
     // keep district for easy scoping
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name="district_id", nullable=false)
@@ -60,4 +63,7 @@ public class Admin {
 
     public School getSchool() { return school; }
     public void setSchool(School school) { this.school = school; }
+
+    public boolean isMustChangePassword() { return mustChangePassword; }
+    public void setMustChangePassword(boolean mustChangePassword) { this.mustChangePassword = mustChangePassword; }
 }

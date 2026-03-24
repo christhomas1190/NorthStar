@@ -1,0 +1,9 @@
+io/northstar/behavior/service/StudentServiceTest.class
+io/northstar/behavior/service/TeacherServiceTest.class
+io/northstar/behavior/service/IncidentServiceTest.class
+io/northstar/behavior/service/InterventionServiceTest.class
+io/northstar/behavior/controller/StudentControllerTest.class
+io/northstar/behavior/service/SchoolYearSimulationTest.class
+io/northstar/behavior/controller/BehaviorCategoryControllerTest.class
+io/northstar/behavior/service/EscalationEvaluationServiceImplTest.class
+io/northstar/behavior/controller/IncidentControllerTest.class

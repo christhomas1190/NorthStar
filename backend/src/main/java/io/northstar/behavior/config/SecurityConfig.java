@@ -21,6 +21,8 @@ public class SecurityConfig {
                 .headers(h -> h.frameOptions(f -> f.disable()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/h2-console/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/forgot-password").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/reset-password").permitAll()
 
                         .requestMatchers(HttpMethod.GET, "/api/teachers/*/caution-stats").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/teachers/*/promote-to-admin").hasRole("ADMIN")

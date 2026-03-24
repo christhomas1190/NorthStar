@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { FileDown, BarChart3, Plus } from "lucide-react";
 import { useAuth } from "@/state/auth.jsx";
-import { getJSON } from "@/lib/api.js";
+import { getJSON, putJSON, delJSON } from "@/lib/api.js";
 
 // ---------- Date helpers ----------
 function fmtDay(d) {
@@ -294,6 +294,11 @@ const nav = useNavigate();
   const canCreateIncident =
     user?.role === "Admin" || user?.role === "Teacher";
   const canCreateDiscipline = user?.role === "Admin";
+  const canEdit = user?.role === "Admin";
+
+  const [editing, setEditing] = useState(false);
+  const [editForm, setEditForm] = useState({ firstName: "", lastName: "", grade: "" });
+  const [deleting, setDeleting] = useState(false);
 
   const [from, setFrom] = useState(startOfCurrentYear());
   const [to, setTo] = useState(today());
@@ -304,6 +309,7 @@ const nav = useNavigate();
   const [student, setStudent] = useState(null);
   const [allIncidents, setAllIncidents] = useState([]);
   const [interventions, setInterventions] = useState([]);
+  const [tierHistory, setTierHistory] = useState([]);
 
   useEffect(() => {
     if (!activeDistrictId || !studentId) return;
@@ -312,10 +318,11 @@ const nav = useNavigate();
       setLoading(true);
       setErr("");
       try {
-        const [sJson, iJson, ivJson] = await Promise.all([
+        const [sJson, iJson, ivJson, thJson] = await Promise.all([
           getJSON(`/api/students/${studentId}`).catch(() => null),
           getJSON("/api/incidents").catch(() => []),
           getJSON(`/api/students/${studentId}/interventions`).catch(() => []),
+          getJSON(`/api/students/${studentId}/tier-history`).catch(() => []),
         ]);
 
         if (!alive) return;
@@ -323,6 +330,7 @@ const nav = useNavigate();
         setStudent(sJson);
         setAllIncidents(Array.isArray(iJson) ? iJson : []);
         setInterventions(Array.isArray(ivJson) ? ivJson : []);
+        setTierHistory(Array.isArray(thJson) ? thJson : []);
       } catch (e) {
         if (!alive) return;
         setErr(String(e.message || e));
@@ -385,6 +393,20 @@ const nav = useNavigate();
   // Show all disciplines for this student (not filtered by date range)
   const disciplines = interventions;
 
+  // Interleave tier-change markers with disciplines by date (desc)
+  const disciplinesWithTierMarkers = useMemo(() => {
+    const items = [
+      ...disciplines.map((d) => ({ kind: "discipline", date: d.startDate, data: d })),
+      ...tierHistory.map((t) => ({ kind: "tier", date: t.changedAt, data: t })),
+    ].sort((a, b) => {
+      if (!a.date && !b.date) return 0;
+      if (!a.date) return 1;
+      if (!b.date) return -1;
+      return new Date(b.date) - new Date(a.date);
+    });
+    return items;
+  }, [disciplines, tierHistory]);
+
     function handleCreateIncident() {
       nav(`/admin/students/${studentId}/incidents/new`);
     }
@@ -431,6 +453,35 @@ const nav = useNavigate();
           URL.revokeObjectURL(url);
         } catch (e) {
           setErr(String(e.message || e));
+        }
+      }
+
+      async function handleSaveEdit() {
+        try {
+          await putJSON(`/api/students/${studentId}`, {
+            firstName: editForm.firstName,
+            lastName: editForm.lastName,
+            grade: editForm.grade,
+            districtId: activeDistrictId,
+            schoolId: student?.schoolId,
+          });
+          setEditing(false);
+          const updated = await getJSON(`/api/students/${studentId}`).catch(() => null);
+          if (updated) setStudent(updated);
+        } catch (e) {
+          setErr(String(e.message || e));
+        }
+      }
+
+      async function handleDeleteStudent() {
+        if (!window.confirm(`Delete this student? This cannot be undone.`)) return;
+        setDeleting(true);
+        try {
+          await delJSON(`/api/students/${studentId}`);
+          nav("/admin/students");
+        } catch (e) {
+          setErr(String(e.message || e));
+          setDeleting(false);
         }
       }
 
@@ -488,30 +539,101 @@ const nav = useNavigate();
         <CardHeader>
           <CardTitle className="text-base flex items-center justify-between">
             <span>Student Overview</span>
-            <span className="text-xs text-slate-500 space-x-2">
-              <span>Internal ID: {student?.id ?? studentId}</span>
-              {student?.studentId && (
-                <span className="border-l border-slate-300 pl-2">
-                  Student ID: {student.studentId}
-                </span>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-slate-500 space-x-2">
+                <span>Internal ID: {student?.id ?? studentId}</span>
+                {student?.studentId && (
+                  <span className="border-l border-slate-300 pl-2">
+                    Student ID: {student.studentId}
+                  </span>
+                )}
+              </span>
+              {canEdit && !editing && (
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs"
+                    onClick={() => {
+                      setEditForm({
+                        firstName: student?.firstName || "",
+                        lastName: student?.lastName || "",
+                        grade: student?.grade || "",
+                      });
+                      setEditing(true);
+                    }}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs text-rose-600 border-rose-200 hover:bg-rose-50"
+                    disabled={deleting}
+                    onClick={handleDeleteStudent}
+                  >
+                    {deleting ? "Deleting…" : "Delete"}
+                  </Button>
+                </div>
               )}
-            </span>
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm">
-          <div>
-            <span className="font-medium text-slate-700">Name: </span>
-            <span>{fullName}</span>
-          </div>
-          {student?.grade && (
-            <div>
-              <span className="font-medium text-slate-700">Grade: </span>
-              <span>{student.grade}</span>
+          {editing ? (
+            <div className="space-y-3">
+              <div className="flex gap-3 flex-wrap">
+                <div>
+                  <label className="block text-xs text-slate-600 mb-1">First Name</label>
+                  <Input
+                    value={editForm.firstName}
+                    onChange={(e) => setEditForm((f) => ({ ...f, firstName: e.target.value }))}
+                    className="h-8 text-sm w-36"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-600 mb-1">Last Name</label>
+                  <Input
+                    value={editForm.lastName}
+                    onChange={(e) => setEditForm((f) => ({ ...f, lastName: e.target.value }))}
+                    className="h-8 text-sm w-36"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-600 mb-1">Grade</label>
+                  <Input
+                    value={editForm.grade}
+                    onChange={(e) => setEditForm((f) => ({ ...f, grade: e.target.value }))}
+                    className="h-8 text-sm w-24"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button size="sm" className="h-8 text-xs" onClick={handleSaveEdit}>Save</Button>
+                <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => setEditing(false)}>Cancel</Button>
+              </div>
             </div>
+          ) : (
+            <>
+              <div>
+                <span className="font-medium text-slate-700">Name: </span>
+                <span>{fullName}</span>
+              </div>
+              {student?.grade && (
+                <div>
+                  <span className="font-medium text-slate-700">Grade: </span>
+                  <span>{student.grade}</span>
+                </div>
+              )}
+            </>
           )}
           <div className="text-xs text-slate-500">
+            <Link to="/admin/students" className="underline">
+              Back to Student Roster
+            </Link>
+            {" · "}
             <Link to="/admin" className="underline">
-              Back to Admin Dashboard
+              Admin Dashboard
             </Link>
           </div>
         </CardContent>
@@ -572,34 +694,68 @@ const nav = useNavigate();
             <div className="text-xs text-slate-500 mb-2">
               Showing interventions for this student in the selected date range.
             </div>
-            {disciplines.length === 0 && (
+            {disciplinesWithTierMarkers.length === 0 && (
               <div className="text-xs text-slate-500">
                 No disciplines/interventions in the selected range.
               </div>
             )}
-            {disciplines.map((d) => (
-              <div
-                key={d.id}
-                className="border rounded-lg px-2 py-1 text-xs mb-1"
-              >
-                <div className="flex justify-between">
-                  <span className="font-semibold">
-                    {d.tier ? d.tier.replace("_", " ").replace("TIER", "Tier") : "Intervention"}
-                  </span>
-                  <span>
-                    {d.startDate
-                      ? new Date(d.startDate).toLocaleDateString()
-                      : "—"}
-                  </span>
+            {disciplinesWithTierMarkers.map((item, idx) => {
+              if (item.kind === "tier") {
+                const t = item.data;
+                const isEscalation = t.fromTier && t.toTier && t.toTier > t.fromTier;
+                const arrow = !t.fromTier ? "→" : isEscalation ? "↑" : "↓";
+                const tierLabel = t.fromTier
+                  ? `${t.fromTier.replace("TIER_", "Tier ")} → ${t.toTier.replace("TIER_", "Tier ")}`
+                  : `Initial: ${t.toTier ? t.toTier.replace("TIER_", "Tier ") : "—"}`;
+                const colorClass = !t.fromTier
+                  ? "bg-slate-50 border-slate-200 text-slate-600"
+                  : isEscalation
+                  ? "bg-amber-50 border-amber-200 text-amber-700"
+                  : "bg-slate-50 border-slate-200 text-slate-600";
+                return (
+                  <div
+                    key={`tier-${t.id || idx}`}
+                    className={`border rounded-lg px-2 py-1 text-xs mb-1 ${colorClass}`}
+                  >
+                    <div className="flex justify-between items-center">
+                      <span className="font-semibold">{arrow} {tierLabel}</span>
+                      <span>
+                        {t.changedAt
+                          ? new Date(t.changedAt).toLocaleDateString()
+                          : "—"}
+                      </span>
+                    </div>
+                    <div className="text-slate-500 mt-0.5">
+                      by {t.changedBy || "—"}
+                    </div>
+                  </div>
+                );
+              }
+              const d = item.data;
+              return (
+                <div
+                  key={`dis-${d.id || idx}`}
+                  className="border rounded-lg px-2 py-1 text-xs mb-1"
+                >
+                  <div className="flex justify-between">
+                    <span className="font-semibold">
+                      {d.tier ? d.tier.replace("_", " ").replace("TIER", "Tier") : "Intervention"}
+                    </span>
+                    <span>
+                      {d.startDate
+                        ? new Date(d.startDate).toLocaleDateString()
+                        : "—"}
+                    </span>
+                  </div>
+                  <div className="text-slate-500">
+                    {d.strategy || d.description || "—"}
+                  </div>
+                  <div className="text-slate-400 mt-0.5">
+                    By {d.assignedBy || d.reportedBy || "—"}
+                  </div>
                 </div>
-                <div className="text-slate-500">
-                  {d.strategy || d.description || "—"}
-                </div>
-                <div className="text-slate-400 mt-0.5">
-                  By {d.assignedBy || d.reportedBy || "—"}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </CardContent>
         </Card>
       </div>

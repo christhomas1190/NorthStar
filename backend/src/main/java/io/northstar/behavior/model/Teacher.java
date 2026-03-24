@@ -33,6 +33,9 @@ public class Teacher {
     @Column(nullable = false)
     private String passwordHash; // BCrypt hash of default password
 
+    @Column(name = "must_change_password", nullable = false, columnDefinition = "boolean default false")
+    private boolean mustChangePassword = false;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name="district_id", nullable=false)
     private District district;
@@ -105,4 +108,7 @@ public class Teacher {
     public void setSchool(School school) {
         this.school = school;
     }
+
+    public boolean isMustChangePassword() { return mustChangePassword; }
+    public void setMustChangePassword(boolean mustChangePassword) { this.mustChangePassword = mustChangePassword; }
 }

@@ -3,7 +3,7 @@ import Page from "@/components/layout/Page";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { BarChart3, X } from "lucide-react";
+import { BarChart3 } from "lucide-react";
 import { useAuth } from "@/state/auth.jsx";
 import { getJSON } from "@/lib/api.js";
 
@@ -282,7 +282,7 @@ function LineChartWithAxes({ points = [], width = 900, height = 260 }) {
 
 /* ---------- Teacher dashboard page ---------- */
 export default function TeacherDashboard() {
-  const { activeDistrictId } = useAuth();
+  const { activeDistrictId, user } = useAuth();
 
   const [from, setFrom] = useState(startOfCurrentYear());
   const [to, setTo] = useState(today());
@@ -291,12 +291,6 @@ export default function TeacherDashboard() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
-  // search / filter by student
-  const [search, setSearch] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-  const [searchLoading, setSearchLoading] = useState(false);
-  const [selectedStudent, setSelectedStudent] = useState(null);
-
   useEffect(() => {
     if (!activeDistrictId) return;
     let alive = true;
@@ -304,9 +298,9 @@ export default function TeacherDashboard() {
       setLoading(true);
       setErr("");
       try {
-        const json = await getJSON("/api/incidents");
+        const iJson = await getJSON("/api/incidents");
         if (!alive) return;
-        setAllIncidents(Array.isArray(json) ? json : []);
+        setAllIncidents(Array.isArray(iJson) ? iJson : []);
       } catch (e) {
         if (!alive) return;
         setErr(String(e.message || e));
@@ -319,72 +313,14 @@ export default function TeacherDashboard() {
     };
   }, [activeDistrictId]);
 
-  async function runSearch(value) {
-    if (!activeDistrictId) return;
-    const q = value.trim();
-    if (q.length < 2) {
-      setSearchResults([]);
-      return;
-    }
-
-    setSearchLoading(true);
-    try {
-      const data = await getJSON("/api/students?size=50");
-      const list = Array.isArray(data) ? data : [];
-
-      const needle = q.toLowerCase();
-      const filtered = [];
-      for (let i = 0; i < list.length; i++) {
-        const s = list[i];
-        const first = (s.firstName || "").toLowerCase();
-        const last = (s.lastName || "").toLowerCase();
-        const sid = (s.studentId || "").toLowerCase();
-        if (
-          first.includes(needle) ||
-          last.includes(needle) ||
-          sid.includes(needle)
-        ) {
-          filtered.push(s);
-        }
-      }
-
-      setSearchResults(filtered);
-    } catch (e) {
-      setSearchResults([]);
-    } finally {
-      setSearchLoading(false);
-    }
-  }
-  function onSearchChange(e) {
-    const value = e.target.value;
-    setSearch(value);
-    runSearch(value);
-  }
-
-  function onPickStudent(s) {
-    setSelectedStudent(s);
-    setSearch(`${s.firstName} ${s.lastName} (${s.studentId ?? "ID " + s.id})`);
-    setSearchResults([]);
-  }
-
-  function clearStudent() {
-    setSelectedStudent(null);
-    setSearch("");
-    setSearchResults([]);
-  }
-
-  // filter incidents by date (and student if selected)
+  // filter incidents by date range
   const incidentsInRange = useMemo(() => {
-    const fromStr = from;
-    const toStr = to;
     return allIncidents.filter((it) => {
       const day = dayStringFromOccurredAt(it.occurredAt);
       if (!day) return false;
-      if (day < fromStr || day > toStr) return false;
-      if (selectedStudent && it.studentId !== selectedStudent.id) return false;
-      return true;
+      return day >= from && day <= to;
     });
-  }, [allIncidents, from, to, selectedStudent]);
+  }, [allIncidents, from, to]);
 
   const chartPoints = useMemo(() => {
     const fromDate = parseLocalDay(from);
@@ -416,11 +352,50 @@ export default function TeacherDashboard() {
     return points;
   }, [incidentsInRange, from, to]);
 
+  const myIncidentsInRange = useMemo(
+    () => incidentsInRange.filter((it) => it.reportedBy === user?.id),
+    [incidentsInRange, user]
+  );
+
+  const uniqueStudentsInRange = useMemo(
+    () => new Set(incidentsInRange.map((it) => it.studentId)).size,
+    [incidentsInRange]
+  );
+
+  const myRecentIncidents = useMemo(() => {
+    return [...allIncidents]
+      .filter((it) => it.reportedBy === user?.id)
+      .sort((a, b) => new Date(b.occurredAt) - new Date(a.occurredAt))
+      .slice(0, 30);
+  }, [allIncidents, user]);
+
   return (
     <Page
       title="Teacher Dashboard"
       subtitle="View incident trends by date and student"
     >
+      {/* KPI row */}
+      <div className="grid grid-cols-3 gap-4 mb-6">
+        <Card>
+          <CardContent className="pt-4 pb-3">
+            <div className="text-xs text-slate-500 mb-1">My Incidents (range)</div>
+            <div className="text-2xl font-semibold text-slate-800">{myIncidentsInRange.length}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-4 pb-3">
+            <div className="text-xs text-slate-500 mb-1">All Incidents (range)</div>
+            <div className="text-2xl font-semibold text-slate-800">{incidentsInRange.length}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-4 pb-3">
+            <div className="text-xs text-slate-500 mb-1">Students w/ Incidents</div>
+            <div className="text-2xl font-semibold text-slate-800">{uniqueStudentsInRange}</div>
+          </CardContent>
+        </Card>
+      </div>
+
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="text-base flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
@@ -462,56 +437,6 @@ export default function TeacherDashboard() {
             </div>
           )}
 
-          {/* Search bar just for this page */}
-          <div className="max-w-xl mb-4">
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Filter by student (optional)
-            </label>
-            <div className="relative">
-              <Input
-                placeholder="Type a student name or ID…"
-                value={search}
-                onChange={onSearchChange}
-              />
-              {selectedStudent && (
-                <button
-                  type="button"
-                  onClick={clearStudent}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                >
-                  <X size={14} />
-                </button>
-              )}
-            </div>
-            <div className="mt-1 text-xs text-slate-500">
-              Leave blank to see all incidents. Type at least 2 characters to search.
-            </div>
-
-            {/* Dropdown results */}
-            {searchLoading && (
-              <div className="mt-2 text-xs text-slate-500">Searching…</div>
-            )}
-            {!searchLoading && searchResults.length > 0 && (
-              <div className="mt-2 border rounded-lg max-h-56 overflow-auto bg-white shadow-sm">
-                {searchResults.map((s) => (
-                  <button
-                    key={s.id}
-                    type="button"
-                    className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 border-b last:border-b-0"
-                    onClick={() => onPickStudent(s)}
-                  >
-                    <div className="font-medium">
-                      {s.firstName} {s.lastName}
-                    </div>
-                    <div className="text-xs text-slate-500">
-                      Student ID: {s.studentId ?? "—"}
-                      {s.grade ? <> · Grade {s.grade}</> : null}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
 
           <div className="w-full h-[260px] mb-4">
             <LineChartWithAxes points={chartPoints} />
@@ -523,24 +448,50 @@ export default function TeacherDashboard() {
               <span className="font-semibold text-slate-700">
                 {incidentsInRange.length}
               </span>{" "}
-              incident(s) from {from} to {to}
-              {selectedStudent && (
-                <>
-                  {" "}
-                  for{" "}
-                  <span className="font-semibold text-slate-700">
-                    {selectedStudent.firstName} {selectedStudent.lastName}
-                  </span>
-                </>
-              )}
-              {!selectedStudent && " for all students"}
-              .
+              incident(s) from {from} to {to}.
             </div>
             <Badge variant="outline" className="gap-1 h-7 flex items-center">
               <BarChart3 size={14} />
               Live
             </Badge>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* My Recent Incidents */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">My Recent Incidents</CardTitle>
+        </CardHeader>
+        <CardContent className="overflow-x-auto">
+          {myRecentIncidents.length === 0 ? (
+            <div className="py-4 text-center text-sm text-slate-500">
+              You haven&apos;t reported any incidents yet.
+            </div>
+          ) : (
+            <table className="w-full text-sm">
+              <thead className="border-b text-slate-600">
+                <tr>
+                  <th className="text-left py-2 pr-4">Date</th>
+                  <th className="text-left py-2 pr-4">Category</th>
+                  <th className="text-left py-2">Severity</th>
+                </tr>
+              </thead>
+              <tbody>
+                {myRecentIncidents.map((it) => (
+                  <tr key={it.id} className="border-b last:border-0 hover:bg-slate-50">
+                    <td className="py-2 pr-4 text-xs">
+                      {it.occurredAt ? new Date(it.occurredAt).toLocaleDateString() : "—"}
+                    </td>
+                    <td className="py-2 pr-4">{it.category || "—"}</td>
+                    <td className="py-2">
+                      <Badge variant="outline">{it.severity || "—"}</Badge>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </CardContent>
       </Card>
     </Page>

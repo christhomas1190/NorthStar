@@ -29,6 +29,10 @@ export default function QuickActionsCard() {
             User & Student Management ▸
           </Button>
 
+          <Button variant="outline" className={btnCls} onClick={() => (window.location.href = "/admin/students")}>
+            Student Roster ▸
+          </Button>
+
           <Button variant="outline" className={btnCls} onClick={() => (window.location.href = "/admin/import-students")}>
             Import Students ▸
           </Button>

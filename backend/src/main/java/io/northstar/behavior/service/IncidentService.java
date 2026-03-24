@@ -17,4 +17,5 @@ public interface IncidentService {
     void delete(Long id);
 
     IncidentDTO createForStudent(Long studentId, Long districtId, CreateIncidentRequest req);
+    List<IncidentDTO> listByReportedBy(Long teacherId);
 }

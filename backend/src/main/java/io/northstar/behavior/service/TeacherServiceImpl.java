@@ -138,6 +138,7 @@ public class TeacherServiceImpl implements TeacherService {
         t.setEmail(email);
         t.setUserName(generateUsername(t.getFirstName(), t.getLastName()));
         t.setPasswordHash(bcrypt(defaultTeacherPassword));
+        t.setMustChangePassword(true);
         t.setDistrict(district);
         t.setSchool(school);
 
@@ -190,6 +191,7 @@ public class TeacherServiceImpl implements TeacherService {
         t.setEmail(email);
         t.setUserName(generateUsername(t.getFirstName(), t.getLastName()));
         t.setPasswordHash(bcrypt(defaultTeacherPassword));
+        t.setMustChangePassword(true);
         t.setDistrict(district);
         t.setSchool(school);
 
@@ -273,6 +275,7 @@ public class TeacherServiceImpl implements TeacherService {
         a.setEmail(t.getEmail());
         a.setUserName(username);
         a.setPasswordHash(bcrypt(defaultAdminPassword));
+        a.setMustChangePassword(true);
         a.setPermissionTag("ADMIN");
         a.setDistrict(district);
         a.setSchool(school);
@@ -290,6 +293,19 @@ public class TeacherServiceImpl implements TeacherService {
                 district.getDistrictId(),
                 school.getSchoolId()
         );
+    }
+
+    @Override
+    @Transactional
+    public List<TeacherCautionStatsDTO> findAllStats() {
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        Admin admin = adminRepository.findByUserName(userName)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "admin not found"));
+        Long districtId = admin.getDistrict().getDistrictId();
+        List<Teacher> all = repo.findByDistrict_DistrictId(districtId);
+        List<TeacherCautionStatsDTO> out = new ArrayList<>();
+        for (Teacher t : all) out.add(cautionStats(t.getId()));
+        return out;
     }
 
     @Override

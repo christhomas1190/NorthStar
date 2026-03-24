@@ -14,8 +14,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -87,10 +88,10 @@ public class EscalationEvaluationServiceImpl implements EscalationEvaluationServ
             int rawCount = studentIncidents.size();
             if (rawCount == 0) continue;
 
-            // Decay: find last incident, compute full periods since then
+            // Decay: find last incident, compute full periods since then (weekdays only)
             OffsetDateTime lastIncident = studentIncidents.get(0).getOccurredAt();
-            long hoursSinceLast = ChronoUnit.HOURS.between(lastIncident, OffsetDateTime.now());
-            long fullDecayPeriods = (decayDays > 0) ? (hoursSinceLast / 24) / decayDays : 0;
+            long weekdaysSinceLast = countWeekdays(lastIncident.toLocalDate(), OffsetDateTime.now().toLocalDate());
+            long fullDecayPeriods = (decayDays > 0) ? weekdaysSinceLast / decayDays : 0;
             int effective = Math.max(0, rawCount - (int) (fullDecayPeriods * decayCount));
 
             if (effective <= 0) continue;
@@ -118,5 +119,19 @@ public class EscalationEvaluationServiceImpl implements EscalationEvaluationServ
         }
 
         return alerts;
+    }
+
+    private long countWeekdays(LocalDate from, LocalDate to) {
+        if (!to.isAfter(from)) return 0;
+        long count = 0;
+        LocalDate date = from.plusDays(1); // start counting the day after the incident
+        while (!date.isAfter(to)) {
+            DayOfWeek dow = date.getDayOfWeek();
+            if (dow != DayOfWeek.SATURDAY && dow != DayOfWeek.SUNDAY) {
+                count++;
+            }
+            date = date.plusDays(1);
+        }
+        return count;
     }
 }

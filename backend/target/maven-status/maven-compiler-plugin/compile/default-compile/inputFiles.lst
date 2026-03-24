@@ -7,6 +7,7 @@
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/repository/BehaviorCategoryRepository.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/dto/BehaviorCategoryDTO.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/controller/AdminController.java
+/Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/controller/TierChangeEventController.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/dto/AdminNotificationDTO.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/service/AnalyticsServiceImpl.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/tenant/TenantFilter.java
@@ -40,6 +41,7 @@
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/service/AdminService.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/controller/AnalyticsController.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/config/DataInitializer.java
+/Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/dto/TierChangeEventDTO.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/dto/StudentEscalationStatusDTO.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/repository/AdminRepository.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/dto/CreateIncidentRequest.java
@@ -53,6 +55,7 @@
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/service/DistrictServiceImpl.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/dto/EscalationRulesDTO.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/model/Teacher.java
+/Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/model/TierChangeEvent.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/config/ApiErrorAdvice.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/controller/InterventionController.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/controller/AdminNotificationController.java
@@ -77,9 +80,11 @@
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/service/NotificationService.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/dto/DistrictDTO.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/model/AdminNotification.java
+/Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/repository/TierChangeEventRepository.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/dto/TeacherDTO.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/service/SchoolServiceImpl.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/dto/CreateStudentRequest.java
+/Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/dto/ChangePasswordRequest.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/dto/CreateInterventionRequest.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/model/EscalationRules.java
 /Users/christianthomas/Projects/NorthStar/backend/src/main/java/io/northstar/behavior/model/School.java
