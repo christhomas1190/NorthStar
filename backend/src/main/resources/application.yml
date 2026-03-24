@@ -37,16 +37,6 @@ spring:
       path: /h2-console
   flyway:
     enabled: false
-
-# app-specific settings (NOT under spring.flyway)
-app:
-  default-teacher-password: "Lions"
-  reset-token:
-    expiry-minutes: 60
-    base-url: ${RESET_BASE_URL:http://localhost:5173}
-
-# Mail / SMTP (override via env vars in prod)
-spring:
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}
     port: ${MAIL_PORT:587}
