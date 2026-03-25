@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { FileDown, BarChart3, Plus } from "lucide-react";
 import { useAuth } from "@/state/auth.jsx";
-import { getJSON, putJSON, delJSON } from "@/lib/api.js";
+import { getJSON, putJSON, delJSON, patchJSON } from "@/lib/api.js";
+import AcademicStatusBadge from "@/components/common/AcademicStatusBadge.jsx";
 
 // ---------- Date helpers ----------
 function fmtDay(d) {
@@ -299,6 +300,7 @@ const nav = useNavigate();
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState({ firstName: "", lastName: "", grade: "" });
   const [deleting, setDeleting] = useState(false);
+  const [statusSaving, setStatusSaving] = useState(false);
 
   const [from, setFrom] = useState(startOfCurrentYear());
   const [to, setTo] = useState(today());
@@ -310,6 +312,7 @@ const nav = useNavigate();
   const [allIncidents, setAllIncidents] = useState([]);
   const [interventions, setInterventions] = useState([]);
   const [tierHistory, setTierHistory] = useState([]);
+  const [studentGrades, setStudentGrades] = useState([]);
 
   useEffect(() => {
     if (!activeDistrictId || !studentId) return;
@@ -318,11 +321,12 @@ const nav = useNavigate();
       setLoading(true);
       setErr("");
       try {
-        const [sJson, iJson, ivJson, thJson] = await Promise.all([
+        const [sJson, iJson, ivJson, thJson, gJson] = await Promise.all([
           getJSON(`/api/students/${studentId}`).catch(() => null),
           getJSON("/api/incidents").catch(() => []),
           getJSON(`/api/students/${studentId}/interventions`).catch(() => []),
           getJSON(`/api/students/${studentId}/tier-history`).catch(() => []),
+          getJSON(`/api/gradebook/students/${studentId}/grades`).catch(() => []),
         ]);
 
         if (!alive) return;
@@ -331,6 +335,7 @@ const nav = useNavigate();
         setAllIncidents(Array.isArray(iJson) ? iJson : []);
         setInterventions(Array.isArray(ivJson) ? ivJson : []);
         setTierHistory(Array.isArray(thJson) ? thJson : []);
+        setStudentGrades(Array.isArray(gJson) ? gJson : []);
       } catch (e) {
         if (!alive) return;
         setErr(String(e.message || e));
@@ -485,6 +490,18 @@ const nav = useNavigate();
         }
       }
 
+      async function handleAcademicStatusChange(newStatus) {
+        setStatusSaving(true);
+        try {
+          const updated = await patchJSON(`/api/students/${studentId}/academic-status`, { status: newStatus });
+          setStudent((prev) => prev ? { ...prev, academicStatus: updated.academicStatus } : prev);
+        } catch (e) {
+          setErr(String(e.message || e));
+        } finally {
+          setStatusSaving(false);
+        }
+      }
+
       const fullName = student
         ? `${student.firstName || ""} ${student.lastName || ""}`.trim()
         : `Student #${studentId}`;
@@ -623,6 +640,33 @@ const nav = useNavigate();
                 <div>
                   <span className="font-medium text-slate-700">Grade: </span>
                   <span>{student.grade}</span>
+                </div>
+              )}
+              {user?.hasAcademicTrend && (
+                <div className="flex items-center gap-3 mt-1">
+                  <span className="font-medium text-slate-700">Academic Status: </span>
+                  <AcademicStatusBadge status={student?.academicStatus} />
+                  {canEdit && (
+                    <select
+                      disabled={statusSaving}
+                      value={student?.academicStatus || ""}
+                      onChange={(e) => handleAcademicStatusChange(e.target.value)}
+                      style={{
+                        fontSize: 12,
+                        padding: "2px 6px",
+                        borderRadius: 6,
+                        border: "1.5px solid var(--ns-border2)",
+                        background: "var(--ns-bg)",
+                        color: "var(--ns-text)",
+                        fontFamily: "'Outfit', sans-serif",
+                      }}
+                    >
+                      <option value="">— clear —</option>
+                      <option value="ON_TRACK">On Track</option>
+                      <option value="DECLINING">Declining</option>
+                      <option value="AT_RISK">At Risk</option>
+                    </select>
+                  )}
                 </div>
               )}
             </>
@@ -819,6 +863,75 @@ const nav = useNavigate();
           </table>
         </CardContent>
       </Card>
+
+      {user?.hasGradebook && (
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="text-base">Grades</CardTitle>
+          </CardHeader>
+          <CardContent className="overflow-x-auto">
+            {studentGrades.length === 0 ? (
+              <p className="text-sm text-slate-500">No grades recorded yet.</p>
+            ) : (
+              <>
+                <table className="w-full text-sm">
+                  <thead className="border-b">
+                    <tr>
+                      <th className="text-left py-2 pr-3">Assignment</th>
+                      <th className="text-left py-2 pr-3">Subject</th>
+                      <th className="text-left py-2 pr-3">Teacher</th>
+                      <th className="text-left py-2 pr-3">Category</th>
+                      <th className="text-center py-2 pr-3">Pts</th>
+                      <th className="text-center py-2 pr-3">Max</th>
+                      <th className="text-center py-2">%</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {studentGrades.map((g) => {
+                      const pct = g.pointsEarned != null && g.maxPoints > 0
+                        ? Math.round((g.pointsEarned / g.maxPoints) * 100)
+                        : null;
+                      return (
+                        <tr key={g.id} className="border-b last:border-0">
+                          <td className="py-1 pr-3">{g.assignmentName}</td>
+                          <td className="py-1 pr-3">{g.subject || "—"}</td>
+                          <td className="py-1 pr-3">{g.teacherName || "—"}</td>
+                          <td className="py-1 pr-3">{g.categoryName || "—"}</td>
+                          <td className="py-1 pr-3 text-center font-mono">{g.pointsEarned ?? "—"}</td>
+                          <td className="py-1 pr-3 text-center font-mono">{g.maxPoints}</td>
+                          <td className="py-1 text-center font-mono">{pct != null ? `${pct}%` : "—"}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+                {/* Per-teacher weighted averages */}
+                {(() => {
+                  const byTeacher = {};
+                  for (const g of studentGrades) {
+                    const t = g.teacherName || "Unknown";
+                    if (!byTeacher[t]) byTeacher[t] = { earned: 0, max: 0 };
+                    if (g.pointsEarned != null) {
+                      byTeacher[t].earned += g.pointsEarned;
+                      byTeacher[t].max += g.maxPoints;
+                    }
+                  }
+                  return (
+                    <div className="mt-3 flex gap-4 flex-wrap">
+                      {Object.entries(byTeacher).map(([teacher, { earned, max }]) => (
+                        <div key={teacher} className="text-xs text-slate-600">
+                          <span className="font-medium">{teacher}:</span>{" "}
+                          {max > 0 ? `${Math.round((earned / max) * 100)}%` : "—"}
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </Page>
   );
 }

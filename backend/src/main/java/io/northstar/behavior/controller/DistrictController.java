@@ -1,6 +1,7 @@
 package io.northstar.behavior.controller;
 
 import io.northstar.behavior.dto.DistrictDTO;
+import io.northstar.behavior.dto.DistrictFeaturesRequest;
 import io.northstar.behavior.service.DistrictService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -47,5 +48,11 @@ public class DistrictController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
         service.delete(id);
+    }
+
+    // PATCH features flags
+    @PatchMapping("/{id}/features")
+    public DistrictDTO updateFeatures(@PathVariable Long id, @RequestBody DistrictFeaturesRequest req) {
+        return service.updateFeatures(id, req);
     }
 }

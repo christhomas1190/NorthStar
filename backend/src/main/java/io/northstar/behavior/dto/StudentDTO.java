@@ -2,7 +2,7 @@ package io.northstar.behavior.dto;
 
 import java.util.List;
 
-public record StudentDTO (
+public record StudentDTO(
         long id,
         String firstName,
         String lastName,
@@ -11,5 +11,6 @@ public record StudentDTO (
         List<IncidentSummaryDTO> incidents,
         List<InterventionSummaryDTO> interventions,
         Long districtId,
-        Long schoolId
+        Long schoolId,
+        String academicStatus
 ) {}

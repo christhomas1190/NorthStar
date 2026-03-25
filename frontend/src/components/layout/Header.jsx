@@ -67,7 +67,11 @@ export default function Header() {
     else window.alert("No student found for that name or ID.");
   }
 
-  const navLinks = user?.role === "Admin" ? ADMIN_NAV : user?.role === "Teacher" ? TEACHER_NAV : [];
+  const baseAdminNav = ADMIN_NAV.slice();
+  if (user?.hasGradebook) {
+    baseAdminNav.push({ label: "Gradebook", to: "/gradebook" });
+  }
+  const navLinks = user?.role === "Admin" ? baseAdminNav : user?.role === "Teacher" ? TEACHER_NAV : [];
 
   const userInitials = user?.name
     ? user.name.split(" ").map((p) => p[0]).join("").toUpperCase().slice(0, 2)

@@ -7,8 +7,10 @@ import io.northstar.behavior.dto.TeacherDTO;
 import io.northstar.behavior.model.Admin;
 import io.northstar.behavior.model.School;
 import io.northstar.behavior.model.Teacher;
+import io.northstar.behavior.model.GradeCategory;
 import io.northstar.behavior.repository.AdminRepository;
 import io.northstar.behavior.repository.DistrictRepository;
+import io.northstar.behavior.repository.GradeCategoryRepository;
 import io.northstar.behavior.repository.IncidentRepository;
 import io.northstar.behavior.repository.SchoolRepository;
 import io.northstar.behavior.repository.TeacherRepository;
@@ -32,6 +34,7 @@ public class TeacherServiceImpl implements TeacherService {
     private final SchoolRepository schoolRepository;
     private final AdminRepository adminRepository;
     private final IncidentRepository incidentRepository;
+    private final GradeCategoryRepository gradeCategoryRepo;
 
     @Value("${app.default-teacher-password:Teach!2025#}")
     private String defaultTeacherPassword;
@@ -43,12 +46,33 @@ public class TeacherServiceImpl implements TeacherService {
                               DistrictRepository districtRepository,
                               SchoolRepository schoolRepository,
                               AdminRepository adminRepository,
-                              IncidentRepository incidentRepository) {
+                              IncidentRepository incidentRepository,
+                              GradeCategoryRepository gradeCategoryRepo) {
         this.repo = repo;
         this.districtRepository = districtRepository;
         this.schoolRepository = schoolRepository;
         this.adminRepository = adminRepository;
         this.incidentRepository = incidentRepository;
+        this.gradeCategoryRepo = gradeCategoryRepo;
+    }
+
+    private void seedDefaultCategories(Teacher teacher) {
+        String[][] defaults = {
+            {"Tests",     "40"},
+            {"Classwork", "25"},
+            {"Quizzes",   "20"},
+            {"Homework",  "15"},
+        };
+        for (String[] row : defaults) {
+            if (!gradeCategoryRepo.existsByTeacher_IdAndName(teacher.getId(), row[0])) {
+                GradeCategory cat = new GradeCategory();
+                cat.setTeacher(teacher);
+                cat.setDistrict(teacher.getDistrict());
+                cat.setName(row[0]);
+                cat.setWeightPercent(Integer.parseInt(row[1]));
+                gradeCategoryRepo.save(cat);
+            }
+        }
     }
 
     private TeacherDTO toDto(Teacher t){
@@ -142,7 +166,9 @@ public class TeacherServiceImpl implements TeacherService {
         t.setDistrict(district);
         t.setSchool(school);
 
-        return toDto(repo.save(t));
+        Teacher saved = repo.save(t);
+        seedDefaultCategories(saved);
+        return toDto(saved);
     }
     @Override
     @Transactional
@@ -195,7 +221,9 @@ public class TeacherServiceImpl implements TeacherService {
         t.setDistrict(district);
         t.setSchool(school);
 
-        return toDto(repo.save(t));
+        Teacher saved = repo.save(t);
+        seedDefaultCategories(saved);
+        return toDto(saved);
     }
 
 

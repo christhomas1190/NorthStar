@@ -27,6 +27,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/teachers/*/caution-stats").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/teachers/*/promote-to-admin").hasRole("ADMIN")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/districts/*/features").hasRole("ADMIN")
+                        .requestMatchers("/api/gradebook/**").authenticated()
 
                         .anyRequest().authenticated()
                 )

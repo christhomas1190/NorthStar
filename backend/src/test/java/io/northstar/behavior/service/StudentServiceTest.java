@@ -36,6 +36,8 @@ class StudentServiceTest {
     SchoolRepository schoolRepo;
     IncidentRepository incidentRepo;
     InterventionRepository interventionRepo;
+    io.northstar.behavior.repository.GradeRepository gradeRepo;
+    io.northstar.behavior.repository.AssignmentRepository assignmentRepo;
     StudentService service;
 
     static final Long DISTRICT_ID = 10L;
@@ -48,7 +50,9 @@ class StudentServiceTest {
         schoolRepo       = mock(SchoolRepository.class);
         incidentRepo     = mock(IncidentRepository.class);
         interventionRepo = mock(InterventionRepository.class);
-        service = new StudentServiceImpl(repo, districtRepo, schoolRepo, incidentRepo, interventionRepo);
+        gradeRepo        = mock(io.northstar.behavior.repository.GradeRepository.class);
+        assignmentRepo   = mock(io.northstar.behavior.repository.AssignmentRepository.class);
+        service = new StudentServiceImpl(repo, districtRepo, schoolRepo, incidentRepo, interventionRepo, gradeRepo, assignmentRepo);
 
         TenantContext.setDistrictId(DISTRICT_ID);
     }
@@ -121,7 +125,7 @@ class StudentServiceTest {
         when(repo.findByIdAndDistrict_DistrictId(100L, DISTRICT_ID))
                 .thenReturn(Optional.of(existing));
 
-        StudentDTO patch = new StudentDTO(100L, "Al", "Tur", "T100", "7", List.of(), List.of(), DISTRICT_ID, SCHOOL_ID);
+        StudentDTO patch = new StudentDTO(100L, "Al", "Tur", "T100", "7", List.of(), List.of(), DISTRICT_ID, SCHOOL_ID, null);
         StudentDTO out = service.update(100L, patch);
 
         assertEquals("Al",  out.firstName());
@@ -133,7 +137,7 @@ class StudentServiceTest {
     void update_notFound_throws404() {
         when(repo.findByIdAndDistrict_DistrictId(999L, DISTRICT_ID)).thenReturn(Optional.empty());
 
-        StudentDTO patch = new StudentDTO(999L, "X", "Y", "S0", "5", List.of(), List.of(), DISTRICT_ID, SCHOOL_ID);
+        StudentDTO patch = new StudentDTO(999L, "X", "Y", "S0", "5", List.of(), List.of(), DISTRICT_ID, SCHOOL_ID, null);
         assertThrows(Exception.class, () -> service.update(999L, patch));
     }
 

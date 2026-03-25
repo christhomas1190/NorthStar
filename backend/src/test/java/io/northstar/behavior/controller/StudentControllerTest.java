@@ -38,7 +38,7 @@ class StudentControllerTest {
     IncidentService incidentService;
 
     private StudentDTO dto(long id, String first, String last, String sid, String grade) {
-        return new StudentDTO(id, first, last, sid, grade, List.of(), List.of(), 10L, 5L);
+        return new StudentDTO(id, first, last, sid, grade, List.of(), List.of(), 10L, 5L, null);
     }
 
     // ---------- GET /api/students ----------

@@ -46,6 +46,8 @@ export function AuthProvider({ children }) {
           districtId: data.districtId,
           schoolId: data.schoolId,
           mustChangePassword: data.mustChangePassword === true,
+          hasGradebook: data.hasGradebook === true,
+          hasAcademicTrend: data.hasAcademicTrend === true,
         };
         localStorage.setItem("ns_token", basicToken);
         localStorage.setItem("ns_user", JSON.stringify(realUser));
@@ -118,11 +120,12 @@ export function useAuth() {
   return ctx;
 }
 
-export function Protected({ roles, children }) {
+export function Protected({ roles, feature, children }) {
   const { user } = useAuth();
   const location = useLocation();
   if (!user) return <Navigate to="/login" replace state={{ from: location }} />;
   if (user.mustChangePassword) return <Navigate to="/change-password" replace />;
   if (roles && !roles.includes(user.role)) return <Navigate to="/unauthorized" replace />;
+  if (feature && !user[feature]) return <Navigate to="/unauthorized" replace />;
   return children;
 }

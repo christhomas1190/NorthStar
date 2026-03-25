@@ -54,26 +54,32 @@ public class AuthController {
         var adminOpt = adminRepo.findByUserName(username);
         if (adminOpt.isPresent()) {
             var a = adminOpt.get();
+            var d = a.getDistrict();
             Map<String, Object> body = new HashMap<>();
             body.put("username", a.getUserName());
             body.put("name", a.getFirstName() + " " + a.getLastName());
             body.put("role", "Admin");
-            body.put("districtId", a.getDistrict() != null ? a.getDistrict().getDistrictId() : null);
+            body.put("districtId", d != null ? d.getDistrictId() : null);
             body.put("schoolId", a.getSchool() != null ? a.getSchool().getSchoolId() : null);
             body.put("mustChangePassword", a.isMustChangePassword());
+            body.put("hasGradebook", d != null && d.isHasGradebook());
+            body.put("hasAcademicTrend", d != null && d.isHasAcademicTrend());
             return ResponseEntity.ok(body);
         }
 
         var teacherOpt = teacherRepo.findByUserName(username);
         if (teacherOpt.isPresent()) {
             var t = teacherOpt.get();
+            var d = t.getDistrict();
             Map<String, Object> body = new HashMap<>();
             body.put("username", t.getUserName());
             body.put("name", t.getFirstName() + " " + t.getLastName());
             body.put("role", "Teacher");
-            body.put("districtId", t.getDistrict() != null ? t.getDistrict().getDistrictId() : null);
+            body.put("districtId", d != null ? d.getDistrictId() : null);
             body.put("schoolId", t.getSchool() != null ? t.getSchool().getSchoolId() : null);
             body.put("mustChangePassword", t.isMustChangePassword());
+            body.put("hasGradebook", d != null && d.isHasGradebook());
+            body.put("hasAcademicTrend", d != null && d.isHasAcademicTrend());
             return ResponseEntity.ok(body);
         }
 

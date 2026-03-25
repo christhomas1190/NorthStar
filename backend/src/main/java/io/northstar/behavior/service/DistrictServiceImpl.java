@@ -1,6 +1,7 @@
 package io.northstar.behavior.service;
 
-import io.northstar.behavior.dto.*;
+import io.northstar.behavior.dto.DistrictDTO;
+import io.northstar.behavior.dto.DistrictFeaturesRequest;
 import io.northstar.behavior.model.*;
 import io.northstar.behavior.repository.DistrictRepository;
 import jakarta.transaction.Transactional;
@@ -27,7 +28,14 @@ public class DistrictServiceImpl implements DistrictService {
     private DistrictDTO toDto(District d){
         return new DistrictDTO(
                 d.getDistrictId(),
-                d.getDistrictName()
+                d.getDistrictName(),
+                d.getStatus(),
+                d.getBillingEmail(),
+                d.getContactName(),
+                d.getSeatLimit(),
+                d.getMaxSchools(),
+                d.isHasGradebook(),
+                d.isHasAcademicTrend()
         );
     }
 
@@ -96,5 +104,14 @@ public class DistrictServiceImpl implements DistrictService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "district not found");
         }
         repo.deleteById(id);
+    }
+
+    @Override
+    public DistrictDTO updateFeatures(Long id, DistrictFeaturesRequest req) {
+        District d = repo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "district not found"));
+        if (req.hasGradebook() != null) d.setHasGradebook(req.hasGradebook());
+        if (req.hasAcademicTrend() != null) d.setHasAcademicTrend(req.hasAcademicTrend());
+        return toDto(d);
     }
 }

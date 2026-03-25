@@ -34,6 +34,9 @@ import ReportsPage from "@/components/reports/ReportsPage.jsx";
 import StudentDetailPage from "@/components/student/StudentDetailsPage.jsx";
 import TeacherDashboard from "@/components/teacher/TeacherDashboard.jsx";
 import CreateIncidentPage from "@/components/incidents/CreateIncidentPage.jsx";
+import DistrictFeaturesPage from "@/components/admin/DistrictFeaturesPage.jsx";
+import GradebookPage from "@/components/gradebook/GradebookPage.jsx";
+import GradebookSetupPage from "@/components/gradebook/GradebookSetupPage.jsx";
 
 
 /** Redirect "/" to a sensible home after login; otherwise go to /login */
@@ -244,6 +247,34 @@ export default function App() {
         element={
           <Protected roles={["Viewer"]}>
             <AppShell><ViewerStudentPage /></AppShell>
+          </Protected>
+        }
+      />
+
+      {/* Feature Flags admin page */}
+      <Route
+        path="/admin/districts/features"
+        element={
+          <Protected roles={["Admin"]}>
+            <AppShell><DistrictFeaturesPage /></AppShell>
+          </Protected>
+        }
+      />
+
+      {/* Gradebook */}
+      <Route
+        path="/gradebook"
+        element={
+          <Protected roles={["Admin", "Teacher"]} feature="hasGradebook">
+            <AppShell><GradebookPage /></AppShell>
+          </Protected>
+        }
+      />
+      <Route
+        path="/admin/gradebook/setup"
+        element={
+          <Protected roles={["Admin", "Teacher"]} feature="hasGradebook">
+            <AppShell><GradebookSetupPage /></AppShell>
           </Protected>
         }
       />

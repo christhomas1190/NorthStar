@@ -30,12 +30,13 @@ import static org.mockito.Mockito.*;
 @DisplayName("TeacherService — unit tests")
 class TeacherServiceTest {
 
-    TeacherRepository     repo;
-    DistrictRepository    districtRepository;
-    SchoolRepository      schoolRepository;
-    AdminRepository       adminRepository;
-    IncidentRepository    incidentRepository;
-    TeacherServiceImpl    service;
+    TeacherRepository         repo;
+    DistrictRepository        districtRepository;
+    SchoolRepository          schoolRepository;
+    AdminRepository           adminRepository;
+    IncidentRepository        incidentRepository;
+    io.northstar.behavior.repository.GradeCategoryRepository gradeCategoryRepo;
+    TeacherServiceImpl        service;
 
     static final Long DID = 10L;
     static final Long SID = 5L;
@@ -47,9 +48,10 @@ class TeacherServiceTest {
         schoolRepository   = mock(SchoolRepository.class);
         adminRepository    = mock(AdminRepository.class);
         incidentRepository = mock(IncidentRepository.class);
+        gradeCategoryRepo  = mock(io.northstar.behavior.repository.GradeCategoryRepository.class);
 
         service = new TeacherServiceImpl(repo, districtRepository, schoolRepository,
-                adminRepository, incidentRepository);
+                adminRepository, incidentRepository, gradeCategoryRepo);
 
         // inject defaultTeacherPassword (bypasses @Value for unit tests)
         try {

@@ -1,15 +1,19 @@
 package io.northstar.behavior.service;
 
+import io.northstar.behavior.dto.AcademicStatusRequest;
 import io.northstar.behavior.dto.CreateStudentRequest;
 import io.northstar.behavior.dto.IncidentSummaryDTO;
 import io.northstar.behavior.dto.InterventionSummaryDTO;
 import io.northstar.behavior.dto.StudentDTO;
+import io.northstar.behavior.model.AcademicStatus;
 import io.northstar.behavior.model.District;
 import io.northstar.behavior.model.Incident;
 import io.northstar.behavior.model.Intervention;
 import io.northstar.behavior.model.School;
 import io.northstar.behavior.model.Student;
+import io.northstar.behavior.repository.AssignmentRepository;
 import io.northstar.behavior.repository.DistrictRepository;
+import io.northstar.behavior.repository.GradeRepository;
 import io.northstar.behavior.repository.IncidentRepository;
 import io.northstar.behavior.repository.InterventionRepository;
 import io.northstar.behavior.repository.SchoolRepository;
@@ -41,17 +45,23 @@ public class StudentServiceImpl implements StudentService {
     private final SchoolRepository schools;
     private final IncidentRepository incidentRepo;
     private final InterventionRepository interventionRepo;
+    private final GradeRepository gradeRepo;
+    private final AssignmentRepository assignmentRepo;
 
     public StudentServiceImpl(StudentRepository repo,
                               DistrictRepository districtRepo,
                               SchoolRepository schools,
                               IncidentRepository incidentRepo,
-                              InterventionRepository interventionRepo) {
+                              InterventionRepository interventionRepo,
+                              GradeRepository gradeRepo,
+                              AssignmentRepository assignmentRepo) {
         this.repo = repo;
         this.districtRepo = districtRepo;
         this.schools = schools;
         this.incidentRepo = incidentRepo;
         this.interventionRepo = interventionRepo;
+        this.gradeRepo = gradeRepo;
+        this.assignmentRepo = assignmentRepo;
     }
 
     // ---------- helpers (keep private; not in interface) ----------
@@ -116,6 +126,7 @@ public class StudentServiceImpl implements StudentService {
         long id = (s.getId() == null ? 0L : s.getId());
         Long did = (s.getDistrict() != null) ? s.getDistrict().getDistrictId() : null;
         Long sid = (s.getSchool() != null) ? s.getSchool().getSchoolId() : null;
+        String status = s.getAcademicStatus() != null ? s.getAcademicStatus().name() : null;
 
         return new StudentDTO(
                 id,
@@ -126,7 +137,8 @@ public class StudentServiceImpl implements StudentService {
                 toIncidentSummaries(s.getIncidents()),
                 toInterventionSummaries(s.getInterventions()),
                 did,
-                sid
+                sid,
+                status
         );
     }
 
@@ -463,6 +475,106 @@ public class StudentServiceImpl implements StudentService {
                 }
             }
 
+            // ---- Gradebook Section (if enabled) ----
+            District pdfDistrict = student.getDistrict();
+            if (pdfDistrict != null && pdfDistrict.isHasGradebook()) {
+                List<io.northstar.behavior.model.Grade> gradeList =
+                        gradeRepo.findByStudent_IdAndDistrict_DistrictId(studentId, pdfDistrict.getDistrictId());
+
+                if (!gradeList.isEmpty()) {
+                    y -= 14;
+                    if (y < BOTTOM_Y) {
+                        cs.close();
+                        page = new PDPage(PDRectangle.LETTER);
+                        doc.addPage(page);
+                        cs = new PDPageContentStream(doc, page);
+                        y = PAGE_H - MARGIN;
+                    }
+                    cs.setLineWidth(0.5f);
+                    cs.moveTo(MARGIN, y);
+                    cs.lineTo(PAGE_W - MARGIN, y);
+                    cs.stroke();
+                    y -= 16;
+
+                    cs.beginText();
+                    cs.setFont(bold, 13);
+                    cs.newLineAtOffset(MARGIN, y);
+                    cs.showText("Gradebook Summary");
+                    cs.endText();
+                    y -= 18;
+
+                    // Compute totals per teacher
+                    java.util.Map<String, int[]> teacherTotals = new java.util.LinkedHashMap<>();
+                    for (io.northstar.behavior.model.Grade g : gradeList) {
+                        String tName = (g.getAssignment().getTeacher() != null)
+                                ? safe(g.getAssignment().getTeacher().getFirstName() + " " + g.getAssignment().getTeacher().getLastName())
+                                : "Unknown";
+                        teacherTotals.computeIfAbsent(tName, k -> new int[]{0, 0});
+                        if (g.getPointsEarned() != null) {
+                            teacherTotals.get(tName)[0] += g.getPointsEarned();
+                            teacherTotals.get(tName)[1] += g.getAssignment().getMaxPoints();
+                        }
+                    }
+                    for (java.util.Map.Entry<String, int[]> entry : teacherTotals.entrySet()) {
+                        int earned = entry.getValue()[0], max = entry.getValue()[1];
+                        String avgStr = max > 0 ? (earned * 100 / max) + "%" : "—";
+                        String letter = max > 0 ? letterGradeStr(earned * 100.0 / max) : "—";
+                        cs.beginText();
+                        cs.setFont(regular, 10);
+                        cs.newLineAtOffset(MARGIN + 10, y);
+                        cs.showText(entry.getKey() + ": " + avgStr + " (" + letter + ")");
+                        cs.endText();
+                        y -= 14;
+                    }
+
+                    y -= 8;
+                    // Grade table header
+                    float[] gCols = {MARGIN + 5, MARGIN + 130, MARGIN + 210, MARGIN + 300, MARGIN + 345, MARGIN + 385};
+                    String[] gHdrs = {"Assignment", "Subject", "Teacher", "Pts", "Max", "%"};
+                    cs.setNonStrokingColor(0.9f, 0.9f, 0.9f);
+                    cs.addRect(MARGIN, y - 3, USABLE_W, 16);
+                    cs.fill();
+                    cs.setNonStrokingColor(0f, 0f, 0f);
+                    for (int i = 0; i < gHdrs.length; i++) {
+                        cs.beginText();
+                        cs.setFont(bold, 9);
+                        cs.newLineAtOffset(gCols[i], y);
+                        cs.showText(gHdrs[i]);
+                        cs.endText();
+                    }
+                    y -= 16;
+
+                    for (io.northstar.behavior.model.Grade g : gradeList) {
+                        if (y < BOTTOM_Y) {
+                            cs.close();
+                            page = new PDPage(PDRectangle.LETTER);
+                            doc.addPage(page);
+                            cs = new PDPageContentStream(doc, page);
+                            y = PAGE_H - MARGIN;
+                        }
+                        String aName = safe(g.getAssignment().getName());
+                        String subj = safe(g.getAssignment().getSubject() != null ? g.getAssignment().getSubject() : "—");
+                        String tName = g.getAssignment().getTeacher() != null
+                                ? safe(g.getAssignment().getTeacher().getFirstName() + " " + g.getAssignment().getTeacher().getLastName())
+                                : "—";
+                        String pts = g.getPointsEarned() != null ? String.valueOf(g.getPointsEarned()) : "—";
+                        String maxPts = String.valueOf(g.getAssignment().getMaxPoints());
+                        String pct = (g.getPointsEarned() != null && g.getAssignment().getMaxPoints() > 0)
+                                ? (g.getPointsEarned() * 100 / g.getAssignment().getMaxPoints()) + "%"
+                                : "—";
+                        String[] gVals = {aName, subj, tName, pts, maxPts, pct};
+                        for (int i = 0; i < gVals.length; i++) {
+                            cs.beginText();
+                            cs.setFont(regular, 9);
+                            cs.newLineAtOffset(gCols[i], y);
+                            cs.showText(gVals[i]);
+                            cs.endText();
+                        }
+                        y -= 13;
+                    }
+                }
+            }
+
             cs.close();
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             doc.save(baos);
@@ -471,6 +583,37 @@ public class StudentServiceImpl implements StudentService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                     "PDF generation failed: " + e.getMessage());
         }
+    }
+
+    private static String letterGradeStr(double avg) {
+        if (avg >= 90) return "A";
+        if (avg >= 80) return "B";
+        if (avg >= 70) return "C";
+        if (avg >= 60) return "D";
+        return "F";
+    }
+
+    @Override
+    public StudentDTO updateAcademicStatus(Long studentId, AcademicStatusRequest req) {
+        Long districtId = TenantContext.getDistrictId();
+        Student s = repo.findByIdAndDistrict_DistrictId(studentId, districtId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "student not found"));
+
+        District d = s.getDistrict();
+        if (d == null || !d.isHasAcademicTrend()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Academic Trend not enabled for this district");
+        }
+
+        if (req.status() == null || req.status().isBlank()) {
+            s.setAcademicStatus(null);
+        } else {
+            try {
+                s.setAcademicStatus(AcademicStatus.valueOf(req.status().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status: " + req.status());
+            }
+        }
+        return toDto(s);
     }
 
     /** Strip characters outside Latin-1 printable range (PDType1Font limitation). */

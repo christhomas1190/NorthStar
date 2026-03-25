@@ -45,3 +45,7 @@ export async function delJSON(url) {
   const res = await fetch(API_BASE + url, { method: "DELETE", headers: commonHeaders() });
   return handle(res);
 }
+export async function patchJSON(url, body) {
+  const res = await fetch(API_BASE + url, { method: "PATCH", headers: commonHeaders(), body: JSON.stringify(body) });
+  return handle(res);
+}

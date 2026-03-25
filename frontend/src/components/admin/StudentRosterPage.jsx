@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/state/auth.jsx";
 import { getJSON, putJSON, delJSON } from "@/lib/api.js";
+import AcademicStatusBadge from "@/components/common/AcademicStatusBadge.jsx";
 
 export default function StudentRosterPage() {
   const { activeDistrictId, user } = useAuth();
@@ -108,20 +109,21 @@ export default function StudentRosterPage() {
                 <th className="text-left py-2 pr-4">Name</th>
                 <th className="text-left py-2 pr-4">Grade</th>
                 <th className="text-left py-2 pr-4">Student ID</th>
+                {user?.hasAcademicTrend && <th className="text-left py-2 pr-4">Academic Status</th>}
                 {canEdit && <th className="text-left py-2">Actions</th>}
               </tr>
             </thead>
             <tbody>
               {loading && (
                 <tr>
-                  <td colSpan={canEdit ? 4 : 3} className="py-4 text-center text-slate-500">
+                  <td colSpan={(canEdit ? 4 : 3) + (user?.hasAcademicTrend ? 1 : 0)} className="py-4 text-center text-slate-500">
                     Loading…
                   </td>
                 </tr>
               )}
               {!loading && filtered.length === 0 && (
                 <tr>
-                  <td colSpan={canEdit ? 4 : 3} className="py-4 text-center text-slate-500">
+                  <td colSpan={(canEdit ? 4 : 3) + (user?.hasAcademicTrend ? 1 : 0)} className="py-4 text-center text-slate-500">
                     No students found.
                   </td>
                 </tr>
@@ -154,6 +156,7 @@ export default function StudentRosterPage() {
                       />
                     </td>
                     <td className="py-2 pr-4 text-slate-500 text-xs">{s.studentId || "—"}</td>
+                    {user?.hasAcademicTrend && <td className="py-2 pr-4">—</td>}
                     <td className="py-2">
                       <div className="flex gap-2">
                         <Button size="sm" className="h-7 text-xs" onClick={() => saveEdit(s)}>
@@ -177,6 +180,11 @@ export default function StudentRosterPage() {
                     </td>
                     <td className="py-2 pr-4">{s.grade || "—"}</td>
                     <td className="py-2 pr-4 text-slate-500">{s.studentId || "—"}</td>
+                    {user?.hasAcademicTrend && (
+                      <td className="py-2 pr-4">
+                        <AcademicStatusBadge status={s.academicStatus} />
+                      </td>
+                    )}
                     {canEdit && (
                       <td className="py-2">
                         <div className="flex gap-2">

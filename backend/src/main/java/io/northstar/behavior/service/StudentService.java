@@ -1,5 +1,6 @@
 package io.northstar.behavior.service;
 
+import io.northstar.behavior.dto.AcademicStatusRequest;
 import io.northstar.behavior.dto.CreateStudentRequest;
 import io.northstar.behavior.dto.StudentDTO;
 
@@ -21,4 +22,5 @@ public interface StudentService {
         StudentDTO findById(Long id);
         StudentDTO update(Long id, StudentDTO dto);
         void delete(Long id);
+        StudentDTO updateAcademicStatus(Long studentId, AcademicStatusRequest req);
 }

@@ -27,6 +27,10 @@ public class Student {
 
     @Column(nullable = false) private String grade;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "academic_status", nullable = true)
+    private AcademicStatus academicStatus;
+
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("occurredAt DESC")
     private List<Incident> incidents = new ArrayList<>();
@@ -60,6 +64,9 @@ public class Student {
 
     public String getGrade() { return grade; }
     public void setGrade(String grade) { this.grade = grade; }
+
+    public AcademicStatus getAcademicStatus() { return academicStatus; }
+    public void setAcademicStatus(AcademicStatus academicStatus) { this.academicStatus = academicStatus; }
 
     public List<Incident> getIncidents() { return incidents; }
     public void setIncidents(List<Incident> incidents) { this.incidents = incidents; }

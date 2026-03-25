@@ -40,6 +40,12 @@ public class District {
     @Column(name = "max_schools", nullable = false)
     private int maxSchools = 100;
 
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean hasGradebook = false;
+
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean hasAcademicTrend = false;
+
     // ---- lifecycle hooks to guarantee slug ----
     @PrePersist
     @PreUpdate
@@ -89,4 +95,10 @@ public class District {
 
     public int getMaxSchools() { return maxSchools; }
     public void setMaxSchools(int maxSchools) { this.maxSchools = maxSchools; }
+
+    public boolean isHasGradebook() { return hasGradebook; }
+    public void setHasGradebook(boolean hasGradebook) { this.hasGradebook = hasGradebook; }
+
+    public boolean isHasAcademicTrend() { return hasAcademicTrend; }
+    public void setHasAcademicTrend(boolean hasAcademicTrend) { this.hasAcademicTrend = hasAcademicTrend; }
 }

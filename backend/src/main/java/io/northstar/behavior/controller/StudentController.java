@@ -1,6 +1,7 @@
 // src/main/java/io/northstar/behavior/controller/StudentController.java
 package io.northstar.behavior.controller;
 
+import io.northstar.behavior.dto.AcademicStatusRequest;
 import io.northstar.behavior.dto.CreateIncidentRequest;
 import io.northstar.behavior.dto.CreateStudentRequest;
 import io.northstar.behavior.dto.IncidentDTO;
@@ -89,5 +90,10 @@ public class StudentController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
         students.delete(id);
+    }
+
+    @PatchMapping("/{id}/academic-status")
+    public StudentDTO updateAcademicStatus(@PathVariable Long id, @RequestBody AcademicStatusRequest req) {
+        return students.updateAcademicStatus(id, req);
     }
 }

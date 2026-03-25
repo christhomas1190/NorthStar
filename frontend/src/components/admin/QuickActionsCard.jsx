@@ -1,10 +1,11 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/state/auth.jsx";
 
 export default function QuickActionsCard() {
-  const btnCls =
-    "justify-between rounded-lg w-full text-left";
+  const { user } = useAuth();
+  const btnCls = "justify-between rounded-lg w-full text-left";
 
   return (
     <Card>
@@ -36,6 +37,16 @@ export default function QuickActionsCard() {
           <Button variant="outline" className={btnCls} onClick={() => (window.location.href = "/admin/import-students")}>
             Import Students ▸
           </Button>
+
+          <Button variant="outline" className={btnCls} onClick={() => (window.location.href = "/admin/districts/features")}>
+            Feature Flags ▸
+          </Button>
+
+          {user?.hasGradebook && (
+            <Button variant="outline" className={btnCls} onClick={() => (window.location.href = "/admin/gradebook/setup")}>
+              Gradebook Setup ▸
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>
